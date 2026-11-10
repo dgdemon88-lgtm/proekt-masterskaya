@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Дорожная одежда — требуемый модуль, эквивалентная толщина, морозоустойчивость</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#78716c;--accent2:#57534e;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:#a8a29e;border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:#d6d3d1;display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fbbf24;font-size:22px}
+.kpi.ok .v{color:#22d3a0}.kpi.bad .v{color:#fca5a5}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#292524;border:1px solid #57534e;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#d6d3d1;margin-top:12px;line-height:1.7}
+.rec-box.ok{background:#06301f;border-color:#15803d;color:#6ee7b7}
+.rec-box.bad{background:#2a0d0d;border-color:#7f1d1d;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:#a8a29e;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:#d6d3d1;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🛣 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Проезд / дорога"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="АД-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('etr')">📈 Требуемый модуль E_тр</button>
+  <button class="tab-btn" onclick="switchTab('struct')">🧱 Конструкция (Одемарк)</button>
+  <button class="tab-btn" onclick="switchTab('frost')">❄ Морозоустойчивость</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== ETR ===== -->
+<div id="sec-etr" class="sec active">
+  <div class="card">
+    <div class="card-title">Суммарное число приложений расчётной нагрузки ΣN<sub>p</sub></div>
+    <div class="grid4">
+      <div class="fld"><label>Интенсивность N, авт/сут (приведённая)</label><input id="e-N" type="number" step="10" value="500" oninput="calcEtr()"></div>
+      <div class="fld"><label>Срок службы T<sub>сл</sub>, лет</label><input id="e-T" type="number" step="1" value="15" oninput="calcEtr()"></div>
+      <div class="fld"><label>Расч. дней в году T<sub>рдг</sub></label><input id="e-Trg" type="number" step="10" value="145" oninput="calcEtr()"></div>
+      <div class="fld"><label>Коэф. суммирования по годам q</label><input id="e-q" type="number" step="0.05" value="1.05" oninput="calcEtr()"><span class="hint">учёт роста интенсивности</span></div>
+      <div class="fld"><label>Коэф. полос K<sub>п</sub></label><input id="e-Kp" type="number" step="0.05" value="0.55" oninput="calcEtr()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Требуемый общий модуль упругости E<sub>тр</sub></div>
+    <div class="grid4">
+      <div class="fld"><label>Категория / тип покрытия (коэф. c)</label>
+        <select id="e-c" onchange="calcEtr()">
+          <option value="3.55" selected>Капитальный (а/б) — c=3,55</option>
+          <option value="3.25">Облегчённый — c=3,25</option>
+          <option value="3.0">Переходный — c=3,0</option>
+        </select></div>
+      <div class="fld"><label>Минимальный E<sub>тр,min</sub> по категории, МПа</label><input id="e-emin" type="number" step="5" value="200" oninput="calcEtr()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="e-kpi"></div>
+    <div class="formula" id="e-formula"></div>
+    <div class="rec-box" id="e-rec"></div>
+    <div class="btn-row"><button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button></div>
+    <div class="note">ΣN<sub>p</sub> = N·K<sub>п</sub>·T<sub>рдг</sub>·T<sub>сл</sub>·q. Требуемый модуль по упругому прогибу: E<sub>тр</sub> = 98,65·(lg(ΣN<sub>p</sub>) − c), но не менее E<sub>тр,min</sub> для категории дороги (ОДН 218.046-01).</div>
+  </div>
+</div>
+
+<!-- ===== STRUCTURE ===== -->
+<div id="sec-struct" class="sec">
+  <div class="card">
+    <div class="card-title">Конструкция дорожной одежды и эквивалентная толщина (метод Одемарка)</div>
+    <div class="grid4">
+      <div class="fld"><label>Модуль упругости грунта E₀, МПа</label><input id="st-E0" type="number" step="5" value="45" oninput="renderStruct()"></div>
+      <div class="fld"><label>Требуемый модуль E<sub>тр</sub>, МПа (из вкладки)</label><input id="st-Etr" type="number" step="5" value="250" oninput="calcStruct()"></div>
+    </div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table class="res-table">
+        <thead><tr><th>Слой (сверху вниз)</th><th style="width:150px">Материал</th><th style="width:110px">Толщина h, см</th><th style="width:120px">Модуль E, МПа</th><th style="width:130px">h·(E/E₀)^⅓, см</th><th style="width:28px"></th></tr></thead>
+        <tbody id="st-rows"></tbody>
+        <tfoot><tr class="total"><td colspan="2">Итого толщина / эквивалентная H<sub>э</sub></td><td id="st-hsum" style="text-align:right"></td><td></td><td id="st-he" style="text-align:right"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addStruct()">＋ Добавить слой</button>
+    <div class="kpi-row" style="margin-top:16px" id="st-kpi"></div>
+    <div class="formula" id="st-formula"></div>
+    <div class="rec-box" id="st-rec"></div>
+    <div class="note">Эквивалентная толщина H<sub>э</sub> = Σ h<sub>i</sub>·(E<sub>i</sub>/E₀)<sup>1/3</sup> (метод Одемарка) приводит многослойную конструкцию к однослойной на грунте. Показатель H<sub>э</sub>/D характеризует жёсткость. <b>Проверка общего модуля по упругому прогибу выполняется по номограмме ОДН 218.046</b> — здесь даётся оценочный ориентир.</div>
+  </div>
+</div>
+
+<!-- ===== FROST ===== -->
+<div id="sec-frost" class="sec">
+  <div class="card">
+    <div class="card-title">Проверка на морозоустойчивость (толщина одежды)</div>
+    <div class="grid4">
+      <div class="fld"><label>Глубина промерзания z<sub>пр</sub>, м</label><input id="fr-z" type="number" step="0.1" value="1.8" oninput="calcFrost()"></div>
+      <div class="fld"><label>Грунт земляного полотна</label>
+        <select id="fr-soil" onchange="onFrostSoil()">
+          <option value="0.5" selected>Суглинок / глина (пучинистый) — 0,50</option>
+          <option value="0.4">Супесь — 0,40</option>
+          <option value="0.3">Песок пылеватый — 0,30</option>
+          <option value="0.2">Песок (непучинистый) — 0,20</option>
+          <option value="custom">вручную…</option>
+        </select></div>
+      <div class="fld"><label>Коэф. (доля от z<sub>пр</sub>)</label><input id="fr-k" type="number" step="0.05" value="0.5" oninput="calcFrost()"></div>
+      <div class="fld"><label>Фактическая толщина одежды, см</label><input id="fr-h" type="number" step="1" value="63" oninput="calcFrost()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="fr-kpi"></div>
+    <div class="formula" id="fr-formula"></div>
+    <div class="rec-box" id="fr-rec"></div>
+    <div class="note">Ориентировочно требуемая толщина морозозащитного слоя (всей одежды) h<sub>мин</sub> = k·z<sub>пр</sub>, где k зависит от пучинистости грунта. Точный расчёт пучения — по ОДН 218.046 с учётом влажности и морозного пучения.</div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Минимальный требуемый модуль E<sub>тр,min</sub> по категориям</div>
+    <table class="ref-table"><thead><tr><th>Категория дороги / покрытие</th><th>E<sub>тр,min</sub>, МПа</th></tr></thead>
+      <tbody>
+        <tr><td>I–II категория (капитальный а/б)</td><td class="c">230–300</td></tr>
+        <tr><td>III категория</td><td class="c">200–230</td></tr>
+        <tr><td>IV категория (облегчённый)</td><td class="c">150–200</td></tr>
+        <tr><td>Внутриквартальные проезды</td><td class="c">150–170</td></tr>
+        <tr><td>Тротуары, дорожки</td><td class="c">100–130</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">По ОДН 218.046-01 / СП РК. Уточняется по категории и интенсивности.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Расчётные модули упругости материалов, МПа</div>
+    <table class="ref-table"><thead><tr><th>Материал слоя</th><th>E, МПа</th></tr></thead>
+      <tbody>
+        <tr><td>Асфальтобетон плотный (верхний)</td><td class="c">2400–3200</td></tr>
+        <tr><td>Асфальтобетон пористый (нижний)</td><td class="c">1400–2000</td></tr>
+        <tr><td>Щебень, обработанный битумом</td><td class="c">600–900</td></tr>
+        <tr><td>Щебень фракционный (заклинка)</td><td class="c">350–450</td></tr>
+        <tr><td>Гравийно-песчаная смесь (ПГС)</td><td class="c">180–280</td></tr>
+        <tr><td>Песок крупный (дренирующий)</td><td class="c">120–180</td></tr>
+        <tr><td>Грунт земляного полотна</td><td class="c">30–60</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let stRows=[];
+
+/* ===== ETR ===== */
+function calcEtr(){
+  const N=parseFloat($('e-N').value)||0,T=parseFloat($('e-T').value)||1,Trg=parseFloat($('e-Trg').value)||145;
+  const q=parseFloat($('e-q').value)||1,Kp=parseFloat($('e-Kp').value)||0.55,c=parseFloat($('e-c').value)||3.55,emin=parseFloat($('e-emin').value)||200;
+  const sumN=N*Kp*Trg*T*q;
+  let Etr=sumN>1?98.65*(Math.log10(sumN)-c):0;
+  const EtrFinal=Math.max(Etr,emin);
+  $('e-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(sumN,0)}</span><span class="u">прилож.</span><span class="lbl">ΣN_p</span></div>
+    <div class="kpi"><span class="v">${fmt(Etr,0)}</span><span class="u">МПа</span><span class="lbl">E_тр по формуле</span></div>
+    <div class="kpi big"><span class="v">${fmt(EtrFinal,0)}</span><span class="u">МПа</span><span class="lbl">E_тр принятый</span></div>`;
+  $('e-formula').innerHTML=`ΣN<sub>p</sub> = ${fmt(N,0)}·${fmt(Kp,2)}·${fmt(Trg,0)}·${fmt(T,0)}·${fmt(q,2)} = ${fmt(sumN,0)}; E<sub>тр</sub> = 98,65·(lg(${fmt(sumN,0)}) − ${c}) = ${fmt(Etr,0)} МПа → принято <b>${fmt(EtrFinal,0)} МПа</b>`;
+  $('e-rec').className='rec-box';
+  $('e-rec').innerHTML=`Требуемый общий модуль упругости дорожной одежды — <b>${fmt(EtrFinal,0)} МПа</b> (по упругому прогибу, не менее ${fmt(emin,0)} МПа для категории). Конструкция подбирается так, чтобы общий модуль на поверхности ≥ E<sub>тр</sub>.`;
+  $('st-Etr').value=Math.round(EtrFinal);
+  window._e={sumN,Etr:EtrFinal};
+}
+
+/* ===== STRUCTURE ===== */
+function addStruct(){stRows.push({name:'',h:10,E:350});renderStruct();}
+function delStruct(i){stRows.splice(i,1);renderStruct();}
+function updStruct(i,f,v){stRows[i][f]=(f==='name')?v:(parseFloat(v)||0);renderStruct();}
+function renderStruct(){
+  const E0=parseFloat($('st-E0').value)||45;
+  const tb=$('st-rows');
+  if(!stRows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-s)">Нет слоёв. Нажмите «＋ Добавить слой».</td></tr>';}
+  else tb.innerHTML=stRows.map((r,i)=>{
+    const he=r.h*Math.cbrt(r.E/E0);
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updStruct(${i},'name',this.value)"></td>
+      <td><input class="ap-inp" value="${esc(r.name)}" list="matlist" oninput="updStruct(${i},'name',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="1" value="${r.h}" oninput="updStruct(${i},'h',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="10" value="${r.E}" oninput="updStruct(${i},'E',this.value)"></td>
+      <td class="num">${fmt(he,1)}</td>
+      <td><button class="btn-del" onclick="delStruct(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  calcStruct();
+}
+function calcStruct(){
+  const E0=parseFloat($('st-E0').value)||45,Etr=parseFloat($('st-Etr').value)||250;
+  const hsum=stRows.reduce((a,r)=>a+r.h,0);
+  const He=stRows.reduce((a,r)=>a+r.h*Math.cbrt(r.E/E0),0);
+  $('st-hsum').textContent=fmt(hsum,0)+' см';
+  $('st-he').textContent=fmt(He,1)+' см';
+  // индикатор: топ-модуль оценочно (Одемарк) — грубая оценка через He/He_ref не строгая; показываем He и рекомендацию
+  const topE=stRows.length?stRows[0].E:0;
+  $('st-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(hsum,0)}</span><span class="u">см</span><span class="lbl">Толщина одежды</span></div>
+    <div class="kpi big"><span class="v">${fmt(He,1)}</span><span class="u">см</span><span class="lbl">Эквив. толщина Hэ</span></div>
+    <div class="kpi"><span class="v">${fmt(E0,0)}</span><span class="u">МПа</span><span class="lbl">Модуль грунта E₀</span></div>
+    <div class="kpi"><span class="v">${fmt(Etr,0)}</span><span class="u">МПа</span><span class="lbl">Требуемый E_тр</span></div>`;
+  $('st-formula').innerHTML=`H<sub>э</sub> = Σ h<sub>i</sub>·(E<sub>i</sub>/E₀)<sup>1/3</sup> = <b>${fmt(He,1)} см</b> (при E₀=${fmt(E0,0)} МПа); фактическая толщина ${fmt(hsum,0)} см`;
+  $('st-rec').className='rec-box';
+  $('st-rec').innerHTML=`Эквивалентная толщина конструкции H<sub>э</sub> = <b>${fmt(He,1)} см</b> (приведена к грунту E₀=${fmt(E0,0)} МПа). Чем больше H<sub>э</sub> и модули слоёв — тем выше общий модуль. `+
+    `<b>Окончательная проверка E<sub>общ</sub> ≥ E<sub>тр</sub>=${fmt(Etr,0)} МПа — по номограмме ОДН 218.046</b> (послойный пересчёт снизу вверх).`;
+  window._st={hsum,He,E0,Etr};
+}
+
+/* ===== FROST ===== */
+function onFrostSoil(){const v=$('fr-soil').value;if(v!=='custom')$('fr-k').value=v;calcFrost();}
+function calcFrost(){
+  const z=parseFloat($('fr-z').value)||0,k=parseFloat($('fr-k').value)||0.5,h=parseFloat($('fr-h').value)||0;
+  const hmin=z*k*100; // см
+  const ok=h>=hmin;
+  $('fr-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(z,2)}</span><span class="u">м</span><span class="lbl">Глубина промерзания</span></div>
+    <div class="kpi big"><span class="v">${fmt(hmin,0)}</span><span class="u">см</span><span class="lbl">Требуемая толщина</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${fmt(h,0)}</span><span class="u">см</span><span class="lbl">Фактическая</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${ok?'✓':'✗'}</span><span class="lbl">${ok?'Достаточно':'Недостаточно'}</span></div>`;
+  $('fr-formula').innerHTML=`h<sub>мин</sub> = k·z<sub>пр</sub> = ${fmt(k,2)}·${fmt(z,2)}·100 = <b>${fmt(hmin,0)} см</b>`;
+  $('fr-rec').className='rec-box '+(ok?'ok':'bad');
+  $('fr-rec').innerHTML=ok
+    ? `✓ Толщина дорожной одежды ${fmt(h,0)} см ≥ требуемой по морозоустойчивости ${fmt(hmin,0)} см.`
+    : `✗ Толщина ${fmt(h,0)} см &lt; требуемой ${fmt(hmin,0)} см — добавьте морозозащитный (дренирующий) слой ≈ ${fmt(hmin-h,0)} см.`;
+  window._fr={hmin,h,ok,z};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['etr','struct','frost','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,e:{N:$('e-N').value,T:$('e-T').value,Trg:$('e-Trg').value,q:$('e-q').value,Kp:$('e-Kp').value,c:$('e-c').value,emin:$('e-emin').value},
+    st:{E0:$('st-E0').value,Etr:$('st-Etr').value,rows:stRows},
+    fr:{z:$('fr-z').value,soil:$('fr-soil').value,k:$('fr-k').value,h:$('fr-h').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj)=>{if(!obj)return;Object.keys(obj).forEach(k=>{if($(pfx+k)&&obj[k]!=null&&k!=='rows')$(pfx+k).value=obj[k];});};
+  set('e-',d.e);set('st-',d.st);set('fr-',d.fr);
+  if(d.st&&Array.isArray(d.st.rows))stRows=d.st.rows;
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcEtr();renderStruct();calcFrost();}
+function saveLS(){localStorage.setItem('pavementCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('pavementCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#57534e;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcEtr();calcStruct();calcFrost();
+  const e=window._e||{},st=window._st||{},fr=window._fr||{};
+  const E0=parseFloat($('st-E0').value)||45;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  let sr=stRows.map(r=>`<tr><td style="${td}">${esc(r.name)}</td><td style="${td};text-align:right">${fmt(r.h,0)}</td><td style="${td};text-align:right">${fmt(r.E,0)}</td><td style="${td};text-align:right">${fmt(r.h*Math.cbrt(r.E/E0),1)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт дорожной одежды</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#78716c;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>РАСЧЁТ ДОРОЖНОЙ ОДЕЖДЫ</h1>
+  <h2>1. Требуемый модуль упругости</h2>
+  <p>ΣN<sub>p</sub> = ${fmt(e.sumN,0)}; требуемый общий модуль E<sub>тр</sub> = <b>${fmt(e.Etr,0)} МПа</b>.</p>
+  <h2>2. Конструкция дорожной одежды</h2>
+  <table><thead><tr><th style="${td};background:#eee">Слой</th><th style="${td};background:#eee">h, см</th><th style="${td};background:#eee">E, МПа</th><th style="${td};background:#eee">h·(E/E₀)^⅓</th></tr></thead>
+  <tbody>${sr}<tr class="tot"><td style="${td}">Итого (H<sub>э</sub>=${fmt(st.He,1)} см)</td><td style="${td};text-align:right">${fmt(st.hsum,0)}</td><td style="${td}"></td><td style="${td};text-align:right">${fmt(st.He,1)}</td></tr></tbody></table>
+  <p>E₀ грунта = ${fmt(E0,0)} МПа. Проверка E<sub>общ</sub> ≥ E<sub>тр</sub> — по номограмме ОДН 218.046.</p>
+  <h2>3. Морозоустойчивость</h2>
+  <p>Глубина промерзания ${fmt(fr.z,2)} м; требуемая толщина одежды ${fmt(fr.hmin,0)} см; фактическая ${fmt(fr.h,0)} см — <b>${fr.ok?'достаточно':'НЕДОСТАТОЧНО'}</b>.</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: ОДН 218.046-01 / СП РК (проектирование нежёстких дорожных одежд). Расчёт по упругому прогибу выполняется по номограммам.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('pavementCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    stRows=[
+      {name:'Асфальтобетон плотный',h:5,E:2400},
+      {name:'Асфальтобетон пористый',h:8,E:1600},
+      {name:'Щебень фракционный',h:20,E:350},
+      {name:'Песчано-гравийная смесь',h:30,E:180}
+    ];
+    calcEtr();renderStruct();calcFrost();
+  }
+});
+</script>
+<datalist id="matlist"><option>Асфальтобетон плотный</option><option>Асфальтобетон пористый</option><option>Щебень фракционный</option><option>Песчано-гравийная смесь</option><option>Песок дренирующий</option></datalist>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
