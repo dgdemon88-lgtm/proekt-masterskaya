@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Расчёт конструктивных элементов — балка, колонна, основание</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#6d28d9;--accent2:#5b21b6;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#a78bfa;font-size:22px}
+.kpi.ok .v{color:#22d3a0}.kpi.bad .v{color:#fca5a5}
+.rec-box{background:#1e1245;border:1px solid #5b21b6;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#c4b5fd;margin-top:12px;line-height:1.7}
+.rec-box.ok{background:#06301f;border-color:#15803d;color:#6ee7b7}
+.rec-box.bad{background:#2a0d0d;border-color:#7f1d1d;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🏗 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Элемент</label><input id="doc-el" placeholder="Балка Б-1"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="КР-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('sbeam')">🔩 Стальная балка</button>
+  <button class="tab-btn" onclick="switchTab('col')">🏛 Стальная колонна</button>
+  <button class="tab-btn" onclick="switchTab('rc')">🧱 Ж/б балка (изгиб)</button>
+  <button class="tab-btn" onclick="switchTab('found')">⬛ Основание / фундамент</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== STEEL BEAM ===== -->
+<div id="sec-sbeam" class="sec active">
+  <div class="card">
+    <div class="card-title">Стальная балка на изгиб (шарнирно опёртая, равномерная нагрузка)</div>
+    <div class="grid4">
+      <div class="fld"><label>Расчётная нагрузка q, кН/м</label><input id="sb-q" type="number" step="0.5" value="20" oninput="calcSB()"></div>
+      <div class="fld"><label>Пролёт L, м</label><input id="sb-L" type="number" step="0.1" value="6" oninput="calcSB()"></div>
+      <div class="fld"><label>Сталь (R<sub>y</sub>, МПа)</label>
+        <select id="sb-ry" onchange="calcSB()">
+          <option value="240" selected>С245 — 240 МПа</option>
+          <option value="250">С255 — 250 МПа</option>
+          <option value="320">С345 — 320 МПа</option>
+        </select></div>
+      <div class="fld"><label>γ<sub>c</sub> — коэф. усл. работы</label><input id="sb-gc" type="number" step="0.05" value="1" oninput="calcSB()"></div>
+      <div class="fld"><label>Профиль (двутавр)</label><select id="sb-prof" onchange="calcSB()"></select></div>
+      <div class="fld"><label>Предельный прогиб [f] = L/</label><input id="sb-flim" type="number" step="10" value="250" oninput="calcSB()"></div>
+      <div class="fld"><label>Норм. нагрузка для прогиба q<sub>н</sub>, кН/м</label><input id="sb-qn" type="number" step="0.5" value="16" oninput="calcSB()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="sb-kpi"></div>
+    <div class="formula" id="sb-formula"></div>
+    <div class="rec-box" id="sb-rec"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">M = q·L²/8; требуемый момент сопротивления W<sub>тр</sub> = M/(R<sub>y</sub>·γ<sub>c</sub>). Проверка прочности σ = M/W ≤ R<sub>y</sub>·γ<sub>c</sub> и прогиба f = 5q<sub>н</sub>L⁴/(384EI) ≤ [f].</div>
+  </div>
+</div>
+
+<!-- ===== COLUMN ===== -->
+<div id="sec-col" class="sec">
+  <div class="card">
+    <div class="card-title">Стальная колонна на центральное сжатие (устойчивость)</div>
+    <div class="grid4">
+      <div class="fld"><label>Продольная сила N, кН</label><input id="c-N" type="number" step="10" value="800" oninput="calcCol()"></div>
+      <div class="fld"><label>Длина колонны l, м</label><input id="c-l" type="number" step="0.1" value="4" oninput="calcCol()"></div>
+      <div class="fld"><label>μ — коэф. расчётной длины</label>
+        <select id="c-mu" onchange="calcCol()">
+          <option value="1" selected>1,0 — шарнир–шарнир</option>
+          <option value="0.7">0,7 — защемл.–шарнир</option>
+          <option value="0.5">0,5 — защемл.–защемл.</option>
+          <option value="2">2,0 — защемл.–свободный (консоль)</option>
+        </select></div>
+      <div class="fld"><label>Площадь сечения A, см²</label><input id="c-A" type="number" step="1" value="50" oninput="calcCol()"></div>
+      <div class="fld"><label>Радиус инерции i<sub>min</sub>, см</label><input id="c-i" type="number" step="0.1" value="5" oninput="calcCol()"></div>
+      <div class="fld"><label>Сталь (R<sub>y</sub>, МПа)</label>
+        <select id="c-ry" onchange="calcCol()">
+          <option value="240" selected>С245 — 240 МПа</option>
+          <option value="250">С255 — 250 МПа</option>
+          <option value="320">С345 — 320 МПа</option>
+        </select></div>
+      <div class="fld"><label>γ<sub>c</sub></label><input id="c-gc" type="number" step="0.05" value="1" oninput="calcCol()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="c-kpi"></div>
+    <div class="formula" id="c-formula"></div>
+    <div class="rec-box" id="c-rec"></div>
+    <div class="note">Гибкость λ = μl/i<sub>min</sub>; φ — коэф. продольного изгиба (по λ, СП 16.13330). Условие: N ≤ φ·A·R<sub>y</sub>·γ<sub>c</sub>. Рекомендуется λ ≤ 120 для колонн.</div>
+  </div>
+</div>
+
+<!-- ===== RC BEAM ===== -->
+<div id="sec-rc" class="sec">
+  <div class="card">
+    <div class="card-title">Ж/б балка прямоугольного сечения (изгиб, одиночная арматура)</div>
+    <div class="grid4">
+      <div class="fld"><label>Изгибающий момент M, кН·м</label><input id="rc-M" type="number" step="5" value="100" oninput="calcRC()"></div>
+      <div class="fld"><label>Ширина сечения b, мм</label><input id="rc-b" type="number" step="10" value="300" oninput="calcRC()"></div>
+      <div class="fld"><label>Рабочая высота h₀, мм</label><input id="rc-h0" type="number" step="10" value="450" oninput="calcRC()"></div>
+      <div class="fld"><label>Бетон (R<sub>b</sub>, МПа)</label>
+        <select id="rc-rb" onchange="calcRC()">
+          <option value="8.5">B15 — 8,5 МПа</option>
+          <option value="11.5">B20 — 11,5 МПа</option>
+          <option value="14.5" selected>B25 — 14,5 МПа</option>
+          <option value="17">B30 — 17,0 МПа</option>
+          <option value="22">B40 — 22,0 МПа</option>
+        </select></div>
+      <div class="fld"><label>Арматура (R<sub>s</sub>, МПа)</label>
+        <select id="rc-rs" onchange="calcRC()">
+          <option value="355" selected>A400 — 355 МПа</option>
+          <option value="435">A500 — 435 МПа</option>
+          <option value="210">A240 — 210 МПа</option>
+        </select></div>
+      <div class="fld"><label>ξ<sub>R</sub> — граничная относит. высота</label><input id="rc-xir" type="number" step="0.01" value="0.53" oninput="calcRC()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="rc-kpi"></div>
+    <div class="formula" id="rc-formula"></div>
+    <div class="rec-box" id="rc-rec"></div>
+    <div class="note">α<sub>m</sub> = M/(R<sub>b</sub>·b·h₀²); ξ = 1 − √(1 − 2α<sub>m</sub>); площадь арматуры A<sub>s</sub> = ξ·R<sub>b</sub>·b·h₀/R<sub>s</sub>. Проверка ξ ≤ ξ<sub>R</sub> (иначе требуется сжатая арматура или увеличение сечения).</div>
+  </div>
+</div>
+
+<!-- ===== FOUNDATION ===== -->
+<div id="sec-found" class="sec">
+  <div class="card">
+    <div class="card-title">Подбор площади подошвы фундамента</div>
+    <div class="grid4">
+      <div class="fld"><label>Нагрузка на фундамент N, кН</label><input id="f-N" type="number" step="10" value="800" oninput="calcFound()"></div>
+      <div class="fld"><label>Тип грунта (R₀, кПа)</label>
+        <select id="f-soil" onchange="onSoil()">
+          <option value="300">Песок крупный — 300–500</option>
+          <option value="250" selected>Песок средней крупности — 250</option>
+          <option value="200">Супесь — 200–300</option>
+          <option value="200">Суглинок — 200–250</option>
+          <option value="250">Глина твёрдая — 250–600</option>
+          <option value="150">Глина пластичная — 100–200</option>
+          <option value="custom">задать вручную…</option>
+        </select></div>
+      <div class="fld"><label>R₀ — усл. сопротивление, кПа</label><input id="f-R0" type="number" step="10" value="250" oninput="calcFound()"></div>
+      <div class="fld"><label>Глубина заложения d, м</label><input id="f-d" type="number" step="0.1" value="1.5" oninput="calcFound()"></div>
+      <div class="fld"><label>Средний уд. вес γ<sub>ср</sub>, кН/м³</label><input id="f-gmt" type="number" step="1" value="20" oninput="calcFound()"></div>
+      <div class="fld"><label>Форма подошвы</label>
+        <select id="f-shape" onchange="calcFound()">
+          <option value="sq" selected>Квадратная</option>
+          <option value="strip">Ленточная (на 1 п.м, N — кН/м)</option>
+        </select></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="f-kpi"></div>
+    <div class="formula" id="f-formula"></div>
+    <div class="rec-box" id="f-rec"></div>
+    <div class="note">
+      Упрощённо: A<sub>тр</sub> = N/(R₀ − γ<sub>ср</sub>·d); давление под подошвой p = N/A + γ<sub>ср</sub>·d ≤ R₀. R₀ — предварительное (табличное) расчётное сопротивление;
+      для проекта уточняется по формуле СП 22.13330 с учётом характеристик грунта (c, φ, γ).
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Сортамент двутавров (ГОСТ 8239)</div>
+    <table class="ref-table"><thead><tr><th>Профиль</th><th>W<sub>x</sub>, см³</th><th>I<sub>x</sub>, см⁴</th></tr></thead><tbody id="prof-ref-body"></tbody></table>
+  </div>
+  <div class="card">
+    <div class="card-title">Условное расчётное сопротивление грунтов R₀, кПа</div>
+    <table class="ref-table"><thead><tr><th>Грунт</th><th>R₀, кПа</th></tr></thead>
+      <tbody>
+        <tr><td>Песок крупный / гравелистый</td><td class="c">300–500</td></tr>
+        <tr><td>Песок средней крупности</td><td class="c">200–350</td></tr>
+        <tr><td>Песок мелкий / пылеватый</td><td class="c">100–250</td></tr>
+        <tr><td>Супесь</td><td class="c">200–300</td></tr>
+        <tr><td>Суглинок</td><td class="c">150–300</td></tr>
+        <tr><td>Глина твёрдая</td><td class="c">250–600</td></tr>
+        <tr><td>Глина пластичная</td><td class="c">100–250</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Ориентировочно по СП 22.13330 (прил. Б). Точное R — по расчёту с характеристиками грунта из отчёта ИГИ.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+const E_STEEL=2.06e8; // кН/м²
+
+// двутавры ГОСТ 8239: №, Wx(см³), Ix(см⁴)
+const PROF={
+  '№20':{W:184,I:1840},'№24':{W:289,I:3460},'№27':{W:371,I:5010},'№30':{W:472,I:7080},
+  '№33':{W:597,I:9840},'№36':{W:743,I:13380},'№40':{W:953,I:19062},'№45':{W:1231,I:27696},
+  '№50':{W:1589,I:39727},'№55':{W:2035,I:55962},'№60':{W:2560,I:76806}
+};
+const PROF_KEYS=Object.keys(PROF);
+const LAM=[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200];
+const PHI=[1,0.99,0.97,0.95,0.92,0.89,0.86,0.81,0.75,0.69,0.60,0.52,0.45,0.40,0.36,0.32,0.29,0.26,0.23,0.21,0.19];
+function interp(x,xs,ys){if(x<=xs[0])return ys[0];if(x>=xs[xs.length-1])return ys[ys.length-1];for(let i=1;i<xs.length;i++)if(x<=xs[i]){const t=(x-xs[i-1])/(xs[i]-xs[i-1]);return ys[i-1]+t*(ys[i]-ys[i-1]);}}
+
+/* ===== STEEL BEAM ===== */
+function calcSB(){
+  const q=parseFloat($('sb-q').value)||0,L=parseFloat($('sb-L').value)||1,Ry=parseFloat($('sb-ry').value)||240,gc=parseFloat($('sb-gc').value)||1;
+  const qn=parseFloat($('sb-qn').value)||0,flimD=parseFloat($('sb-flim').value)||250;
+  const M=q*L*L/8; // kN·m
+  const Wtr=M*1000/(Ry*gc); // cm³
+  // auto-suggest smallest profile if empty selection handled by select
+  const prof=PROF[$('sb-prof').value]||PROF['№30'];
+  const sigma=M*1e6/(prof.W*1e3); // MPa
+  const Im4=prof.I*1e-8;
+  const f=5*qn*Math.pow(L,4)/(384*E_STEEL*Im4);
+  const flim=L/flimD;
+  const okS=sigma<=Ry*gc, okF=f<=flim;
+  $('sb-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(M,1)}</span><span class="u">кН·м</span><span class="lbl">Момент M</span></div>
+    <div class="kpi big"><span class="v">${fmt(Wtr,0)}</span><span class="u">см³</span><span class="lbl">W требуемый</span></div>
+    <div class="kpi ${okS?'ok':'bad'}"><span class="v">${fmt(sigma,0)}</span><span class="u">МПа</span><span class="lbl">σ (≤${fmt(Ry*gc,0)})</span></div>
+    <div class="kpi ${okF?'ok':'bad'}"><span class="v">${fmt(f*1000,1)}</span><span class="u">мм</span><span class="lbl">Прогиб (≤${fmt(flim*1000,1)})</span></div>`;
+  $('sb-formula').innerHTML=`M = q·L²/8 = ${fmt(q,1)}·${fmt(L,1)}²/8 = <b>${fmt(M,1)} кН·м</b>; W<sub>тр</sub> = M/(R<sub>y</sub>·γ<sub>c</sub>) = <b>${fmt(Wtr,0)} см³</b>. Профиль ${$('sb-prof').value}: W=${prof.W} см³, I=${prof.I} см⁴`;
+  const auto=PROF_KEYS.find(k=>PROF[k].W>=Wtr);
+  $('sb-rec').className='rec-box '+((okS&&okF)?'ok':'bad');
+  $('sb-rec').innerHTML=(okS&&okF)
+    ? `✓ Профиль ${$('sb-prof').value} проходит: σ=${fmt(sigma,0)}≤${fmt(Ry*gc,0)} МПа, прогиб ${fmt(f*1000,1)}≤${fmt(flim*1000,1)} мм.`
+    : `✗ Профиль ${$('sb-prof').value} не проходит${!okS?' по прочности':''}${!okF?(okS?' по прогибу':' и прогибу'):''}. Минимальный по W<sub>тр</sub> — <b>${auto||'вне сортамента'}</b>.`;
+  window._sb={M,Wtr,sigma,f:f*1000,flim:flim*1000,prof:$('sb-prof').value,okS,okF};
+}
+
+/* ===== COLUMN ===== */
+function calcCol(){
+  const N=parseFloat($('c-N').value)||0,l=parseFloat($('c-l').value)||1,mu=parseFloat($('c-mu').value)||1;
+  const A=parseFloat($('c-A').value)||1,i=parseFloat($('c-i').value)||1,Ry=parseFloat($('c-ry').value)||240,gc=parseFloat($('c-gc').value)||1;
+  const lam=mu*l*100/i; // λ = μl/i, both cm
+  const phi=interp(lam,LAM,PHI);
+  const Nadm=phi*A*1e-4*Ry*1e3*gc; // kN
+  const util=N/Nadm*100;
+  const ok=N<=Nadm;
+  $('c-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(lam,0)}</span><span class="u">—</span><span class="lbl">Гибкость λ</span></div>
+    <div class="kpi"><span class="v">${fmt(phi,3)}</span><span class="u">—</span><span class="lbl">φ прод. изгиб</span></div>
+    <div class="kpi big"><span class="v">${fmt(Nadm,0)}</span><span class="u">кН</span><span class="lbl">Несущая способн.</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${fmt(util,0)}</span><span class="u">%</span><span class="lbl">Использование</span></div>`;
+  $('c-formula').innerHTML=`λ = μl/i = ${mu}·${fmt(l*100,0)}/${fmt(i,1)} = <b>${fmt(lam,0)}</b>; φ = ${fmt(phi,3)}; [N] = φ·A·R<sub>y</sub>·γ<sub>c</sub> = <b>${fmt(Nadm,0)} кН</b>`;
+  $('c-rec').className='rec-box '+(ok?'ok':'bad');
+  $('c-rec').innerHTML=(ok?`✓ Колонна проходит: N=${fmt(N,0)} ≤ [N]=${fmt(Nadm,0)} кН (загрузка ${fmt(util,0)}%).`:`✗ N=${fmt(N,0)} &gt; [N]=${fmt(Nadm,0)} кН — увеличьте сечение.`)+
+    (lam>120?' ⚠ Гибкость λ&gt;120 — превышает рекомендуемую для колонн.':'');
+  window._col={lam,phi,Nadm,util,ok};
+}
+
+/* ===== RC BEAM ===== */
+function calcRC(){
+  const M=parseFloat($('rc-M').value)||0,b=parseFloat($('rc-b').value)||1,h0=parseFloat($('rc-h0').value)||1;
+  const Rb=parseFloat($('rc-rb').value)||14.5,Rs=parseFloat($('rc-rs').value)||355,xiR=parseFloat($('rc-xir').value)||0.53;
+  const am=M*1e6/(Rb*b*h0*h0);
+  let xi=NaN,As=NaN,ok=false,overReinf=false;
+  if(am<0.5){xi=1-Math.sqrt(1-2*am);As=xi*Rb*b*h0/Rs;ok=xi<=xiR;overReinf=xi>xiR;}
+  else overReinf=true;
+  $('rc-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(am,3)}</span><span class="u">—</span><span class="lbl">α_m</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${fmt(xi,3)}</span><span class="u">—</span><span class="lbl">ξ (≤${fmt(xiR,2)})</span></div>
+    <div class="kpi big"><span class="v">${isNaN(As)?'—':fmt(As/100,2)}</span><span class="u">см²</span><span class="lbl">Площадь A_s</span></div>
+    <div class="kpi"><span class="v">${isNaN(As)?'—':fmt(As,0)}</span><span class="u">мм²</span><span class="lbl">A_s</span></div>`;
+  $('rc-formula').innerHTML=`α<sub>m</sub> = M/(R<sub>b</sub>·b·h₀²) = ${fmt(M,0)}·10⁶/(${Rb}·${fmt(b,0)}·${fmt(h0,0)}²) = <b>${fmt(am,3)}</b>; ξ = 1−√(1−2α<sub>m</sub>) = ${fmt(xi,3)}; A<sub>s</sub> = ξ·R<sub>b</sub>·b·h₀/R<sub>s</sub> = <b>${isNaN(As)?'—':fmt(As,0)} мм²</b>`;
+  $('rc-rec').className='rec-box '+(ok?'ok':'bad');
+  $('rc-rec').innerHTML=overReinf
+    ? `✗ ξ &gt; ξ<sub>R</sub> (${fmt(xiR,2)}) — сечение переармировано. Увеличьте h₀/b, класс бетона или примените сжатую арматуру.`
+    : `✓ Требуемая площадь рабочей арматуры A<sub>s</sub> = <b>${fmt(As,0)} мм² (${fmt(As/100,2)} см²)</b>. Подберите стержни (напр. по сортаменту арматуры) с A ≥ требуемой.`;
+  window._rc={am,xi,As,ok,overReinf};
+}
+
+/* ===== FOUNDATION ===== */
+function onSoil(){const v=$('f-soil').value;if(v!=='custom')$('f-R0').value=v;calcFound();}
+function calcFound(){
+  const N=parseFloat($('f-N').value)||0,R0=parseFloat($('f-R0').value)||250,d=parseFloat($('f-d').value)||0,gmt=parseFloat($('f-gmt').value)||20;
+  const shape=$('f-shape').value;
+  const denom=R0-gmt*d;
+  const Atr=denom>0?N/denom:NaN;
+  let sizeLabel,p;
+  if(shape==='sq'){const side=Math.sqrt(Atr);sizeLabel=fmt(side,2)+' × '+fmt(side,2)+' м';p=N/Atr+gmt*d;}
+  else{const width=Atr;sizeLabel='ширина '+fmt(width,2)+' м (на 1 п.м)';p=N/Atr+gmt*d;}
+  const ok=p<=R0&&isFinite(Atr);
+  $('f-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${isNaN(Atr)?'—':fmt(Atr,2)}</span><span class="u">${shape==='sq'?'м²':'м²/пм'}</span><span class="lbl">Площадь подошвы</span></div>
+    <div class="kpi"><span class="v">${isNaN(Atr)?'—':sizeLabel.split(' ')[0]}</span><span class="u">м</span><span class="lbl">${shape==='sq'?'Сторона':'Ширина'}</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${fmt(p,0)}</span><span class="u">кПа</span><span class="lbl">Давление p (≤${fmt(R0,0)})</span></div>`;
+  $('f-formula').innerHTML=`A<sub>тр</sub> = N/(R₀ − γ<sub>ср</sub>·d) = ${fmt(N,0)}/(${fmt(R0,0)} − ${gmt}·${fmt(d,1)}) = <b>${isNaN(Atr)?'—':fmt(Atr,2)} м²</b> → ${sizeLabel}`;
+  $('f-rec').className='rec-box '+(ok?'ok':'bad');
+  $('f-rec').innerHTML=denom<=0
+    ? `✗ R₀ ≤ γ<sub>ср</sub>·d — уменьшите глубину заложения или уточните грунт.`
+    : (ok?`✓ Принять подошву <b>${sizeLabel}</b>. Давление под подошвой p = ${fmt(p,0)} кПа ≤ R₀ = ${fmt(R0,0)} кПа.`:`✗ Давление превышает R₀ — увеличьте площадь подошвы.`);
+  window._f={Atr,sizeLabel,p,ok,N,R0,d};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['sbeam','col','rc','found','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function fillProf(){$('sb-prof').innerHTML=PROF_KEYS.map(k=>`<option${k==='№30'?' selected':''}>${k}</option>`).join('');$('prof-ref-body').innerHTML=PROF_KEYS.map(k=>`<tr><td class="c">${k}</td><td>${PROF[k].W}</td><td>${PROF[k].I}</td></tr>`).join('');}
+function collect(){const o={};['org','obj','el','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,
+    sb:{q:$('sb-q').value,L:$('sb-L').value,ry:$('sb-ry').value,gc:$('sb-gc').value,prof:$('sb-prof').value,flim:$('sb-flim').value,qn:$('sb-qn').value},
+    col:{N:$('c-N').value,l:$('c-l').value,mu:$('c-mu').value,A:$('c-A').value,i:$('c-i').value,ry:$('c-ry').value,gc:$('c-gc').value},
+    rc:{M:$('rc-M').value,b:$('rc-b').value,h0:$('rc-h0').value,rb:$('rc-rb').value,rs:$('rc-rs').value,xir:$('rc-xir').value},
+    f:{N:$('f-N').value,soil:$('f-soil').value,R0:$('f-R0').value,d:$('f-d').value,gmt:$('f-gmt').value,shape:$('f-shape').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','el','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj)=>{if(!obj)return;Object.keys(obj).forEach(k=>{if($(pfx+k)&&obj[k]!=null)$(pfx+k).value=obj[k];});};
+  set('sb-',d.sb);set('c-',d.col);set('rc-',d.rc);set('f-',d.f);
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcSB();calcCol();calcRC();calcFound();}
+function saveLS(){localStorage.setItem('elementCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('elementCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#5b21b6;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcSB();calcCol();calcRC();calcFound();
+  const sb=window._sb||{},col=window._col||{},rc=window._rc||{},f=window._f||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт конструктивных элементов</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Элемент: ${esc($('doc-el').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>РАСЧЁТ КОНСТРУКТИВНЫХ ЭЛЕМЕНТОВ</h1>
+  <h2>1. Стальная балка</h2>
+  <p>M = ${fmt(sb.M,1)} кН·м; W<sub>тр</sub> = ${fmt(sb.Wtr,0)} см³; профиль ${esc(sb.prof)}; σ = ${fmt(sb.sigma,0)} МПа; прогиб ${fmt(sb.f,1)} мм (доп. ${fmt(sb.flim,1)}). ${(sb.okS&&sb.okF)?'Проходит.':'Не проходит.'}</p>
+  <h2>2. Стальная колонна</h2>
+  <p>λ = ${fmt(col.lam,0)}; φ = ${fmt(col.phi,3)}; несущая способность [N] = ${fmt(col.Nadm,0)} кН; загрузка ${fmt(col.util,0)}%. ${col.ok?'Проходит.':'Не проходит.'}</p>
+  <h2>3. Ж/б балка (изгиб)</h2>
+  <p>α<sub>m</sub> = ${fmt(rc.am,3)}; ξ = ${fmt(rc.xi,3)}; требуемая арматура A<sub>s</sub> = ${isNaN(rc.As)?'—':fmt(rc.As,0)+' мм² ('+fmt(rc.As/100,2)+' см²)'}. ${rc.overReinf?'Переармировано — пересмотреть сечение.':'ОК.'}</p>
+  <h2>4. Основание / фундамент</h2>
+  <p>N = ${fmt(f.N,0)} кН; R₀ = ${fmt(f.R0,0)} кПа; A<sub>тр</sub> = ${isNaN(f.Atr)?'—':fmt(f.Atr,2)+' м²'} (${esc(f.sizeLabel||'')}); давление p = ${fmt(f.p,0)} кПа. ${f.ok?'Проходит.':'Не проходит.'}</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СП 16.13330 (сталь), СП 63.13330 (ж/б), СП 22.13330 (основания). Упрощённые проверочные расчёты.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  fillProf();
+  const saved=localStorage.getItem('elementCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{calcSB();calcCol();calcRC();calcFound();}
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
