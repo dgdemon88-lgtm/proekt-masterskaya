@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Теплотехнический расчёт ограждающих конструкций</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0d9488;--accent2:#0f766e;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#2dd4bf;font-size:22px}
+.kpi.ok .v{color:#22d3a0}.kpi.bad .v{color:#fca5a5}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#06302e;border:1px solid #0f766e;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#5eead4;margin-top:12px;line-height:1.7}
+.rec-box.ok{background:#06301f;border-color:#15803d;color:#6ee7b7}
+.rec-box.bad{background:#2a0d0d;border-color:#7f1d1d;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+.tprofile{display:flex;align-items:flex-end;gap:2px;height:120px;margin-top:10px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);padding:0 4px}
+.tbar{flex:1;background:linear-gradient(#2dd4bf,#0d9488);border-radius:3px 3px 0 0;position:relative;min-height:2px}
+.tbar span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text-s);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🧱 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Конструкция</label><input id="doc-cons" placeholder="Наружная стена"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ТТ-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('layers')">🧱 Слои и сопротивление</button>
+  <button class="tab-btn" onclick="switchTab('norm')">✅ Проверка по норме</button>
+  <button class="tab-btn" onclick="switchTab('cond')">💧 Точка росы / конденсация</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочник λ</button>
+</div>
+
+<!-- ===== LAYERS ===== -->
+<div id="sec-layers" class="sec active">
+  <div class="card">
+    <div class="card-title">Слои конструкции (изнутри наружу)</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr>
+          <th>Материал слоя</th>
+          <th style="width:150px">Из справочника</th>
+          <th style="width:100px">δ, мм</th>
+          <th style="width:130px">λ, Вт/(м·°С)</th>
+          <th style="width:120px">R = δ/λ, м²·°С/Вт</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="lay-rows"></tbody>
+        <tfoot><tr class="total"><td colspan="4">Σ R слоёв, м²·°С/Вт</td><td id="lay-sum" style="text-align:right"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addLay()">＋ Добавить слой</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Коэффициенты теплоотдачи и однородности</div>
+    <div class="grid4">
+      <div class="fld"><label>α<sub>в</sub> внутр., Вт/(м²·°С)</label>
+        <select id="l-av" onchange="calc()">
+          <option value="8.7" selected>8,7 — стены, полы, гладкие потолки</option>
+          <option value="7.6">7,6 — потолки с рёбрами (h/a≥0,3)</option>
+        </select></div>
+      <div class="fld"><label>α<sub>н</sub> наружн., Вт/(м²·°С)</label>
+        <select id="l-an" onchange="calc()">
+          <option value="23" selected>23 — наружные стены, покрытия</option>
+          <option value="12">12 — над холодным подпольем/чердаком</option>
+          <option value="6">6 — над неотапл. подвалом</option>
+        </select></div>
+      <div class="fld"><label>r — коэф. теплотехн. однородности</label><input id="l-r" type="number" step="0.01" min="0.1" max="1" value="0.9" oninput="calc()">
+        <span class="hint">0,7–0,92 — учёт мостиков холода.</span></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="l-kpi"></div>
+    <div class="formula" id="l-formula"></div>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">
+      R<sub>усл</sub> = 1/α<sub>в</sub> + Σ(δ/λ) + 1/α<sub>н</sub>; приведённое R<sub>пр</sub> = R<sub>усл</sub>·r. Коэффициент теплопередачи U = 1/R<sub>пр</sub>.
+      λ принимается по условиям эксплуатации (А или Б) — см. справочник.
+    </div>
+  </div>
+</div>
+
+<!-- ===== NORM ===== -->
+<div id="sec-norm" class="sec">
+  <div class="card">
+    <div class="card-title">Проверка по нормируемому сопротивлению теплопередаче</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип конструкции</label>
+        <select id="n-type" onchange="calc()">
+          <option value="0.00035,1.4" selected>Стены</option>
+          <option value="0.0005,2.2">Покрытия и чердачные перекрытия</option>
+          <option value="0.00045,1.9">Перекрытия над подвалами/проездами</option>
+          <option value="0.000075,0.15">Окна и балконные двери</option>
+          <option value="0.000025,0.2">Фонари</option>
+        </select></div>
+      <div class="fld"><label>ГСОП, °С·сут</label><input id="n-gsop" type="number" step="10" value="5400" oninput="calc()">
+        <span class="hint">= (t<sub>в</sub> − t<sub>от</sub>)·z<sub>от</sub>, по климату города.</span></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="n-kpi"></div>
+    <div class="formula" id="n-formula"></div>
+    <div class="rec-box" id="n-rec"></div>
+    <div class="btn-row"><button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button></div>
+    <div class="note">R<sub>тр</sub> = a·ГСОП + b (коэффициенты a, b — по типу конструкции, СП 50.13330 табл. 3). Условие: R<sub>пр</sub> ≥ R<sub>тр</sub>.</div>
+  </div>
+</div>
+
+<!-- ===== CONDENSATION ===== -->
+<div id="sec-cond" class="sec">
+  <div class="card">
+    <div class="card-title">Температурный режим и проверка на конденсацию</div>
+    <div class="grid4">
+      <div class="fld"><label>t<sub>в</sub> — внутр. температура, °С</label><input id="c-tin" type="number" step="0.5" value="20" oninput="calc()"></div>
+      <div class="fld"><label>φ<sub>в</sub> — влажность внутри, %</label><input id="c-phi" type="number" step="1" value="55" oninput="calc()"></div>
+      <div class="fld"><label>t<sub>н</sub> — расч. наружная, °С</label><input id="c-tn" type="number" step="0.5" value="-27" oninput="calc()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="c-kpi"></div>
+    <div class="rec-box" id="c-rec"></div>
+    <div class="card-title" style="margin-top:18px">Распределение температуры по сечению</div>
+    <div class="tprofile" id="c-profile"></div>
+    <div id="c-tbl" style="overflow-x:auto;margin-top:20px"></div>
+    <div class="note">
+      Температура точки росы t<sub>р</sub> определяется по t<sub>в</sub> и φ<sub>в</sub>. Условие отсутствия конденсата на внутренней поверхности:
+      τ<sub>si</sub> = t<sub>в</sub> − (1/α<sub>в</sub>)/R<sub>усл</sub>·(t<sub>в</sub>−t<sub>н</sub>) ≥ t<sub>р</sub>. Давление насыщенного пара — по формуле Магнуса.
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Теплопроводность материалов λ, Вт/(м·°С)</div>
+    <table class="ref-table"><thead><tr><th>Материал</th><th>λ</th><th>Материал</th><th>λ</th></tr></thead><tbody id="lam-ref-body"></tbody></table>
+    <div class="hint" style="margin-top:6px">Значения ориентировочные (условия эксплуатации Б). Точные λ — по СП 50.13330 прил. Т или паспорту материала.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let layRows=[]; // {name,d,lam}
+
+const LAM={
+  'Железобетон':2.04,'Кирпич керамический':0.7,'Кирпич силикатный':0.87,'Кладка керамич. пустотелая':0.5,
+  'Газобетон D400':0.11,'Газобетон D500':0.14,'Газобетон D600':0.18,'Пенобетон D400':0.12,'Керамзитобетон':0.5,
+  'Минвата (плита) 50 кг/м³':0.045,'Минвата плотная 100 кг/м³':0.05,'ЭППС (пеноплэкс)':0.032,
+  'Пенополистирол ПСБ-С 25':0.04,'Пенополиуретан (ППУ)':0.028,'Пеностекло':0.08,'Керамзит насыпной':0.17,
+  'Дерево (сосна поперёк волокон)':0.18,'Фанера клееная':0.15,'ОСП / OSB':0.13,'ГКЛ (гипсокартон)':0.21,
+  'Штукатурка цем.-песчаная':0.93,'Штукатурка известковая':0.7,'Стяжка цем.-песчаная':0.93,'Керамогранит / плитка':1.5
+};
+const LAM_KEYS=Object.keys(LAM);
+
+function addLay(){layRows.push({name:'',d:0,lam:1});renderLay();}
+function delLay(i){layRows.splice(i,1);renderLay();}
+function updLay(i,f,v){
+  if(f==='pick'){if(v){layRows[i].name=v;layRows[i].lam=LAM[v];}renderLay();return;}
+  layRows[i][f]=(f==='name')?v:(parseFloat(v)||0);renderLay();
+}
+function renderLay(){
+  const tb=$('lay-rows');
+  if(!layRows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-s)">Нет слоёв. Нажмите «＋ Добавить слой».</td></tr>';}
+  else tb.innerHTML=layRows.map((r,i)=>{
+    const R=r.lam>0?(r.d/1000)/r.lam:0;
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updLay(${i},'name',this.value)"></td>
+      <td><select class="ap-inp" onchange="updLay(${i},'pick',this.value)"><option value="">— выбрать —</option>${LAM_KEYS.map(k=>`<option${k===r.name?' selected':''}>${k}</option>`).join('')}</select></td>
+      <td><input class="ap-inp num" type="number" step="1" value="${r.d}" oninput="updLay(${i},'d',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.001" value="${r.lam}" oninput="updLay(${i},'lam',this.value)"></td>
+      <td class="num">${fmt(R,3)}</td>
+      <td><button class="btn-del" onclick="delLay(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  calc();
+}
+
+/* physics */
+function Esat(t){return 611*Math.exp(17.27*t/(237.3+t));}
+function dewPoint(tin,phi){const e=phi/100*Esat(tin);const ln=Math.log(e/611);return 237.3*ln/(17.27-ln);}
+
+function calc(){
+  const av=parseFloat($('l-av').value)||8.7, an=parseFloat($('l-an').value)||23, r=parseFloat($('l-r').value)||0.9;
+  const Rsi=1/av, Rse=1/an;
+  const Rlay=layRows.reduce((a,x)=>a+(x.lam>0?(x.d/1000)/x.lam:0),0);
+  const Rusl=Rsi+Rlay+Rse, Rpr=Rusl*r, U=1/Rpr;
+  $('lay-sum').textContent=fmt(Rlay,3);
+  $('l-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Rlay,3)}</span><span class="u">м²·°С/Вт</span><span class="lbl">R слоёв</span></div>
+    <div class="kpi"><span class="v">${fmt(Rusl,3)}</span><span class="u">м²·°С/Вт</span><span class="lbl">R условное</span></div>
+    <div class="kpi big"><span class="v">${fmt(Rpr,3)}</span><span class="u">м²·°С/Вт</span><span class="lbl">R приведённое</span></div>
+    <div class="kpi"><span class="v">${fmt(U,3)}</span><span class="u">Вт/(м²·°С)</span><span class="lbl">U коэф. теплопередачи</span></div>`;
+  $('l-formula').innerHTML=`R<sub>усл</sub> = 1/${av} + ${fmt(Rlay,3)} + 1/${an} = ${fmt(Rusl,3)}; R<sub>пр</sub> = ${fmt(Rusl,3)}·${r} = <b>${fmt(Rpr,3)} м²·°С/Вт</b>`;
+
+  // norm
+  const [a,b]=$('n-type').value.split(',').map(Number);
+  const gsop=parseFloat($('n-gsop').value)||0;
+  const Rtr=a*gsop+b;
+  const pass=Rpr>=Rtr;
+  $('n-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Rtr,2)}</span><span class="u">м²·°С/Вт</span><span class="lbl">R требуемое</span></div>
+    <div class="kpi"><span class="v">${fmt(Rpr,3)}</span><span class="u">м²·°С/Вт</span><span class="lbl">R приведённое</span></div>
+    <div class="kpi ${pass?'ok':'bad'}"><span class="v">${pass?'✓':'✗'}</span><span class="lbl">${pass?'Норма выполнена':'Ниже нормы'}</span></div>`;
+  $('n-formula').innerHTML=`R<sub>тр</sub> = a·ГСОП + b = ${a}·${fmt(gsop,0)} + ${b} = <b>${fmt(Rtr,2)} м²·°С/Вт</b>`;
+  $('n-rec').className='rec-box '+(pass?'ok':'bad');
+  $('n-rec').innerHTML=pass
+    ? `✓ R<sub>пр</sub> = ${fmt(Rpr,3)} ≥ R<sub>тр</sub> = ${fmt(Rtr,2)} м²·°С/Вт — теплозащита достаточна.`
+    : `✗ R<sub>пр</sub> = ${fmt(Rpr,3)} &lt; R<sub>тр</sub> = ${fmt(Rtr,2)} м²·°С/Вт — требуется увеличить толщину утеплителя. Недостаёт ΔR ≈ ${fmt(Rtr-Rpr,3)}.`;
+
+  // condensation
+  const tin=parseFloat($('c-tin').value)||20, phi=parseFloat($('c-phi').value)||55, tn=parseFloat($('c-tn').value)||-27;
+  const tp=dewPoint(tin,phi);
+  const dt=tin-tn;
+  const tau_si=tin-Rsi/Rusl*dt;
+  const noCond=tau_si>tp;
+  $('c-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(tp,1)}</span><span class="u">°С</span><span class="lbl">Точка росы t_р</span></div>
+    <div class="kpi ${noCond?'ok':'bad'}"><span class="v">${fmt(tau_si,1)}</span><span class="u">°С</span><span class="lbl">τ внутр. поверхн.</span></div>
+    <div class="kpi ${noCond?'ok':'bad'}"><span class="v">${noCond?'✓':'✗'}</span><span class="lbl">${noCond?'Без конденсата':'Конденсат!'}</span></div>`;
+  $('c-rec').className='rec-box '+(noCond?'ok':'bad');
+  $('c-rec').innerHTML=noCond
+    ? `✓ Температура внутренней поверхности τ<sub>si</sub> = ${fmt(tau_si,1)} °С выше точки росы t<sub>р</sub> = ${fmt(tp,1)} °С — конденсат не образуется.`
+    : `✗ τ<sub>si</sub> = ${fmt(tau_si,1)} °С ниже точки росы t<sub>р</sub> = ${fmt(tp,1)} °С — возможно выпадение конденсата. Усильте теплозащиту.`;
+
+  // temp profile
+  const points=[{lbl:'внутр.',t:tau_si}];
+  let Racc=Rsi;
+  layRows.forEach((x,i)=>{Racc+=(x.lam>0?(x.d/1000)/x.lam:0);points.push({lbl:'сл.'+(i+1),t:tin-Racc/Rusl*dt});});
+  const tmin=Math.min(tn,...points.map(p=>p.t)),tmax=Math.max(tin,...points.map(p=>p.t));
+  const rng=(tmax-tmin)||1;
+  $('c-profile').innerHTML=points.map(p=>{const h=Math.max((p.t-tmin)/rng*100,2);const cold=p.t<tp;return `<div class="tbar" style="height:${h}%;background:${cold?'linear-gradient(#60a5fa,#2563eb)':'linear-gradient(#2dd4bf,#0d9488)'}"><span>${fmt(p.t,1)}°</span></div>`;}).join('');
+  let ct=`<table class="res-table"><thead><tr><th>Сечение</th><th style="text-align:right">Температура, °С</th><th style="text-align:right">t_р, °С</th><th>Состояние</th></tr></thead><tbody>`;
+  points.forEach(p=>{ct+=`<tr><td>${p.lbl}</td><td style="text-align:right">${fmt(p.t,1)}</td><td style="text-align:right">${fmt(tp,1)}</td><td style="color:${p.t<tp?'#fca5a5':'#6ee7b7'}">${p.t<tp?'ниже точки росы':'ок'}</td></tr>`;});
+  ct+='</tbody></table>';
+  $('c-tbl').innerHTML=ct;
+
+  window._t={Rlay,Rusl,Rpr,U,Rtr,pass,tp,tau_si,noCond,gsop,tin,phi,tn};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['layers','norm','cond','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function fillLamRef(){const rows=[];for(let i=0;i<LAM_KEYS.length;i+=2){const a=LAM_KEYS[i],b=LAM_KEYS[i+1];rows.push(`<tr><td>${a}</td><td class="c">${LAM[a]}</td><td>${b||''}</td><td class="c">${b?LAM[b]:''}</td></tr>`);}$('lam-ref-body').innerHTML=rows.join('');}
+function collect(){const o={};['org','obj','cons','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,lay:layRows,l:{av:$('l-av').value,an:$('l-an').value,r:$('l-r').value},
+    n:{type:$('n-type').value,gsop:$('n-gsop').value},c:{tin:$('c-tin').value,phi:$('c-phi').value,tn:$('c-tn').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','cons','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  if(Array.isArray(d.lay))layRows=d.lay;
+  const l=d.l||{};['av','an','r'].forEach(k=>{if(l[k]!=null)$('l-'+k).value=l[k];});
+  const n=d.n||{};if(n.type)$('n-type').value=n.type;if(n.gsop!=null)$('n-gsop').value=n.gsop;
+  const c=d.c||{};['tin','phi','tn'].forEach(k=>{if(c[k]!=null)$('c-'+k).value=c[k];});
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  renderLay();}
+function saveLS(){localStorage.setItem('thermalCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('thermalCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f766e;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calc();const t=window._t||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  let lr=layRows.map((x,i)=>`<tr><td style="${td}">${i+1}. ${esc(x.name)}</td><td style="${td};text-align:right">${fmt(x.d,0)}</td><td style="${td};text-align:right">${fmt(x.lam,3)}</td><td style="${td};text-align:right">${fmt(x.lam>0?(x.d/1000)/x.lam:0,3)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Теплотехнический расчёт</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#0d9488;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Конструкция: ${esc($('doc-cons').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>ТЕПЛОТЕХНИЧЕСКИЙ РАСЧЁТ ОГРАЖДАЮЩЕЙ КОНСТРУКЦИИ</h1>
+  <h2>1. Состав конструкции</h2>
+  <table><thead><tr><th style="${td};background:#d5f5f0">Слой</th><th style="${td};background:#d5f5f0">δ, мм</th><th style="${td};background:#d5f5f0">λ</th><th style="${td};background:#d5f5f0">R</th></tr></thead>
+  <tbody>${lr}<tr class="tot"><td colspan="3" style="${td}">R приведённое (r=${$('l-r').value})</td><td style="${td};text-align:right">${fmt(t.Rpr,3)}</td></tr></tbody></table>
+  <p>R<sub>усл</sub> = ${fmt(t.Rusl,3)} м²·°С/Вт; U = ${fmt(t.U,3)} Вт/(м²·°С).</p>
+  <h2>2. Проверка по норме</h2>
+  <p>ГСОП = ${fmt(t.gsop,0)} °С·сут; R<sub>тр</sub> = ${fmt(t.Rtr,2)} м²·°С/Вт. Условие R<sub>пр</sub> ≥ R<sub>тр</sub>: <b>${t.pass?'ВЫПОЛНЕНО':'НЕ ВЫПОЛНЕНО'}</b>.</p>
+  <h2>3. Проверка на конденсацию</h2>
+  <p>t<sub>в</sub>=${fmt(t.tin,1)} °С, φ=${fmt(t.phi,0)} %, t<sub>н</sub>=${fmt(t.tn,1)} °С. Точка росы t<sub>р</sub>=${fmt(t.tp,1)} °С;
+  температура внутр. поверхности τ<sub>si</sub>=${fmt(t.tau_si,1)} °С. Конденсат: <b>${t.noCond?'не образуется':'ВОЗМОЖЕН'}</b>.</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СП 50.13330 «Тепловая защита зданий» / СН РК 2.04-04.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  fillLamRef();
+  const saved=localStorage.getItem('thermalCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    layRows=[
+      {name:'Штукатурка цем.-песчаная',d:20,lam:0.93},
+      {name:'Кирпич керамический',d:380,lam:0.7},
+      {name:'Минвата (плита) 50 кг/м³',d:100,lam:0.045},
+      {name:'Штукатурка цем.-песчаная',d:20,lam:0.93}
+    ];
+    renderLay();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
