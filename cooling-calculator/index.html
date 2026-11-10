@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Холодоснабжение и кондиционирование — теплопритоки и подбор (ОВ)</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0e7490;--accent2:#155e75;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:#22d3ee;display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fbbf24;font-size:22px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.res-table tr.sub td{background:#16283a;color:#7dd3fc;font-weight:600}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#06231f;border:1px solid #155e75;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#67e8f9;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:#22d3ee;font-weight:600}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">❄ Лого</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Помещение</label><input id="doc-room" placeholder="Офис 301"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ОВ-ХС-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('heat')">☀ Теплопритоки</button>
+  <button class="tab-btn" onclick="switchTab('sel')">❄ Подбор оборудования</button>
+  <button class="tab-btn" onclick="switchTab('route')">🧊 Трассы и гидравлика</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== ТЕПЛОПРИТОКИ ===== -->
+<div id="sec-heat" class="sec active">
+  <div class="card">
+    <div class="card-title">Помещение и расчётные параметры</div>
+    <div class="grid4">
+      <div class="fld"><label>Площадь помещения F, м²</label><input id="r-area" type="number" step="1" value="60" oninput="calc()"></div>
+      <div class="fld"><label>Высота помещения, м</label><input id="r-h" type="number" step="0.1" value="3" oninput="calc()"></div>
+      <div class="fld"><label>t внутр. (расчётная), °C</label><input id="r-tin" type="number" step="0.5" value="24" oninput="calc()"></div>
+      <div class="fld"><label>t наружн. (параметры Б), °C</label><input id="r-tout" type="number" step="0.5" value="33" oninput="calc()"></div>
+      <div class="fld"><label>φ внутр., %</label><input id="r-fin" type="number" step="1" value="50" oninput="calc()"></div>
+      <div class="fld"><label>φ наружн., %</label><input id="r-fout" type="number" step="1" value="35" oninput="calc()"></div>
+      <div class="fld"><label>Назначение помещения</label>
+        <select id="r-type" onchange="applyPreset();calc()">
+          <option value="office" selected>Офис</option>
+          <option value="meet">Переговорная</option>
+          <option value="shop">Торговый зал</option>
+          <option value="rest">Кафе / ресторан</option>
+          <option value="serv">Серверная</option>
+          <option value="flat">Жилая комната</option>
+        </select>
+      </div>
+      <div class="fld"><label>Δt = t<sub>н</sub> − t<sub>в</sub>, °C</label><input id="r-dt" readonly></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">1. Через наружные ограждения · Q = K·F·Δt</div>
+    <div class="grid4">
+      <div class="fld"><label>Площадь наружных стен, м²</label><input id="w-area" type="number" step="1" value="30" oninput="calc()"></div>
+      <div class="fld"><label>R стен, м²·°C/Вт</label><input id="w-r" type="number" step="0.05" value="2.8" oninput="calc()"><span class="hint">K = 1/R</span></div>
+      <div class="fld"><label>Площадь покрытия / кровли, м²</label><input id="c-area" type="number" step="1" value="0" oninput="calc()"><span class="hint">0 — если помещение не под кровлей</span></div>
+      <div class="fld"><label>R покрытия, м²·°C/Вт</label><input id="c-r" type="number" step="0.05" value="4.2" oninput="calc()"></div>
+    </div>
+    <div class="note">Для покрытия и стен южной/западной ориентации Δt принимают с надбавкой на солнечную радиацию (условная Δt<sub>усл</sub> — до +8…12 °C для тёмной кровли). Ниже это учитывается отдельным полем.</div>
+    <div class="grid4" style="margin-top:10px">
+      <div class="fld"><label>Надбавка Δt на радиацию для кровли, °C</label><input id="c-dtsun" type="number" step="1" value="10" oninput="calc()"></div>
+      <div class="fld"><label>Надбавка Δt на радиацию для стен, °C</label><input id="w-dtsun" type="number" step="1" value="3" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. Через остекление · теплопередача + солнечная радиация</div>
+    <div class="grid4">
+      <div class="fld"><label>Площадь остекления F<sub>ок</sub>, м²</label><input id="g-area" type="number" step="0.5" value="12" oninput="calc()"></div>
+      <div class="fld"><label>R остекления, м²·°C/Вт</label><input id="g-r" type="number" step="0.05" value="0.55" oninput="calc()"><span class="hint">1-кам. СП ≈ 0,35; 2-кам. ≈ 0,55; с i-стеклом ≈ 0,75</span></div>
+      <div class="fld"><label>Ориентация окон</label>
+        <select id="g-orient" onchange="calc()">
+          <option value="60">С — 60 Вт/м²</option>
+          <option value="120">СВ / СЗ — 120 Вт/м²</option>
+          <option value="230" selected>В / З — 230 Вт/м²</option>
+          <option value="180">ЮВ / ЮЗ — 180 Вт/м²</option>
+          <option value="150">Ю — 150 Вт/м²</option>
+          <option value="300">Горизонтальное (фонарь) — 300 Вт/м²</option>
+        </select>
+      </div>
+      <div class="fld"><label>Коэф. проникания радиации τ</label>
+        <select id="g-tau" onchange="calc()">
+          <option value="1">1,00 — без затенения, чистое стекло</option>
+          <option value="0.8" selected>0,80 — стеклопакет, лёгкие шторы</option>
+          <option value="0.55">0,55 — жалюзи внутренние</option>
+          <option value="0.35">0,35 — солнцезащитное стекло / внешние жалюзи</option>
+          <option value="0.15">0,15 — окна в тени (не облучаются)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. Внутренние источники</div>
+    <div class="grid4">
+      <div class="fld"><label>Количество людей</label><input id="p-n" type="number" step="1" value="6" oninput="calc()"></div>
+      <div class="fld"><label>Характер работы</label>
+        <select id="p-act" onchange="calc()">
+          <option value="70:120" selected>Покой / лёгкая (офис) — 70 / 120 Вт</option>
+          <option value="80:170">Работа средней тяжести — 80 / 170 Вт</option>
+          <option value="95:250">Тяжёлая работа — 95 / 250 Вт</option>
+        </select>
+        <span class="hint">явное / полное тепловыделение на человека</span>
+      </div>
+      <div class="fld"><label>Освещение, Вт/м²</label><input id="l-w" type="number" step="1" value="12" oninput="calc()"></div>
+      <div class="fld"><label>Доля тепла от освещения</label><input id="l-k" type="number" step="0.05" value="1" oninput="calc()"><span class="hint">1,0 — светильники в объёме помещения</span></div>
+      <div class="fld"><label>Оборудование, кВт (установл.)</label><input id="e-kw" type="number" step="0.1" value="1.8" oninput="calc()"></div>
+      <div class="fld"><label>Коэф. загрузки / одновременности</label><input id="e-k" type="number" step="0.05" value="0.7" oninput="calc()"></div>
+      <div class="fld"><label>Расход наружного воздуха L, м³/ч</label><input id="v-l" type="number" step="10" value="360" oninput="calc()"><span class="hint">по санитарной норме — 30…60 м³/ч на чел.</span></div>
+      <div class="fld"><label>Обработка наружного воздуха</label>
+        <select id="v-mode" onchange="calc()">
+          <option value="1" selected>Учитывать в холодопроизводительности</option>
+          <option value="0">Обрабатывается отдельной приточной установкой</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Итог по теплопритокам</div>
+    <div class="kpi-row" id="h-kpi"></div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr><th>Источник теплопритока</th><th style="width:150px">Явное тепло, Вт</th><th style="width:150px">Полное тепло, Вт</th><th style="width:110px">Доля</th></tr></thead>
+        <tbody id="h-rows"></tbody>
+        <tfoot><tr class="total"><td>ИТОГО</td><td class="num" id="h-sens"></td><td class="num" id="h-tot"></td><td class="num">100%</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="formula" id="h-formula"></div>
+    <div class="note">
+      Расчётные параметры наружного воздуха — по параметрам Б для тёплого периода (СП РК 4.02-101-2012, СН РК 2.04-01).
+      Значения удельной радиации в таблице ориентировочные для широт 43–52° с.ш.; для ответственных объектов уточняйте почасовым расчётом
+      с учётом широты, времени суток и тепловой инерции ограждений.
+    </div>
+  </div>
+</div>
+
+<!-- ===== ПОДБОР ===== -->
+<div id="sec-sel" class="sec">
+  <div class="card">
+    <div class="card-title">Подбор холодильного оборудования</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип системы</label>
+        <select id="s-sys" onchange="calc()">
+          <option value="split" selected>Сплит-система / мульти-сплит</option>
+          <option value="vrf">VRF / VRV</option>
+          <option value="kkb">ККБ + приточная установка</option>
+          <option value="chiller">Чиллер — фанкойлы</option>
+        </select>
+      </div>
+      <div class="fld"><label>Запас на неучтённое, %</label><input id="s-res" type="number" step="1" value="15" oninput="calc()"></div>
+      <div class="fld"><label>EER (холодильный коэффициент)</label><input id="s-eer" type="number" step="0.1" value="3.2" oninput="calc()"></div>
+      <div class="fld"><label>Δt воздуха на охладителе, °C</label><input id="s-dta" type="number" step="0.5" value="10" oninput="calc()"><span class="hint">обычно 8…12 °C</span></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="s-kpi"></div>
+    <div class="formula" id="s-formula"></div>
+    <div class="rec-box" id="s-rec"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Типоряд — ближайший больший номинал</div>
+    <table class="ref-table">
+      <thead><tr><th>Номинал, кВт (BTU/ч)</th><th>Ориентировочная площадь, м²</th><th>Подходит</th></tr></thead>
+      <tbody id="s-range"></tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Номинальная холодопроизводительность указывается при стандартных условиях; при t<sub>н</sub> выше 35 °C фактическая производительность падает на 10–20 % — учитывайте по данным производителя.</div>
+  </div>
+</div>
+
+<!-- ===== ТРАССЫ ===== -->
+<div id="sec-route" class="sec">
+  <div class="card">
+    <div class="card-title">Фреоновая трасса (сплит / VRF)</div>
+    <div class="grid4">
+      <div class="fld"><label>Длина трассы, м</label><input id="f-len" type="number" step="1" value="15" oninput="calc()"></div>
+      <div class="fld"><label>Штатная длина (без дозаправки), м</label><input id="f-base" type="number" step="1" value="5" oninput="calc()"></div>
+      <div class="fld"><label>Дозаправка, г/м</label><input id="f-gram" type="number" step="1" value="20" oninput="calc()"><span class="hint">R410A: 15…30 г/м — по паспорту</span></div>
+      <div class="fld"><label>Перепад высот, м</label><input id="f-dh" type="number" step="1" value="4" oninput="calc()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="f-kpi"></div>
+    <div class="note">
+      Потери производительности по длине трассы ориентировочно 1 % на каждые 5 м сверх штатной длины и 1 % на каждые 3 м перепада высот.
+      Предельные длина и перепад — строго по паспорту оборудования; при превышении требуются маслоподъёмные петли и пересчёт диаметров.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Гидравлика холодоносителя (чиллер — фанкойлы)</div>
+    <div class="grid4">
+      <div class="fld"><label>Δt воды (график), °C</label><input id="wt-dt" type="number" step="0.5" value="5" oninput="calc()"><span class="hint">типовой график 7/12 °C</span></div>
+      <div class="fld"><label>Скорость воды в трубе, м/с</label><input id="wt-v" type="number" step="0.1" value="1.2" oninput="calc()"><span class="hint">магистрали 1,0…2,0 м/с</span></div>
+      <div class="fld"><label>Расход воды G, м³/ч</label><input id="wt-g" readonly></div>
+      <div class="fld"><label>Расчётный внутр. диаметр, мм</label><input id="wt-d" readonly></div>
+    </div>
+    <div class="kpi-row" style="margin-top:14px" id="wt-kpi"></div>
+    <div class="formula" id="wt-formula"></div>
+  </div>
+</div>
+
+<!-- ===== СПРАВОЧНИКИ ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Удельная солнечная радиация через остекление, Вт/м²</div>
+    <table class="ref-table">
+      <thead><tr><th>Ориентация</th><th>q, Вт/м²</th><th>Примечание</th></tr></thead>
+      <tbody>
+        <tr><td class="c">С</td><td>40–60</td><td>только рассеянная составляющая</td></tr>
+        <tr><td class="c">СВ / СЗ</td><td>100–130</td><td>пик утром / вечером</td></tr>
+        <tr><td class="c">В / З</td><td>190–230</td><td>наибольшая нагрузка на систему</td></tr>
+        <tr><td class="c">ЮВ / ЮЗ</td><td>150–200</td><td>—</td></tr>
+        <tr><td class="c">Ю</td><td>130–190</td><td>днём, при высоком стоянии солнца — меньше</td></tr>
+        <tr><td class="c">гориз.</td><td>250–350</td><td>зенитные фонари, световые купола</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Ориентировочные максимальные значения для широт 43–52° с.ш. Уточняются по СП РК 4.02-101-2012 и климатическим данным площадки.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Тепловыделения людей, Вт/чел (при t<sub>в</sub> = 24…26 °C)</div>
+    <table class="ref-table">
+      <thead><tr><th>Характер работы</th><th>Явное</th><th>Полное</th><th>Влага, г/ч</th></tr></thead>
+      <tbody>
+        <tr><td>Покой, лёгкая работа (офис, жильё)</td><td class="c">70</td><td class="c">120</td><td class="c">75</td></tr>
+        <tr><td>Работа средней тяжести</td><td class="c">80</td><td class="c">170</td><td class="c">130</td></tr>
+        <tr><td>Тяжёлая работа</td><td class="c">95</td><td class="c">250</td><td class="c">230</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">С ростом температуры помещения явная доля падает, полное тепловыделение почти не меняется — растёт доля скрытого тепла (влаговыделения).</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ориентировочная удельная холодильная нагрузка</div>
+    <table class="ref-table">
+      <thead><tr><th>Тип помещения</th><th>Вт/м²</th><th>Люди, м²/чел</th><th>Оборудование</th></tr></thead>
+      <tbody>
+        <tr><td>Жилая комната</td><td class="c">80–100</td><td class="c">20</td><td class="c">низкое</td></tr>
+        <tr><td>Офис (открытая планировка)</td><td class="c">100–130</td><td class="c">8–10</td><td class="c">ПК, оргтехника</td></tr>
+        <tr><td>Переговорная</td><td class="c">150–200</td><td class="c">2–3</td><td class="c">проектор, ТВ</td></tr>
+        <tr><td>Торговый зал</td><td class="c">120–160</td><td class="c">4–6</td><td class="c">освещение повышенное</td></tr>
+        <tr><td>Кафе / ресторан</td><td class="c">180–250</td><td class="c">2–3</td><td class="c">кухонное оборудование</td></tr>
+        <tr><td>Серверная</td><td class="c">500–1500</td><td class="c">—</td><td class="c">определяется ИТ-нагрузкой</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Только для прикидки и проверки порядка величин — проектное решение принимается по расчёту теплопритоков.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+/* номинальный типоряд бытовых/полупромышленных систем, кВт */
+const RANGE=[2.6,3.5,5.3,7.0,10.6,14.0,17.6,22.4,28.0,35.5,45.0,56.0];
+
+const PRESETS={
+  office:{l:12,e:1.8,ek:0.7,ppl:6,act:'70:120'},
+  meet:{l:15,e:1.2,ek:0.6,ppl:12,act:'70:120'},
+  shop:{l:20,e:2.5,ek:0.8,ppl:15,act:'80:170'},
+  rest:{l:18,e:8,ek:0.6,ppl:20,act:'80:170'},
+  serv:{l:8,e:15,ek:1,ppl:0,act:'70:120'},
+  flat:{l:8,e:1,ek:0.5,ppl:3,act:'70:120'}
+};
+function applyPreset(){
+  const p=PRESETS[$('r-type').value]; if(!p)return;
+  $('l-w').value=p.l; $('e-kw').value=p.e; $('e-k').value=p.ek; $('p-n').value=p.ppl; $('p-act').value=p.act;
+}
+
+/* влагосодержание и энтальпия влажного воздуха */
+function ps(t){ return 610.94*Math.exp(17.625*t/(t+243.04)); }         // Па
+function dx(t,rh){ const p=101325, e=rh/100*ps(t); return 622*e/(p-e); } // г/кг с.в.
+function enth(t,rh){ const d=dx(t,rh)/1000; return 1.005*t + d*(2501+1.86*t); } // кДж/кг
+
+function calc(){
+  const F=parseFloat($('r-area').value)||0;
+  const tin=parseFloat($('r-tin').value)||0, tout=parseFloat($('r-tout').value)||0;
+  const fin=parseFloat($('r-fin').value)||0, fout=parseFloat($('r-fout').value)||0;
+  const dt=tout-tin;
+  $('r-dt').value=fmt(dt,1);
+
+  /* 1. ограждения */
+  const wA=parseFloat($('w-area').value)||0, wR=parseFloat($('w-r').value)||0, wDs=parseFloat($('w-dtsun').value)||0;
+  const cA=parseFloat($('c-area').value)||0, cR=parseFloat($('c-r').value)||0, cDs=parseFloat($('c-dtsun').value)||0;
+  const Qw = wR? wA/wR*(dt+wDs) : 0;
+  const Qc = cR? cA/cR*(dt+cDs) : 0;
+
+  /* 2. остекление */
+  const gA=parseFloat($('g-area').value)||0, gR=parseFloat($('g-r').value)||0;
+  const q=parseFloat($('g-orient').value)||0, tau=parseFloat($('g-tau').value)||0;
+  const Qgt = gR? gA/gR*dt : 0;
+  const Qgr = gA*q*tau;
+
+  /* 3. внутренние */
+  const n=parseFloat($('p-n').value)||0;
+  const act=($('p-act').value||'70:120').split(':');
+  const qs=parseFloat(act[0])||0, qf=parseFloat(act[1])||0;
+  const Qps=n*qs, Qpf=n*qf;
+  const Ql=(parseFloat($('l-w').value)||0)*F*(parseFloat($('l-k').value)||0);
+  const Qe=(parseFloat($('e-kw').value)||0)*1000*(parseFloat($('e-k').value)||0);
+
+  /* 4. наружный воздух */
+  const L=parseFloat($('v-l').value)||0;
+  const on=$('v-mode').value==='1';
+  const G=L*1.2;                                  // кг/ч
+  const dh=enth(tout,fout)-enth(tin,fin);         // кДж/кг
+  const Qv_full = on? G*dh/3.6 : 0;               // Вт (полное)
+  const Qv_sens = on? G*1.005*(tout-tin)/3.6 : 0; // Вт (явное)
+
+  const rows=[
+    ['Наружные стены',Qw,Qw],
+    ['Покрытие / кровля',Qc,Qc],
+    ['Остекление — теплопередача',Qgt,Qgt],
+    ['Остекление — солнечная радиация',Qgr,Qgr],
+    ['Люди',Qps,Qpf],
+    ['Освещение',Ql,Ql],
+    ['Оборудование',Qe,Qe],
+    ['Наружный воздух',Qv_sens,Qv_full]
+  ];
+  const sens=rows.reduce((a,r)=>a+r[1],0);
+  const tot=rows.reduce((a,r)=>a+r[2],0);
+  $('h-rows').innerHTML=rows.map(r=>`<tr${r[2]?'':' style="opacity:.45"'}>
+      <td>${r[0]}</td><td class="num">${fmt(r[1],0)}</td><td class="num">${fmt(r[2],0)}</td>
+      <td class="num">${tot?fmt(r[2]/tot*100,1):'—'}%</td></tr>`).join('');
+  $('h-sens').textContent=fmt(sens,0);
+  $('h-tot').textContent=fmt(tot,0);
+  const shr = tot? sens/tot : 0;
+  $('h-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(tot/1000,2)}</span><span class="u">кВт</span><span class="lbl">Полная нагрузка Q₀</span></div>
+    <div class="kpi"><span class="v">${fmt(sens/1000,2)}</span><span class="u">кВт</span><span class="lbl">Явное тепло</span></div>
+    <div class="kpi"><span class="v">${fmt(shr,2)}</span><span class="u">—</span><span class="lbl">SHF (явн./полн.)</span></div>
+    <div class="kpi"><span class="v">${F?fmt(tot/F,1):'—'}</span><span class="u">Вт/м²</span><span class="lbl">Удельная нагрузка</span></div>`;
+  $('h-formula').innerHTML=`Δt = ${fmt(dt,1)} °C; энтальпия наружного воздуха ${fmt(enth(tout,fout),1)} кДж/кг, внутреннего ${fmt(enth(tin,fin),1)} кДж/кг
+    (влагосодержание ${fmt(dx(tout,fout),1)} и ${fmt(dx(tin,fin),1)} г/кг); теплота на обработку наружного воздуха Q = G·Δh/3,6, G = ${fmt(G,0)} кг/ч.`;
+
+  /* ===== подбор ===== */
+  const res=parseFloat($('s-res').value)||0;
+  const Q0=tot/1000*(1+res/100);
+  const eer=parseFloat($('s-eer').value)||1;
+  const dta=parseFloat($('s-dta').value)||10;
+  const Lair = dta? sens*3.6/(1.005*1.2*dta) : 0;  // м³/ч по явному теплу
+  const Pel = Q0/eer;
+  const nom = RANGE.find(v=>v>=Q0) || RANGE[RANGE.length-1];
+  $('s-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(tot/1000,2)}</span><span class="u">кВт</span><span class="lbl">Расчётная нагрузка</span></div>
+    <div class="kpi big"><span class="v">${fmt(Q0,2)}</span><span class="u">кВт</span><span class="lbl">С запасом ${fmt(res,0)}%</span></div>
+    <div class="kpi"><span class="v">${fmt(nom,1)}</span><span class="u">кВт</span><span class="lbl">Номинал типоряда</span></div>
+    <div class="kpi"><span class="v">${fmt(Lair,0)}</span><span class="u">м³/ч</span><span class="lbl">Расход воздуха</span></div>
+    <div class="kpi"><span class="v">${fmt(Pel,2)}</span><span class="u">кВт</span><span class="lbl">Потребляемая эл. мощность</span></div>`;
+  $('s-formula').innerHTML=`Q₀ = Q·(1 + ${fmt(res,0)}/100) = <b>${fmt(Q0,2)} кВт</b>; L<sub>возд</sub> = 3,6·Q<sub>явн</sub>/(1,005·1,2·Δt<sub>возд</sub>) = ${fmt(Lair,0)} м³/ч;
+    N<sub>эл</sub> = Q₀/EER = ${fmt(Q0,2)}/${fmt(eer,1)} = ${fmt(Pel,2)} кВт.`;
+  const sysName={split:'сплит-система / мульти-сплит',vrf:'VRF-система',kkb:'ККБ с приточной установкой',chiller:'чиллер с фанкойлами'}[$('s-sys').value];
+  $('s-rec').innerHTML=`<b>Подбор:</b> ${sysName} холодопроизводительностью не менее <b>${fmt(Q0,2)} кВт</b> —
+    ближайший номинал типоряда <b>${fmt(nom,1)} кВт</b> (${fmt(nom*3412,0)} BTU/ч).
+    Расход воздуха через охладитель ${fmt(Lair,0)} м³/ч при Δt = ${fmt(dta,1)} °C; потребляемая мощность ≈ ${fmt(Pel,2)} кВт при EER ${fmt(eer,1)}.
+    Доля явного тепла SHF = ${fmt(shr,2)} — ${shr>0.75?'нагрузка преимущественно явная, подойдёт стандартный охладитель':'высокая доля скрытого тепла, требуется проверка режима осушения'}.`;
+  $('s-range').innerHTML=RANGE.map(v=>`<tr${v===nom?' style="background:#16283a"':''}>
+      <td class="c">${fmt(v,1)} (${fmt(v*3412,0)})</td><td>${fmt(v/0.11,0)}</td><td>${v>=Q0?'✓':'—'}</td></tr>`).join('');
+
+  /* ===== трассы ===== */
+  const fl=parseFloat($('f-len').value)||0, fb=parseFloat($('f-base').value)||0;
+  const fg=parseFloat($('f-gram').value)||0, fdh=parseFloat($('f-dh').value)||0;
+  const extra=Math.max(0,fl-fb);
+  const charge=extra*fg;
+  const lossL=extra/5, lossH=Math.abs(fdh)/3;
+  const lossTot=Math.min(30,lossL+lossH);
+  $('f-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(extra,1)}</span><span class="u">м</span><span class="lbl">Сверх штатной длины</span></div>
+    <div class="kpi big"><span class="v">${fmt(charge,0)}</span><span class="u">г</span><span class="lbl">Дозаправка хладагента</span></div>
+    <div class="kpi"><span class="v">${fmt(lossTot,1)}</span><span class="u">%</span><span class="lbl">Потери производительности</span></div>
+    <div class="kpi"><span class="v">${fmt(Q0*(1-lossTot/100),2)}</span><span class="u">кВт</span><span class="lbl">С учётом потерь трассы</span></div>`;
+
+  /* ===== гидравлика ===== */
+  const wdt=parseFloat($('wt-dt').value)||5, wv=parseFloat($('wt-v').value)||1;
+  const Gw = wdt? 3.6*Q0/(4.187*wdt) : 0;              // м³/ч
+  const dInner = wv? Math.sqrt(4*(Gw/3600)/(Math.PI*wv))*1000 : 0; // мм
+  $('wt-g').value=fmt(Gw,2);
+  $('wt-d').value=fmt(dInner,1);
+  $('wt-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Gw,2)}</span><span class="u">м³/ч</span><span class="lbl">Расход холодоносителя</span></div>
+    <div class="kpi"><span class="v">${fmt(Gw*1000/3600,2)}</span><span class="u">кг/с</span><span class="lbl">Массовый расход</span></div>
+    <div class="kpi big"><span class="v">${fmt(dInner,1)}</span><span class="u">мм</span><span class="lbl">Внутренний диаметр</span></div>`;
+  $('wt-formula').innerHTML=`G = 3,6·Q₀/(c·Δt) = 3,6·${fmt(Q0,2)}/(4,187·${fmt(wdt,1)}) = <b>${fmt(Gw,2)} м³/ч</b>;
+    d = √(4·G/(π·v)) = <b>${fmt(dInner,1)} мм</b> при v = ${fmt(wv,1)} м/с — принимается ближайший больший стандартный диаметр.`;
+
+  window._res={tot:tot,sens:sens,shr:shr,Q0:Q0,nom:nom,Lair:Lair,Pel:Pel,rows:rows,dt:dt,F:F,
+               charge:charge,lossTot:lossTot,Gw:Gw,dInner:dInner,eer:eer,res:res,sysName:sysName};
+}
+
+/* ===== утилиты ===== */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['heat','sel','route','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+const FIELDS=['r-area','r-h','r-tin','r-tout','r-fin','r-fout','r-type','w-area','w-r','w-dtsun','c-area','c-r','c-dtsun',
+  'g-area','g-r','g-orient','g-tau','p-n','p-act','l-w','l-k','e-kw','e-k','v-l','v-mode',
+  's-sys','s-res','s-eer','s-dta','f-len','f-base','f-gram','f-dh','wt-dt','wt-v'];
+function collect(){
+  const o={};['org','obj','room','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  const f={};FIELDS.forEach(k=>f[k]=$(k).value);
+  return {doc:o,f:f,logo:logoBase64};
+}
+function apply(d){
+  if(!d)return;
+  const o=d.doc||{};['org','obj','room','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const f=d.f||{};FIELDS.forEach(k=>{if(f[k]!=null)$(k).value=f[k];});
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calc();
+}
+function saveLS(){localStorage.setItem('coolingCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('coolingCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+
+function exportPDF(){
+  calc();
+  const r=window._res||{rows:[]};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:4px 7px;font-size:9pt';
+  const th='border:1px solid #88a;padding:5px 7px;font-size:9pt;background:#e0f2fe;text-align:left';
+  const rows=r.rows.map(x=>`<tr><td style="${td}">${esc(x[0])}</td><td style="${td};text-align:right">${fmt(x[1],0)}</td>
+    <td style="${td};text-align:right">${fmt(x[2],0)}</td><td style="${td};text-align:right">${r.tot?fmt(x[2]/r.tot*100,1):'—'}%</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт холодоснабжения</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:14px 0 6px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#155e75;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Помещение: ${esc($('doc-room').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>РАСЧЁТ ТЕПЛОПРИТОКОВ И ПОДБОР СИСТЕМЫ КОНДИЦИОНИРОВАНИЯ</h1>
+  <h2>1. Исходные данные</h2>
+  <p>Площадь помещения ${fmt(r.F,1)} м²; расчётная температура внутри ${esc($('r-tin').value)} °C при φ = ${esc($('r-fin').value)} %,
+  снаружи ${esc($('r-tout').value)} °C при φ = ${esc($('r-fout').value)} % (параметры Б); Δt = ${fmt(r.dt,1)} °C.</p>
+  <h2>2. Теплопритоки</h2>
+  <table><thead><tr><th style="${th}">Источник</th><th style="${th}">Явное, Вт</th><th style="${th}">Полное, Вт</th><th style="${th}">Доля</th></tr></thead>
+  <tbody>${rows}
+  <tr class="tot"><td style="${td}">ИТОГО</td><td style="${td};text-align:right">${fmt(r.sens,0)}</td>
+  <td style="${td};text-align:right">${fmt(r.tot,0)}</td><td style="${td};text-align:right">100%</td></tr></tbody></table>
+  <p>Полная холодильная нагрузка — <b>${fmt(r.tot/1000,2)} кВт</b> (${fmt(r.F?r.tot/r.F:0,1)} Вт/м²); доля явного тепла SHF = ${fmt(r.shr,2)}.</p>
+  <h2>3. Подбор оборудования</h2>
+  <p>С запасом ${fmt(r.res,0)} % требуемая холодопроизводительность Q₀ = <b>${fmt(r.Q0,2)} кВт</b>.
+  Принята ${esc(r.sysName)}, ближайший номинал типоряда — <b>${fmt(r.nom,1)} кВт</b> (${fmt(r.nom*3412,0)} BTU/ч).
+  Расход воздуха через охладитель ${fmt(r.Lair,0)} м³/ч; потребляемая электрическая мощность ≈ ${fmt(r.Pel,2)} кВт при EER ${fmt(r.eer,1)}.</p>
+  <h2>4. Трассы и гидравлика</h2>
+  <p>Дозаправка хладагента ${fmt(r.charge,0)} г; потери производительности по трассе ≈ ${fmt(r.lossTot,1)} %.
+  Расход холодоносителя ${fmt(r.Gw,2)} м³/ч, расчётный внутренний диаметр ${fmt(r.dInner,1)} мм.</p>
+  <p style="font-size:8.5pt;margin-top:8px">Расчёт предварительный: значения солнечной радиации и тепловыделений приняты по укрупнённым данным,
+  тепловая инерция ограждений и почасовой ход нагрузки не учитывались. Основание: СП РК 4.02-101-2012, СН РК 2.04-01.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('coolingCalc');
+  if(saved){try{apply(JSON.parse(saved));}catch(_){calc();}}
+  else calc();
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
