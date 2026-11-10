@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Охрана окружающей среды — выбросы, отходы, шум</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0f766e;--accent2:#115e59;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#2dd4bf;font-size:22px}
+.kpi.ok .v{color:#22d3a0}.kpi.bad .v{color:#fca5a5}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#06302e;border:1px solid #115e59;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#5eead4;margin-top:12px;line-height:1.7}
+.rec-box.ok{background:#06301f;border-color:#15803d;color:#6ee7b7}
+.rec-box.bad{background:#2a0d0d;border-color:#7f1d1d;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🌍 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ООС-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('air')">🏭 Выброс в атмосферу</button>
+  <button class="tab-btn" onclick="switchTab('waste')">🗑 Отходы</button>
+  <button class="tab-btn" onclick="switchTab('noise')">🔊 Шум</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== AIR ===== -->
+<div id="sec-air" class="sec active">
+  <div class="card">
+    <div class="card-title">Приземная концентрация от точечного источника (ОНД-86)</div>
+    <div class="grid4">
+      <div class="fld"><label>Высота источника H, м</label><input id="a-H" type="number" step="0.5" value="30" oninput="calcAir()"></div>
+      <div class="fld"><label>Диаметр устья D, м</label><input id="a-D" type="number" step="0.05" value="0.5" oninput="calcAir()"></div>
+      <div class="fld"><label>Скорость выхода w₀, м/с</label><input id="a-w0" type="number" step="0.5" value="7" oninput="calcAir()"></div>
+      <div class="fld"><label>Перепад температур ΔT, °С</label><input id="a-dT" type="number" step="1" value="100" oninput="calcAir()"></div>
+      <div class="fld"><label>Выброс M, г/с</label><input id="a-M" type="number" step="0.1" value="5" oninput="calcAir()"></div>
+      <div class="fld"><label>Вещество (ПДК<sub>мр</sub>, мг/м³)</label>
+        <select id="a-sub" onchange="onSub()">
+          <option value="0.2,1">Диоксид азота NO₂ — 0,2</option>
+          <option value="5,1">Оксид углерода CO — 5,0</option>
+          <option value="0.5,1">Диоксид серы SO₂ — 0,5</option>
+          <option value="0.15,3">Взвешенные вещества (пыль) — 0,15</option>
+          <option value="0.035,1">Сажа (углерод) — 0,035</option>
+          <option value="custom">задать вручную…</option>
+        </select></div>
+      <div class="fld"><label>ПДК<sub>мр</sub> вручную, мг/м³</label><input id="a-pdk" type="number" step="0.01" value="0.2" oninput="calcAir()"></div>
+      <div class="fld"><label>F — коэф. оседания</label><input id="a-F" type="number" step="0.5" value="1" oninput="calcAir()"><span class="hint">1 — газы; 2–3 — пыль/аэрозоли</span></div>
+      <div class="fld"><label>A — климатич. коэффициент</label>
+        <select id="a-A" onchange="calcAir()">
+          <option value="200" selected>200 — центр/север Казахстана</option>
+          <option value="250">250 — юг Казахстана, Ср. Азия</option>
+          <option value="160">160 — Ср. полоса РФ</option>
+        </select></div>
+      <div class="fld"><label>η — коэф. рельефа</label><input id="a-eta" type="number" step="0.1" value="1" oninput="calcAir()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="a-kpi"></div>
+    <div class="formula" id="a-formula"></div>
+    <div class="rec-box" id="a-rec"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">C<sub>m</sub> = A·M·F·m·n·η / (H²·∛(V₁·ΔT)); коэффициенты m, n — по параметрам f и v<sub>m</sub> (ОНД-86). Условие соблюдения: C<sub>m</sub> ≤ ПДК<sub>мр</sub> (без учёта фона). x<sub>m</sub> — расстояние макс. концентрации.</div>
+  </div>
+</div>
+
+<!-- ===== WASTE ===== -->
+<div id="sec-waste" class="sec">
+  <div class="card">
+    <div class="card-title">Образование отходов</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr><th>Наименование отхода</th><th style="width:120px">Класс опасн.</th><th style="width:130px">Масса, т/год</th><th style="width:120px">Способ</th><th style="width:28px"></th></tr></thead>
+        <tbody id="waste-rows"></tbody>
+        <tfoot><tr class="total"><td>ИТОГО, т/год</td><td></td><td id="waste-sum" style="text-align:right"></td><td></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addWaste()">＋ Добавить отход</button>
+    <div class="kpi-row" style="margin-top:16px" id="waste-kpi"></div>
+    <div class="note">Классы опасности отходов: I — чрезвычайно опасные; II — высокоопасные; III — умеренно опасные; IV — малоопасные; V — практически неопасные. Классификация — по Экологическому кодексу РК / ФККО.</div>
+  </div>
+</div>
+
+<!-- ===== NOISE ===== -->
+<div id="sec-noise" class="sec">
+  <div class="card">
+    <div class="card-title">Снижение шума с расстоянием (точечный источник)</div>
+    <div class="grid4">
+      <div class="fld"><label>Звуковая мощность источника L<sub>w</sub>, дБА</label><input id="n-lw" type="number" step="1" value="95" oninput="calcNoise()"></div>
+      <div class="fld"><label>Расстояние до точки r, м</label><input id="n-r" type="number" step="1" value="30" oninput="calcNoise()"></div>
+      <div class="fld"><label>Излучение</label>
+        <select id="n-space" onchange="calcNoise()">
+          <option value="8" selected>Полусфера (на поверхности) −8</option>
+          <option value="11">Сфера (в пространстве) −11</option>
+          <option value="5">Четверть сферы (у стены) −5</option>
+        </select></div>
+      <div class="fld"><label>Доп. уровень [L], дБА</label>
+        <select id="n-norm" onchange="calcNoise()">
+          <option value="55" selected>55 — территория жилья, день</option>
+          <option value="45">45 — территория жилья, ночь</option>
+          <option value="70">70 — рабочие места</option>
+          <option value="60">60 — общественно-деловая зона</option>
+        </select></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="n-kpi"></div>
+    <div class="formula" id="n-formula"></div>
+    <div class="rec-box" id="n-rec"></div>
+    <div class="note">L = L<sub>w</sub> − 20·lg(r) − k, где k — поправка на характер излучения. Условие: L ≤ допустимого уровня по СН РК / СанПиН. При превышении определяется требуемое снижение (экраны, СЗЗ).</div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">ПДК<sub>мр</sub> основных загрязняющих веществ, мг/м³</div>
+    <table class="ref-table"><thead><tr><th>Вещество</th><th>ПДК<sub>мр</sub></th><th>Класс опасн.</th></tr></thead>
+      <tbody>
+        <tr><td>Диоксид азота (NO₂)</td><td class="c">0,2</td><td class="c">3</td></tr>
+        <tr><td>Оксид углерода (CO)</td><td class="c">5,0</td><td class="c">4</td></tr>
+        <tr><td>Диоксид серы (SO₂)</td><td class="c">0,5</td><td class="c">3</td></tr>
+        <tr><td>Взвешенные вещества (пыль)</td><td class="c">0,5</td><td class="c">3</td></tr>
+        <tr><td>Сажа (углерод)</td><td class="c">0,15</td><td class="c">3</td></tr>
+        <tr><td>Сероводород (H₂S)</td><td class="c">0,008</td><td class="c">2</td></tr>
+        <tr><td>Формальдегид</td><td class="c">0,05</td><td class="c">2</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Значения по гигиеническим нормативам. Уточняйте по действующим ПДК РК.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Допустимые уровни шума, дБА</div>
+    <table class="ref-table"><thead><tr><th>Территория / помещение</th><th>День (7–23)</th><th>Ночь (23–7)</th></tr></thead>
+      <tbody>
+        <tr><td>Территория жилой застройки</td><td class="c">55</td><td class="c">45</td></tr>
+        <tr><td>Жилые комнаты квартир</td><td class="c">40</td><td class="c">30</td></tr>
+        <tr><td>Палаты больниц</td><td class="c">35</td><td class="c">25</td></tr>
+        <tr><td>Территория школ, площадок отдыха</td><td class="c">55</td><td class="c">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let wasteRows=[];
+
+/* ===== AIR ОНД-86 ===== */
+function onSub(){const v=$('a-sub').value;if(v!=='custom'){const[pdk,F]=v.split(',');$('a-pdk').value=pdk;$('a-F').value=F;}calcAir();}
+function calcAir(){
+  const H=parseFloat($('a-H').value)||1,D=parseFloat($('a-D').value)||0.1,w0=parseFloat($('a-w0').value)||1,dT=parseFloat($('a-dT').value)||1;
+  const M=parseFloat($('a-M').value)||0,F=parseFloat($('a-F').value)||1,A=parseFloat($('a-A').value)||200,eta=parseFloat($('a-eta').value)||1;
+  const pdk=parseFloat($('a-pdk').value)||0.2;
+  const V1=Math.PI*D*D/4*w0;
+  const f=1000*w0*w0*D/(H*H*dT);
+  const vm=0.65*Math.cbrt(V1*dT/H);
+  let m=f<100?1/(0.67+0.1*Math.sqrt(f)+0.34*Math.cbrt(f)):1.47/Math.cbrt(f);
+  let n=vm>=2?1:(vm>=0.5?0.532*vm*vm-2.13*vm+3.13:4.4*vm);
+  const Cm=A*M*F*m*n*eta/(H*H*Math.cbrt(V1*dT));
+  let d;
+  if(vm<=0.5)d=2.48*(1+0.28*Math.cbrt(f));else if(vm<=2)d=4.95*vm*(1+0.28*Math.cbrt(f));else d=7*Math.sqrt(vm)*(1+0.28*Math.cbrt(f));
+  const xm=(5-F)/4*d*H;
+  const ratio=Cm/pdk, ok=ratio<=1;
+  $('a-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(Cm,4)}</span><span class="u">мг/м³</span><span class="lbl">C_m макс. концентр.</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${fmt(ratio,2)}</span><span class="u">ПДК</span><span class="lbl">Доли ПДК</span></div>
+    <div class="kpi"><span class="v">${fmt(xm,0)}</span><span class="u">м</span><span class="lbl">x_m расстояние</span></div>
+    <div class="kpi"><span class="v">${fmt(V1,2)}</span><span class="u">м³/с</span><span class="lbl">Расход ГВС V₁</span></div>`;
+  $('a-formula').innerHTML=`f=${fmt(f,3)}, v<sub>m</sub>=${fmt(vm,3)}, m=${fmt(m,3)}, n=${fmt(n,3)}; C<sub>m</sub> = ${A}·${fmt(M,1)}·${F}·${fmt(m,2)}·${fmt(n,2)}·${eta} / (${fmt(H,0)}²·∛(${fmt(V1,2)}·${fmt(dT,0)})) = <b>${fmt(Cm,4)} мг/м³</b>`;
+  $('a-rec').className='rec-box '+(ok?'ok':'bad');
+  $('a-rec').innerHTML=ok
+    ? `✓ Максимальная приземная концентрация C<sub>m</sub> = ${fmt(Cm,4)} мг/м³ = ${fmt(ratio,2)} ПДК ≤ 1 — норматив соблюдается (без учёта фона). Максимум на расстоянии ≈ ${fmt(xm,0)} м от источника.`
+    : `✗ C<sub>m</sub> = ${fmt(Cm,4)} мг/м³ = ${fmt(ratio,2)} ПДК &gt; 1 — превышение. Требуется увеличить высоту трубы, снизить выброс или установить очистку. Максимум на ≈ ${fmt(xm,0)} м.`;
+  window._air={Cm,ratio,xm,V1,ok};
+}
+
+/* ===== WASTE ===== */
+function addWaste(){wasteRows.push({name:'',cls:'IV',mass:0,method:'вывоз'});renderWaste();}
+function delWaste(i){wasteRows.splice(i,1);renderWaste();}
+function updWaste(i,f,v){wasteRows[i][f]=(f==='mass')?(parseFloat(v)||0):v;renderWaste();}
+function renderWaste(){
+  const tb=$('waste-rows');
+  if(!wasteRows.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-s)">Нет отходов. Нажмите «＋ Добавить отход».</td></tr>';}
+  else tb.innerHTML=wasteRows.map((r,i)=>`<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updWaste(${i},'name',this.value)"></td>
+      <td><select class="ap-inp" onchange="updWaste(${i},'cls',this.value)">${['I','II','III','IV','V'].map(c=>`<option${r.cls===c?' selected':''}>${c}</option>`).join('')}</select></td>
+      <td><input class="ap-inp num" type="number" step="0.001" value="${r.mass}" oninput="updWaste(${i},'mass',this.value)"></td>
+      <td><select class="ap-inp" onchange="updWaste(${i},'method',this.value)">${['вывоз','утилизация','захоронение','обезвреживание','передача'].map(m=>`<option${r.method===m?' selected':''}>${m}</option>`).join('')}</select></td>
+      <td><button class="btn-del" onclick="delWaste(${i})">×</button></td>
+    </tr>`).join('');
+  calcWaste();
+}
+function calcWaste(){
+  const sum=wasteRows.reduce((a,r)=>a+r.mass,0);
+  $('waste-sum').textContent=fmt(sum,3);
+  const byCls={I:0,II:0,III:0,IV:0,V:0};
+  wasteRows.forEach(r=>byCls[r.cls]=(byCls[r.cls]||0)+r.mass);
+  $('waste-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(sum,2)}</span><span class="u">т/год</span><span class="lbl">Всего отходов</span></div>`+
+    ['I','II','III','IV','V'].map(c=>`<div class="kpi"><span class="v">${fmt(byCls[c],2)}</span><span class="u">т/год</span><span class="lbl">Класс ${c}</span></div>`).join('');
+  window._waste={sum,byCls};
+}
+
+/* ===== NOISE ===== */
+function calcNoise(){
+  const Lw=parseFloat($('n-lw').value)||0,r=parseFloat($('n-r').value)||1,k=parseFloat($('n-space').value)||8,norm=parseFloat($('n-norm').value)||55;
+  const L=Lw-20*Math.log10(r)-k;
+  const ok=L<=norm, exceed=L-norm;
+  $('n-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(L,1)}</span><span class="u">дБА</span><span class="lbl">Уровень в точке L</span></div>
+    <div class="kpi ${ok?'ok':'bad'}"><span class="v">${ok?'✓':'+'+fmt(exceed,1)}</span><span class="u">${ok?'':'дБА'}</span><span class="lbl">${ok?'В норме':'Превышение'}</span></div>
+    <div class="kpi"><span class="v">${fmt(norm,0)}</span><span class="u">дБА</span><span class="lbl">Допустимо</span></div>`;
+  $('n-formula').innerHTML=`L = L<sub>w</sub> − 20·lg(r) − k = ${fmt(Lw,0)} − 20·lg(${fmt(r,0)}) − ${k} = <b>${fmt(L,1)} дБА</b>`;
+  $('n-rec').className='rec-box '+(ok?'ok':'bad');
+  $('n-rec').innerHTML=ok
+    ? `✓ Уровень шума L = ${fmt(L,1)} дБА ≤ допустимого ${fmt(norm,0)} дБА.`
+    : `✗ Превышение на ${fmt(exceed,1)} дБА. Требуются шумозащитные мероприятия (экраны, увеличение СЗЗ, тише оборудование).`;
+  window._noise={L,norm,ok,exceed};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['air','waste','noise','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,
+    a:{H:$('a-H').value,D:$('a-D').value,w0:$('a-w0').value,dT:$('a-dT').value,M:$('a-M').value,sub:$('a-sub').value,pdk:$('a-pdk').value,F:$('a-F').value,A:$('a-A').value,eta:$('a-eta').value},
+    waste:wasteRows,
+    n:{lw:$('n-lw').value,r:$('n-r').value,space:$('n-space').value,norm:$('n-norm').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj)=>{if(!obj)return;Object.keys(obj).forEach(k=>{if($(pfx+k)&&obj[k]!=null)$(pfx+k).value=obj[k];});};
+  set('a-',d.a);set('n-',d.n);
+  if(Array.isArray(d.waste))wasteRows=d.waste;
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcAir();renderWaste();calcNoise();}
+function saveLS(){localStorage.setItem('ecoCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('ecoCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#115e59;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcAir();calcWaste();calcNoise();
+  const a=window._air||{},w=window._waste||{},nz=window._noise||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  let wr=wasteRows.map(r=>`<tr><td style="${td}">${esc(r.name)}</td><td style="${td};text-align:center">${esc(r.cls)}</td><td style="${td};text-align:right">${fmt(r.mass,3)}</td><td style="${td}">${esc(r.method)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Раздел ООС</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#0f766e;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>ОХРАНА ОКРУЖАЮЩЕЙ СРЕДЫ (ООС)</h1>
+  <h2>1. Выброс в атмосферу (ОНД-86)</h2>
+  <p>Максимальная приземная концентрация C<sub>m</sub> = ${fmt(a.Cm,4)} мг/м³ = ${fmt(a.ratio,2)} ПДК<sub>мр</sub> на расстоянии x<sub>m</sub> ≈ ${fmt(a.xm,0)} м. ${a.ok?'Норматив соблюдается.':'ПРЕВЫШЕНИЕ ПДК.'}</p>
+  <h2>2. Отходы</h2>
+  <table><thead><tr><th style="${td};background:#d5f0ee">Отход</th><th style="${td};background:#d5f0ee">Класс</th><th style="${td};background:#d5f0ee">т/год</th><th style="${td};background:#d5f0ee">Способ</th></tr></thead>
+  <tbody>${wr}<tr class="tot"><td style="${td}">ИТОГО</td><td style="${td}"></td><td style="${td};text-align:right">${fmt(w.sum,3)}</td><td style="${td}"></td></tr></tbody></table>
+  <h2>3. Шум</h2>
+  <p>Уровень шума в расчётной точке L = ${fmt(nz.L,1)} дБА при допустимом ${fmt(nz.norm,0)} дБА. ${nz.ok?'В норме.':'ПРЕВЫШЕНИЕ на '+fmt(nz.exceed,1)+' дБА.'}</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: ОНД-86 (рассеивание выбросов), Экологический кодекс РК, СН РК / СанПиН (шум, отходы).</p>
+  </body></html>`;
+  const wd=window.open('','_blank');wd.document.write(html);wd.document.close();setTimeout(()=>{try{wd.focus();wd.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('ecoCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    wasteRows=[
+      {name:'Отходы строительного мусора',cls:'IV',mass:12.5,method:'вывоз'},
+      {name:'Лом чёрных металлов',cls:'V',mass:3.2,method:'передача'},
+      {name:'Отработанные люминесцентные лампы',cls:'I',mass:0.02,method:'обезвреживание'}
+    ];
+    calcAir();renderWaste();calcNoise();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
