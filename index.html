@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проектная мастерская — калькуляторы и инструменты</title>
+<style>
+:root{
+  --bg:#0d0f15;--bg2:#161922;--bg3:#1f2330;
+  --border:#2a2f3f;--accent:#3b82f6;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1280px;margin:0 auto;padding:22px 18px 60px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:13px;font-weight:500;color:var(--text-s);margin-top:4px;letter-spacing:0}
+.count{font-size:12px;color:var(--text-s);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;white-space:nowrap}
+.searchbar{margin:20px 0 8px;position:relative}
+.searchbar input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 16px 12px 42px;font-size:15px;transition:.15s}
+.searchbar input:focus{border-color:var(--accent);outline:none}
+.searchbar .ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--text-s);font-size:16px;pointer-events:none}
+.group{margin-top:26px}
+.group-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.group-h .dot{width:9px;height:9px;border-radius:50%}
+.group-h h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-s)}
+.group-h .n{font-size:11px;color:var(--text-s);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2px 9px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.tile{display:flex;gap:13px;align-items:flex-start;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:15px 16px;cursor:pointer;text-decoration:none;color:inherit;transition:.16s;position:relative;overflow:hidden}
+.tile:hover{border-color:var(--tc,#3b82f6);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,#3b82f6);opacity:.85}
+.tile .ico{font-size:24px;line-height:1;flex-shrink:0;width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:10px}
+.tile .body{flex:1;min-width:0}
+.tile .name{font-size:14.5px;font-weight:700;line-height:1.25}
+.tile .desc{font-size:11.5px;color:var(--text-s);margin-top:4px;line-height:1.45}
+.tile .tag{display:inline-block;font-size:9.5px;color:var(--tc,#3b82f6);border:1px solid var(--tc,#3b82f6);border-radius:5px;padding:1px 6px;margin-top:8px;opacity:.85;font-weight:600}
+.empty{display:none;text-align:center;color:var(--text-s);padding:50px 20px;font-size:15px}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-s);font-size:11.5px;line-height:1.7}
+kbd{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🏗 Проектная мастерская<span class="sub">Калькуляторы и инструменты для разделов проектной документации · РК</span></h1>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="searchbar">
+    <span class="ic">🔎</span>
+    <input id="q" type="text" placeholder="Поиск: раздел, СП/СН, тема… (например «снег», «эвакуация», «НДС»)" oninput="render()" autofocus>
+  </div>
+
+  <div id="groups"></div>
+  <div class="empty" id="empty">Ничего не найдено. Измените запрос.</div>
+
+  <div class="foot">
+    Все инструменты — автономные (работают офлайн, один HTML-файл), с сохранением данных в браузере и экспортом в PDF/печать.
+    Нормативные табличные значения ориентировочные — уточняйте по действующим СП / СН РК и данным изысканий.
+    <br>Подсказка: набирайте в поиске — плитки фильтруются мгновенно.
+  </div>
+</div>
+
+<script>
+const GROUPS=[
+  {title:'Инженерные сети (ИОС)', color:'#0891b2', items:[
+    {f:'elec-calculator', ico:'⚡', name:'Электроснабжение', desc:'Расчёт электрических нагрузок', tag:'ЭОМ', c:'#1a56db'},
+    {f:'light-calculator', ico:'💡', name:'Электроосвещение', desc:'Светотехнический расчёт (коэф. использования, удельная мощность)', tag:'ЭО', c:'#ca8a04'},
+    {f:'daylight-calculator', ico:'☀', name:'Естественное освещение и инсоляция', desc:'КЕО, площадь световых проёмов, продолжительность инсоляции', tag:'АР', c:'#f59e0b'},
+    {f:'stairs-calculator', ico:'🪜', name:'Лестницы и пандусы', desc:'Ступени, уклоны, доступность для МГН', tag:'АР', c:'#db2777'},
+    {f:'lightning-calculator', ico:'🌩', name:'Молниезащита', desc:'Зоны защиты стержневого молниеотвода (СО 153)', tag:'МЗ', c:'#4f46e5'},
+    {f:'heat-calculator', ico:'🔥', name:'Теплоснабжение и ОВ', desc:'Тепловой калькулятор: нагрузки, сети, ИТП, вентиляция', tag:'ОВ', c:'#e05e2a'},
+    {f:'vent-calculator', ico:'🌀', name:'Вентиляция', desc:'Аэродинамика воздуховодов и подбор вентилятора', tag:'ОВ', c:'#0891b2'},
+    {f:'cooling-calculator', ico:'❄', name:'Холодоснабжение и кондиционирование', desc:'Теплопритоки, подбор системы, трассы и гидравлика', tag:'ОВ', c:'#0e7490'},
+    {f:'gas-calculator', ico:'🔵', name:'Газоснабжение', desc:'Расход природного газа (СН РК 4.02-07)', tag:'ГС', c:'#2563eb'},
+    {f:'water-calculator', ico:'💧', name:'Водоснабжение и водоотведение', desc:'Расчёт ВК', tag:'ВК', c:'#0284c7'},
+    {f:'storm-calculator', ico:'🌧', name:'Ливневая канализация', desc:'Расход дождевых вод, коллекторы, очистные', tag:'НВК', c:'#2563eb'},
+    {f:'roofdrain-calculator', ico:'🏠', name:'Водосток с кровли', desc:'Расход, воронки, стояки, наружные трубы', tag:'ВК', c:'#06b6d4'},
+    {f:'lowcurrent-calculator', ico:'📡', name:'Слаботочные системы', desc:'СКС/ЛВС, видеонаблюдение, пожарная сигнализация', tag:'СС', c:'#0ea5e9'},
+    {f:'dewatering-calculator', ico:'💦', name:'Водопонижение', desc:'Приток воды в котлован и подбор насосов', tag:'ПОС', c:'#0284c7'},
+  ]},
+  {title:'Теплозащита и энергоэффективность', color:'#0d9488', items:[
+    {f:'thermal-calculator', ico:'🧱', name:'Теплотехника ограждений', desc:'R по слоям, проверка нормы, точка росы', tag:'ЭЭ', c:'#0d9488'},
+    {f:'energy-calculator', ico:'🌿', name:'Энергопаспорт здания', desc:'Удельный расход тепла, класс энергоэффективности', tag:'ЭЭ', c:'#16a34a'},
+  ]},
+  {title:'Конструкции и основания', color:'#b45309', items:[
+    {f:'kr-calculator', ico:'🏗', name:'Нагрузки на конструкции', desc:'Снеговые, ветровые, сбор нагрузок', tag:'КР', c:'#b45309'},
+    {f:'element-calculator', ico:'🔩', name:'Расчёт элементов', desc:'Балка, колонна, ж/б, фундамент', tag:'КР', c:'#6d28d9'},
+    {f:'seismic-calculator', ico:'🌐', name:'Сейсмические нагрузки', desc:'Спектральный расчёт по СП РК 2.03-30: β, распределение сил по этажам', tag:'КР', c:'#ea580c'},
+    {f:'geo-calculator', ico:'⛰', name:'Инженерная геология', desc:'Анализатор инженерно-геологических изысканий', tag:'ИГИ', c:'#a16207'},
+  ]},
+  {title:'Генплан, ПОС, земляные работы', color:'#65a30d', items:[
+    {f:'genplan-calculator', ico:'🗺', name:'Генплан', desc:'ТЭП участка, баланс территории, парковки', tag:'ГП', c:'#65a30d'},
+    {f:'earthwork-calculator', ico:'⛏', name:'Земляные работы', desc:'Объёмы котлована/траншеи, баланс грунта', tag:'ПОС', c:'#9a3412'},
+    {f:'pos-calculator', ico:'📅', name:'ПОС — продолжительность', desc:'Продолжительность строительства (СП РК 1.03-102)', tag:'ПОС', c:'#1a56db'},
+    {f:'cartogram-calculator', ico:'🏔', name:'Картограмма земляных масс', desc:'Объёмы насыпи и выемки по DWG, DXF, TXT: метод квадратов и TIN, баланс, ведомость', tag:'ГП', c:'#d97706'},
+    {f:'kml2dxf-converter', ico:'🛰', name:'KMZ/KML → DXF', desc:'Конвертер Google Earth в чертёж DXF: UTM, СК-42, МСК, ведомость координат', tag:'ГП', c:'#0891b2'},
+    {f:'pavement-calculator', ico:'🛣', name:'Дорожная одежда', desc:'Требуемый модуль, эквивалентная толщина, морозоустойчивость', tag:'АД', c:'#78716c'},
+  ]},
+  {title:'Безопасность и экология', color:'#dc2626', items:[
+    {f:'fire-calculator', ico:'🚒', name:'Пожарная безопасность', desc:'Категорирование помещений, эвакуация, ширина выходов', tag:'ПБ', c:'#dc2626'},
+    {f:'eco-calculator', ico:'🌍', name:'Охрана окружающей среды', desc:'Выбросы (ОНД-86), отходы, шум', tag:'ООС', c:'#0f766e'},
+    {f:'acoustic-calculator', ico:'🔉', name:'Акустика помещений', desc:'Время реверберации и звукоизоляция ограждений', tag:'АК', c:'#9333ea'},
+  ]},
+  {title:'Стоимость и документы', color:'#1e429f', items:[
+    {f:'opz-calculator', ico:'📄', name:'Сводная пояснительная записка', desc:'Собирает результаты всех калькуляторов в один документ (PDF / Word)', tag:'ОПЗ', c:'#7c3aed'},
+    {f:'estimate-calculator', ico:'🧮', name:'ВОР и локальная смета', desc:'Ведомость объёмов, база расценок, НР/СП, лимитированные, НДС', tag:'Смета', c:'#059669'},
+    {f:'pic-calculator', ico:'📐', name:'ПИР — стоимость', desc:'Проектно-изыскательские работы (СЦП/СЦИ РК 8.03)', tag:'Смета', c:'#1a56db'},
+    {f:'kp-calculator', ico:'🧾', name:'Сводная стоимость + КП', desc:'Стоимость проектирования и генератор коммерческого предложения', tag:'КП', c:'#1a56db'},
+  ]},
+];
+
+const total=GROUPS.reduce((a,g)=>a+g.items.length,0);
+
+function render(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  const cont=document.getElementById('groups');
+  let shown=0, html='';
+  GROUPS.forEach(g=>{
+    const items=g.items.filter(it=>!q||(it.name+' '+it.desc+' '+it.tag+' '+g.title).toLowerCase().includes(q));
+    if(!items.length)return;
+    shown+=items.length;
+    html+=`<div class="group"><div class="group-h"><span class="dot" style="background:${g.color}"></span><h2>${g.title}</h2><span class="n">${items.length}</span></div><div class="grid">`;
+    items.forEach(it=>{
+      html+=`<a class="tile" style="--tc:${it.c}" href="./${it.f}/index.html">
+        <div class="ico">${it.ico}</div>
+        <div class="body"><div class="name">${it.name}</div><div class="desc">${it.desc}</div><span class="tag">${it.tag}</span></div>
+      </a>`;
+    });
+    html+='</div></div>';
+  });
+  cont.innerHTML=html;
+  document.getElementById('empty').style.display=shown?'none':'block';
+  document.getElementById('count').textContent=q?(shown+' из '+total):(total+' инструментов');
+}
+render();
+document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement.id!=='q'){e.preventDefault();document.getElementById('q').focus();}});
+</script>
+</body>
+</html>
