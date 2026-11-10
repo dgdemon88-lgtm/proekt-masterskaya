@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Аэродинамический расчёт воздуховодов и подбор вентилятора — ОВ</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0891b2;--accent2:#0e7490;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-print{padding:8px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.preset-chip{padding:5px 11px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:20px;cursor:pointer;font-size:11.5px;font-weight:600;transition:.15s}
+.preset-chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#22d3a0;font-size:22px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.res-table tr.warn td{color:#fca5a5}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.ap-inp.calc{background:transparent;border:none;text-align:right;color:var(--text-s)}
+.results{display:none}.results.show{display:block}
+.rec-box{background:#06303a;border:1px solid #0e7490;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#67e8f9;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🌀 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input type="text" id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input type="text" id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Система</label><input type="text" id="doc-sys" placeholder="П1 / В1"></div>
+    <div class="hdr-fld"><label>Шифр</label><input type="text" id="doc-num" placeholder="ОВ-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input type="text" id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input type="text" id="doc-date"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('size')">📐 Подбор сечения</button>
+  <button class="tab-btn" onclick="switchTab('net')">🧮 Аэродинамика сети</button>
+  <button class="tab-btn" onclick="switchTab('fan')">🌀 Подбор вентилятора</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- common params -->
+<div class="card">
+  <div class="card-title">Параметры воздуха и воздуховода</div>
+  <div class="grid4">
+    <div class="fld"><label>Материал воздуховода (шероховатость Кэ, мм)</label>
+      <select id="mat" onchange="onMat();recalcAll()">
+        <option value="0.1">Сталь оцинкованная (0,1 мм)</option>
+        <option value="0.15">Сталь чёрная (0,15 мм)</option>
+        <option value="0.01">Пластик / ПВХ (0,01 мм)</option>
+        <option value="1.0">Гибкий гофрированный (1,0 мм)</option>
+        <option value="0.9">Кирпичный канал (0,9 мм)</option>
+        <option value="custom">Задать вручную…</option>
+      </select>
+    </div>
+    <div class="fld"><label>Кэ, мм (если вручную)</label><input id="ke" type="number" step="0.01" value="0.1" oninput="recalcAll()"></div>
+    <div class="fld"><label>Температура воздуха, °С</label><input id="tair" type="number" step="1" value="20" oninput="onTair();recalcAll()"></div>
+    <div class="fld"><label>Плотность воздуха ρ, кг/м³</label><input id="rho" type="number" step="0.001" value="1.2" oninput="recalcAll()"></div>
+  </div>
+  <div class="hint" style="margin-top:6px">ρ автоматически по температуре (ρ = 353/(273+t)); можно переопределить. Кинематическая вязкость ν также пересчитывается по t.</div>
+</div>
+
+<!-- ===== SIZE ===== -->
+<div id="sec-size" class="sec active">
+  <div class="card">
+    <div class="card-title">Подбор сечения воздуховода по расходу и скорости</div>
+    <div class="grid3">
+      <div class="fld"><label>Расход воздуха L, м³/ч</label><input id="s-L" type="number" step="any" value="1000" oninput="calcSize()"></div>
+      <div class="fld"><label>Рекомендуемая скорость v, м/с</label><input id="s-v" type="number" step="0.1" value="4" oninput="calcSize()"></div>
+      <div class="fld"><label>Форма сечения</label>
+        <select id="s-shape" onchange="calcSize()">
+          <option value="round">Круглое (подобрать DN)</option>
+          <option value="rect">Прямоугольное (задать одну сторону)</option>
+        </select>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="hint" style="align-self:center">Скорости:</span>
+      <span class="preset-chip" onclick="setV(5)">Магистраль жил/общ 5</span>
+      <span class="preset-chip" onclick="setV(3)">Ответвление 3</span>
+      <span class="preset-chip" onclick="setV(2)">У решётки 2</span>
+      <span class="preset-chip" onclick="setV(8)">Магистраль пром 8</span>
+      <span class="preset-chip" onclick="setV(4)">Воздухозабор 4</span>
+    </div>
+    <div id="s-rect-row" class="grid3" style="margin-top:12px;display:none">
+      <div class="fld"><label>Заданная сторона b (высота), мм</label><input id="s-b" type="number" step="10" value="300" oninput="calcSize()"></div>
+    </div>
+    <div class="results show" id="s-res" style="margin-top:16px">
+      <div class="kpi-row" id="s-kpi"></div>
+      <div class="rec-box" id="s-rec"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NET ===== -->
+<div id="sec-net" class="sec">
+  <div class="card">
+    <div class="card-title">Аэродинамический расчёт магистрали (по участкам)</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:110px">Участок</th>
+          <th style="width:78px">L, м³/ч</th>
+          <th style="width:62px">l, м</th>
+          <th style="width:72px">Форма</th>
+          <th style="width:90px">Размер, мм<br><span style="font-weight:400;font-size:9.5px">d или a×b</span></th>
+          <th style="width:58px">v, м/с</th>
+          <th style="width:58px">R, Па/м</th>
+          <th style="width:58px">R·l, Па</th>
+          <th style="width:62px">Σξ</th>
+          <th style="width:58px">Z, Па</th>
+          <th style="width:64px">ΔP, Па</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="net-rows"></tbody>
+        <tfoot>
+          <tr class="total"><td colspan="7">Суммарные потери давления магистрали ΣΔP</td>
+            <td id="net-frl" style="text-align:right"></td><td></td><td id="net-z" style="text-align:right"></td>
+            <td id="net-dp" style="text-align:right;font-size:13.5px"></td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addNet()">＋ Добавить участок</button>
+    <div class="btn-row">
+      <button class="btn" onclick="netToFan()">→ Передать в подбор вентилятора</button>
+      <button class="btn-clear" onclick="clearNet()">Очистить</button>
+    </div>
+    <div class="note">
+      Размер: для круглого — диаметр (напр. <b>315</b>); для прямоугольного — через «×» (напр. <b>500x300</b>).
+      v — фактическая скорость; R — удельные потери на трение (формула Альтшуля); Z = Σξ·Pд — местные потери; ΔP = R·l + Z.
+      Σξ задаётся вручную (см. вкладку «Справочники»).
+    </div>
+  </div>
+</div>
+
+<!-- ===== FAN ===== -->
+<div id="sec-fan" class="sec">
+  <div class="card">
+    <div class="card-title">Подбор вентилятора</div>
+    <div class="grid4">
+      <div class="fld"><label>Расход сети L, м³/ч</label><input id="f-L" type="number" step="any" value="5000" oninput="calcFan()"></div>
+      <div class="fld"><label>Потери давления сети ΔP, Па</label><input id="f-P" type="number" step="any" value="250" oninput="calcFan()"></div>
+      <div class="fld"><label>Запас по расходу K<sub>L</sub></label><input id="f-kL" type="number" step="0.05" value="1.1" oninput="calcFan()"></div>
+      <div class="fld"><label>Запас по давлению K<sub>P</sub></label><input id="f-kP" type="number" step="0.05" value="1.1" oninput="calcFan()"></div>
+      <div class="fld"><label>КПД вентилятора η</label><input id="f-eta" type="number" step="0.01" min="0.1" max="0.95" value="0.65" oninput="calcFan()"></div>
+      <div class="fld"><label>Коэф. запаса двигателя K<sub>дв</sub></label><input id="f-kdv" type="number" step="0.05" value="1.15" oninput="calcFan()"></div>
+    </div>
+    <div class="results show" id="f-res" style="margin-top:16px">
+      <div class="kpi-row" id="f-kpi"></div>
+      <div class="rec-box" id="f-rec"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Рекомендуемые скорости воздуха, м/с</div>
+    <table class="ref-table">
+      <thead><tr><th>Элемент системы</th><th>Жилые / общественные</th><th>Промышленные</th></tr></thead>
+      <tbody>
+        <tr><td>Воздухозаборные жалюзи</td><td class="c">2–4</td><td class="c">4–6</td></tr>
+        <tr><td>Магистральные воздуховоды</td><td class="c">5–6</td><td class="c">6–12</td></tr>
+        <tr><td>Ответвления</td><td class="c">2–4</td><td class="c">4–8</td></tr>
+        <tr><td>Приточные решётки / диффузоры</td><td class="c">1,5–3</td><td class="c">2–5</td></tr>
+        <tr><td>Вытяжные решётки</td><td class="c">2–3</td><td class="c">3–6</td></tr>
+        <tr><td>Шахты вытяжные</td><td class="c">3–6</td><td class="c">6–12</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Ориентировочно по СН РК 4.02-01 / СП 60.13330. Меньшие скорости — меньше шум и потери.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Коэффициенты местных сопротивлений ξ (ориентировочно)</div>
+    <table class="ref-table">
+      <thead><tr><th>Местное сопротивление</th><th>ξ</th></tr></thead>
+      <tbody>
+        <tr><td>Отвод 90° круглый, R/d = 1–2 (плавный)</td><td class="c">0,15–0,30</td></tr>
+        <tr><td>Колено 90° прямоугольное острое</td><td class="c">1,1–1,3</td></tr>
+        <tr><td>Тройник на проход</td><td class="c">0,2–0,5</td></tr>
+        <tr><td>Тройник на ответвление</td><td class="c">0,5–1,5</td></tr>
+        <tr><td>Диффузор / внезапное расширение</td><td class="c">0,25–0,6</td></tr>
+        <tr><td>Конфузор / сужение</td><td class="c">0,1–0,2</td></tr>
+        <tr><td>Вход в воздуховод с решёткой</td><td class="c">0,5–2,0</td></tr>
+        <tr><td>Жалюзийная решётка</td><td class="c">1,2–2,0</td></tr>
+        <tr><td>Зонт вытяжной / выброс</td><td class="c">1,0–1,3</td></tr>
+        <tr><td>Дроссель-клапан (открыт)</td><td class="c">0,1–0,5</td></tr>
+        <tr><td>Сетка защитная</td><td class="c">0,5–1,0</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Σξ участка = сумма ξ всех фасонных элементов на нём. Точные значения — по «Справочнику проектировщика. Вентиляция и кондиционирование».</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n,d=1) => isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+const STD=[100,125,140,160,180,200,225,250,280,315,355,400,450,500,560,630,710,800,900,1000,1120,1250,1400,1600];
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let netRows=[]; // {name,L,l,shape,size,xi}
+
+/* air props */
+function rho(){return parseFloat($('rho').value)||1.2;}
+function ke(){return parseFloat($('ke').value)||0.1;} // mm
+function nu(){const t=parseFloat($('tair').value)||20;return (13.28+0.09*t)*1e-6;} // m²/s approx
+function onTair(){const t=parseFloat($('tair').value)||20;$('rho').value=(353/(273+t)).toFixed(3);}
+function onMat(){const m=$('mat').value;if(m!=='custom')$('ke').value=m;}
+
+/* core: round duct from area */
+function lambdaA(Ke_m,d,Re){return 0.11*Math.pow((Ke_m/d)+68/Math.max(Re,1),0.25);}
+// compute R (Pa/m), Pd, given velocity v (m/s) and equivalent diameter dEq (m)
+function ductRP(v,dEq){
+  const Re=v*dEq/nu();
+  const lam=lambdaA(ke()/1000,dEq,Re);
+  const Pd=rho()*v*v/2;
+  const R=lam/dEq*Pd;
+  return {Re,lam,Pd,R};
+}
+
+/* ===== TAB 1: sizing ===== */
+function setV(v){$('s-v').value=v;calcSize();}
+function calcSize(){
+  const L=parseFloat($('s-L').value)||0;
+  const vt=parseFloat($('s-v').value)||1;
+  const shape=$('s-shape').value;
+  $('s-rect-row').style.display=shape==='rect'?'grid':'none';
+  const F=L/3600/vt; // m²
+  let dn,a,b,Fa,dEq,sizeLabel;
+  if(shape==='round'){
+    const dreq=Math.sqrt(4*F/Math.PI)*1000; // mm
+    dn=STD.find(x=>x>=dreq)||Math.ceil(dreq);
+    Fa=Math.PI*(dn/1000)*(dn/1000)/4;
+    dEq=dn/1000;
+    sizeLabel='⌀ '+dn+' мм (требуется '+fmt(dreq,0)+')';
+  }else{
+    b=parseFloat($('s-b').value)||100;
+    const areaMM=F*1e6; // mm²
+    let areq=areaMM/b; // mm
+    a=Math.ceil(areq/50)*50; // round to 50 mm
+    Fa=(a/1000)*(b/1000);
+    dEq=2*(a/1000)*(b/1000)/((a/1000)+(b/1000));
+    sizeLabel=a+'×'+b+' мм (экв. ⌀'+fmt(dEq*1000,0)+')';
+  }
+  const v=L/3600/Fa;
+  const {R,Pd,Re}=ductRP(v,dEq);
+  $('s-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${shape==='round'?'⌀'+dn:a+'×'+b}</span><span class="u">мм</span><span class="lbl">Сечение</span></div>
+    <div class="kpi"><span class="v">${fmt(v,2)}</span><span class="u">м/с</span><span class="lbl">v фактич.</span></div>
+    <div class="kpi"><span class="v">${fmt(R,3)}</span><span class="u">Па/м</span><span class="lbl">Уд. потери R</span></div>
+    <div class="kpi"><span class="v">${fmt(Pd,1)}</span><span class="u">Па</span><span class="lbl">Дин. давл. Pд</span></div>
+    <div class="kpi"><span class="v">${fmt(Fa*1e4,0)}</span><span class="u">см²</span><span class="lbl">Площадь F</span></div>`;
+  let vw='';
+  if(v>12)vw=' ⚠ высокая скорость — возможен шум';
+  else if(v<1.5)vw=' ⚠ низкая скорость — сечение завышено';
+  $('s-rec').innerHTML=`Принято сечение: <b>${sizeLabel}</b>. Фактическая скорость <b>${fmt(v,2)} м/с</b>${vw}. `+
+    `Re = ${fmt(Re,0)}, потери на трение <b>${fmt(R,3)} Па/м</b>. `+
+    `На 10 м прямого участка ≈ ${fmt(R*10,1)} Па.`;
+}
+
+/* ===== TAB 2: network ===== */
+function addNet(){netRows.push({name:'Уч.'+(netRows.length+1),L:1000,l:5,shape:'round',size:'315',xi:0.5});renderNet();}
+function clearNet(){netRows=[];renderNet();}
+function delNet(i){netRows.splice(i,1);renderNet();}
+function updNet(i,f,v){netRows[i][f]=(f==='name'||f==='size'||f==='shape')?v:(parseFloat(v)||0);renderNet();}
+function parseSize(str,shape){
+  str=String(str).replace(',','.');
+  if(shape==='rect'||/[x×х*]/i.test(str)){
+    const m=str.split(/[x×х*]/i).map(s=>parseFloat(s)).filter(x=>x>0);
+    if(m.length>=2){const a=m[0]/1000,b=m[1]/1000;return {Fa:a*b,dEq:2*a*b/(a+b)};}
+  }
+  const d=parseFloat(str)/1000;
+  if(d>0)return {Fa:Math.PI*d*d/4,dEq:d};
+  return null;
+}
+function computeNet(r){
+  const g=parseSize(r.size,r.shape);
+  if(!g||r.L<=0)return null;
+  const v=r.L/3600/g.Fa;
+  const {R,Pd}=ductRP(v,g.dEq);
+  const Rl=R*r.l, Z=r.xi*Pd, dP=Rl+Z;
+  return {v,R,Rl,Pd,Z,dP};
+}
+function renderNet(){
+  const tb=$('net-rows');
+  if(!netRows.length){tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:22px;color:var(--text-s)">Нет участков. Нажмите «＋ Добавить участок».</td></tr>';updNetTot();return;}
+  tb.innerHTML=netRows.map((r,i)=>{
+    const c=computeNet(r)||{};
+    const vWarn=c.v>12?' style="color:#fca5a5"':'';
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updNet(${i},'name',this.value)"></td>
+      <td><input class="ap-inp num" type="number" value="${r.L}" oninput="updNet(${i},'L',this.value)"></td>
+      <td><input class="ap-inp num" type="number" value="${r.l}" oninput="updNet(${i},'l',this.value)"></td>
+      <td><select class="ap-inp" onchange="updNet(${i},'shape',this.value)">
+            <option value="round"${r.shape==='round'?' selected':''}>кругл</option>
+            <option value="rect"${r.shape==='rect'?' selected':''}>прямоуг</option></select></td>
+      <td><input class="ap-inp" value="${esc(r.size)}" oninput="updNet(${i},'size',this.value)"></td>
+      <td class="num"${vWarn}>${fmt(c.v,2)}</td>
+      <td class="num">${fmt(c.R,3)}</td>
+      <td class="num">${fmt(c.Rl,1)}</td>
+      <td><input class="ap-inp num" type="number" step="0.1" value="${r.xi}" oninput="updNet(${i},'xi',this.value)"></td>
+      <td class="num">${fmt(c.Z,1)}</td>
+      <td class="num">${fmt(c.dP,1)}</td>
+      <td><button class="btn-del" onclick="delNet(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  updNetTot();
+}
+function netTotals(){
+  let frl=0,z=0,dp=0,L=0;
+  netRows.forEach(r=>{const c=computeNet(r);if(c){frl+=c.Rl;z+=c.Z;dp+=c.dP;}L=Math.max(L,r.L);});
+  return {frl,z,dp,L};
+}
+function updNetTot(){
+  const t=netTotals();
+  $('net-frl').textContent=fmt(t.frl,1);
+  $('net-z').textContent=fmt(t.z,1);
+  $('net-dp').textContent=fmt(t.dp,1)+' Па';
+}
+function netToFan(){
+  const t=netTotals();
+  $('f-L').value=Math.round(t.L);
+  $('f-P').value=+t.dp.toFixed(1);
+  switchTab('fan');calcFan();
+}
+
+/* ===== TAB 3: fan ===== */
+function calcFan(){
+  const L=parseFloat($('f-L').value)||0;
+  const P=parseFloat($('f-P').value)||0;
+  const kL=parseFloat($('f-kL').value)||1;
+  const kP=parseFloat($('f-kP').value)||1;
+  const eta=parseFloat($('f-eta').value)||0.65;
+  const kdv=parseFloat($('f-kdv').value)||1.15;
+  const Lr=L*kL, Pr=P*kP;
+  const Nv=Lr*Pr/(3600*1000*eta); // kW
+  const Ndv=Nv*kdv;
+  $('f-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Lr,0)}</span><span class="u">м³/ч</span><span class="lbl">L расчётный</span></div>
+    <div class="kpi"><span class="v">${fmt(Pr,0)}</span><span class="u">Па</span><span class="lbl">P расчётный</span></div>
+    <div class="kpi"><span class="v">${fmt(Nv,2)}</span><span class="u">кВт</span><span class="lbl">Мощн. на валу</span></div>
+    <div class="kpi big"><span class="v">${fmt(Ndv,2)}</span><span class="u">кВт</span><span class="lbl">Установ. мощн. двигателя</span></div>`;
+  $('f-rec').innerHTML=`Подобрать вентилятор на параметры рабочей точки: <b>L ≈ ${fmt(Lr,0)} м³/ч</b> при <b>P ≈ ${fmt(Pr,0)} Па</b>. `+
+    `Потребляемая мощность на валу N = L·P/(3600·1000·η) = <b>${fmt(Nv,2)} кВт</b>; `+
+    `электродвигатель с запасом — <b>${fmt(Ndv,2)} кВт</b> (ближайший больший типоразмер).`;
+}
+
+function recalcAll(){calcSize();renderNet();calcFan();}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){
+  const ids=['size','net','fan','ref'];
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));
+  ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));
+}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+
+function collect(){
+  const o={};['org','obj','sys','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,mat:$('mat').value,ke:$('ke').value,tair:$('tair').value,rho:$('rho').value,
+    size:{L:$('s-L').value,v:$('s-v').value,shape:$('s-shape').value,b:$('s-b').value},
+    net:netRows,
+    fan:{L:$('f-L').value,P:$('f-P').value,kL:$('f-kL').value,kP:$('f-kP').value,eta:$('f-eta').value,kdv:$('f-kdv').value},
+    logo:logoBase64};
+}
+function apply(d){
+  if(!d)return;const o=d.doc||{};['org','obj','sys','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  if(d.mat!=null)$('mat').value=d.mat;if(d.ke!=null)$('ke').value=d.ke;if(d.tair!=null)$('tair').value=d.tair;if(d.rho!=null)$('rho').value=d.rho;
+  const s=d.size||{};if(s.L!=null)$('s-L').value=s.L;if(s.v!=null)$('s-v').value=s.v;if(s.shape)$('s-shape').value=s.shape;if(s.b!=null)$('s-b').value=s.b;
+  if(Array.isArray(d.net))netRows=d.net;
+  const f=d.fan||{};['L','P','kL','kP','eta','kdv'].forEach(k=>{if(f[k]!=null)$('f-'+k).value=f[k];});
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  recalcAll();
+}
+function saveLS(){localStorage.setItem('ventCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('ventCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0e7490;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  const t=netTotals();
+  const f={L:parseFloat($('f-L').value)||0,P:parseFloat($('f-P').value)||0,kL:parseFloat($('f-kL').value)||1,
+           kP:parseFloat($('f-kP').value)||1,eta:parseFloat($('f-eta').value)||0.65,kdv:parseFloat($('f-kdv').value)||1.15};
+  const Lr=f.L*f.kL,Pr=f.P*f.kP,Nv=Lr*Pr/(3600*1000*f.eta),Ndv=Nv*f.kdv;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  let rows='';
+  netRows.forEach((r,i)=>{const c=computeNet(r)||{};
+    rows+=`<tr><td>${esc(r.name)}</td><td style="text-align:right">${fmt(r.L,0)}</td><td style="text-align:right">${fmt(r.l,1)}</td>`+
+      `<td>${esc(r.size)}</td><td style="text-align:right">${fmt(c.v,2)}</td><td style="text-align:right">${fmt(c.R,3)}</td>`+
+      `<td style="text-align:right">${fmt(c.Rl,1)}</td><td style="text-align:right">${fmt(r.xi,2)}</td>`+
+      `<td style="text-align:right">${fmt(c.Z,1)}</td><td style="text-align:right">${fmt(c.dP,1)}</td></tr>`;
+  });
+  const td='border:1px solid #aac;padding:4px 7px;font-size:9pt';
+  const th='border:1px solid #88a;padding:5px 7px;font-size:9pt;background:#e0f2f7;text-align:left';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Аэродинамический расчёт</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:14px 0 6px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}td,th{${td}}th{${th}}
+  .tot td{background:#0891b2;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Система: ${esc($('doc-sys').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>АЭРОДИНАМИЧЕСКИЙ РАСЧЁТ СИСТЕМЫ ВЕНТИЛЯЦИИ</h1>
+  <h2>Расчёт по участкам</h2>
+  <table><thead><tr><th>Участок</th><th>L, м³/ч</th><th>l, м</th><th>Размер, мм</th><th>v, м/с</th><th>R, Па/м</th><th>R·l, Па</th><th>Σξ</th><th>Z, Па</th><th>ΔP, Па</th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="10" style="text-align:center">нет участков</td></tr>'}
+  <tr class="tot"><td colspan="9">Суммарные потери давления сети ΣΔP</td><td style="text-align:right">${fmt(t.dp,1)}</td></tr></tbody></table>
+  <h2>Подбор вентилятора</h2>
+  <table><tbody>
+  <tr><td>Расчётный расход L (с запасом ${f.kL})</td><td style="text-align:right">${fmt(Lr,0)} м³/ч</td></tr>
+  <tr><td>Расчётное давление P (с запасом ${f.kP})</td><td style="text-align:right">${fmt(Pr,0)} Па</td></tr>
+  <tr><td>Мощность на валу (η=${f.eta})</td><td style="text-align:right">${fmt(Nv,2)} кВт</td></tr>
+  <tr class="tot"><td>Установочная мощность двигателя (×${f.kdv})</td><td style="text-align:right">${fmt(Ndv,2)} кВт</td></tr>
+  </tbody></table>
+  <p style="font-size:8.5pt;margin-top:8px">Расчёт потерь на трение — по формуле Альтшуля; местные потери Z = Σξ·ρv²/2.
+  Нормативная база: СН РК 4.02-01, «Справочник проектировщика. Вентиляция и кондиционирование воздуха».</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+/* init */
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('ventCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    netRows=[
+      {name:'Магистраль',L:5000,l:15,shape:'round',size:'500',xi:1.2},
+      {name:'Ответвление 1',L:2000,l:8,shape:'round',size:'355',xi:1.5},
+      {name:'К решётке',L:500,l:4,shape:'rect',size:'200x150',xi:2.0}
+    ];
+    onTair();calcSize();renderNet();calcFan();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
