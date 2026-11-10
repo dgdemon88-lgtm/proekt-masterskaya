@@ -1,0 +1,2418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расчёт расхода природного газа — СН РК 4.02-07</title>
+<style>
+:root{
+  --blue:#1a56db; --blue-dark:#1e429f; --blue-light:#1e2d4a; --blue-txt:#93c5fd;
+  --grey:#8b92a8; --border:#2e3348; --bg:#0f1117; --bg2:#1a1d27; --bg3:#22263a; --white:#fff;
+  --text:#e8eaf0; --text-s:#8b92a8; --green:#10b981; --amber:#f59e0b;
+  --radius:8px; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+/* HEADER */
+.site-header { background:#0d1220; color:var(--text); padding: 18px 24px 16px; }
+.site-header h1 { font-size: 20px; font-weight: 700;color:var(--blue-txt)}
+.site-header p { font-size: 12px; opacity: .8; margin-top: 3px; }
+
+/* CONTAINER */
+.wrap { max-width: 1060px; margin: 0 auto; padding: 20px 20px 40px; }
+
+/* TABS */
+.tabs { display: flex; gap: 2px; background:var(--bg2); border-radius: 9px; padding: 3px; width: fit-content; margin-bottom: 20px; }
+.tab-btn { padding: 7px 22px; border-radius: 7px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text-s); border: none; background: transparent; transition: all .15s; }
+.tab-btn.active { background:var(--blue); color:#fff; box-shadow: var(--shadow); }
+
+/* SECTION */
+.sec { display: none; } .sec.active { display: block; }
+
+/* CARD */
+.card { background:var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color:var(--blue-txt); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+/* GRID */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+@media(max-width:700px) { .g2,.g3,.g4 { grid-template-columns: 1fr; } }
+
+/* FIELD */
+.fld { display: flex; flex-direction: column; gap: 4px; }
+.fld label { font-size: 11px; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: .03em; }
+.fld input, .fld select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 14px; background:var(--bg3); color: var(--text);
+  transition: border-color .15s;
+}
+.fld input:focus, .fld select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+.fld .hint { font-size: 11px; color: var(--text-s); }
+
+/* CHECKBOX */
+.chk-row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0; }
+.chk-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--blue); }
+.chk-row span { font-size: 13px; }
+.chk-row .tag { font-size: 10px; background:var(--bg3); color:var(--blue-txt); padding: 1px 6px; border-radius: 20px; margin-left: 4px; }
+
+/* RADIO TABS */
+.radio-tabs { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.radio-tabs label { flex: 1; padding: 7px 10px; text-align: center; font-size: 12px; font-weight: 500; cursor: pointer; background:var(--bg3); color: var(--text-s); transition: all .15s; }
+.radio-tabs input[type=radio] { display: none; }
+.radio-tabs input[type=radio]:checked + label { background: var(--blue); color: #fff; }
+
+/* CONDITIONAL */
+.cond { display: none; } .cond.show { display: block; }
+
+/* BUTTON */
+.btn { display: inline-flex; align-items: center; gap: 6px; background: var(--blue); color: #fff; border: none; padding: 10px 26px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.btn:hover { background: var(--blue-dark); }
+.btn-row { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+.btn-clear { background: none; border: 1px solid var(--border); color: var(--text-s); padding: 10px 18px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.btn-clear:hover { background:var(--bg3); }
+.btn-print { background: none; border: 1px solid var(--border); color: var(--text-s); padding: 10px 18px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.btn-print:hover { background:var(--bg3); }
+
+/* RESULTS */
+.results { display: none; } .results.show { display: block; }
+
+/* KPI */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.kpi { background:var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); }
+.kpi .v { font-size: 26px; font-weight: 800; color:var(--blue-txt); line-height: 1.1; }
+.kpi .u { font-size: 11px; color: var(--text-s); margin-top: 2px; }
+.kpi .lbl { font-size: 11px; color: var(--text-s); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+
+/* TABLE */
+.res-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.res-table th { background:var(--bg3); color:var(--blue-txt); font-weight: 700; padding: 9px 12px; text-align: left; border-bottom:2px solid var(--border); font-size: 12px; }
+.res-table td { padding: 8px 12px; border-bottom:1px solid var(--border); vertical-align: top; }
+.res-table tr:last-child td { border-bottom: none; }
+.res-table .subtotal td { font-weight: 700; background:#1a2a3a; color:#7dd3fc; }
+.res-table .total td { font-weight: 800; background:#1a44a0; color:#fff; border-top:2px solid var(--border); }
+.res-table .sep td { background:var(--bg3); font-weight: 600; color: var(--text-s); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* NOTE */
+.note { background:#1a1500; border:1px solid #713f12; border-radius: 6px; padding: 10px 14px; font-size: 12px; color:#fde68a; margin-top: 14px; line-height: 1.6; }
+.note b { font-weight: 700; }
+.info { background:#0d1b2e; border:1px solid #1e3a5f; border-radius: 6px; padding: 10px 14px; font-size: 12px; color:#93c5fd; margin-top: 14px; line-height: 1.6; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* LOGO UPLOAD */
+.logo-upload-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border: 1px dashed var(--border); border-radius: 6px;
+  cursor: pointer; font-size: 13px; color: var(--text-s); background:var(--bg3);
+  transition: border-color .15s; width: 100%;
+}
+.logo-upload-label:hover { border-color: var(--blue); color: var(--blue); }
+.logo-preview-box {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 82px; border: 1px dashed var(--border); border-radius: 6px;
+  background:var(--bg3);
+}
+.logo-preview-box img { max-height: 70px; max-width: 200px; object-fit: contain; }
+/* PDF BUTTON */
+.btn-pdf { display: inline-flex; align-items: center; gap: 6px; background: #065f46; color: #fff; border: none; padding: 10px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.btn-pdf:hover { background: #047857; }
+/* COLLAPSIBLE */
+.card-title-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+.card-title-toggle:hover { color: var(--blue-dark); }
+
+/* GP TABLE */
+.gp-th { padding:8px 7px; color:var(--blue-txt); font-size:11px; font-weight:700; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
+.gp-inp { width:100%; padding:5px 7px; border:1px solid var(--border); border-radius:5px; font-size:13px; background:var(--bg3); color:var(--text); }
+.gp-inp:focus { outline:none; border-color:var(--blue); }
+.gp-sel { width:100%; padding:5px 6px; border:1px solid var(--border); border-radius:5px; font-size:13px; background:var(--bg3); color:var(--text); }
+.gp-sel:focus { outline:none; border-color:var(--blue); }
+.gp-status-ok  { color:var(--green); font-weight:700; }
+.gp-status-err { color:#f87171; font-weight:700; }
+
+/* PRINT */
+@media print {
+  body { background: #fff; }
+  .site-header { background: var(--blue) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .tabs, .btn-row, .btn, .btn-clear, .btn-print { display: none !important; }
+  .sec { display: block !important; }
+  .results { display: block !important; }
+  .card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  .cond { display: block !important; }
+}
+
+/* ШАПКА ДОКУМЕНТА — общий формат мастерской */
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+
+/* прямая печать страницы — светлый вид */
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .card,.kpi,.hdr{background:#fff!important;color:#000!important;border:1px solid #ccc!important;box-shadow:none!important}
+  .card-title,.kpi .v,.res-table th{color:#1a44a0!important}
+  .res-table th{background:#e8f0fe!important}
+  .res-table td,.fld label,.fld .hint{color:#333!important}
+  .fld input,.fld select,.hdr-fld input,.hdr-fld select{background:#fff!important;color:#000!important;border:1px solid #ccc!important}
+  .hdr-logo{border:1px solid #ccc!important;color:#666!important}
+}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <h1>Расчёт расхода природного газа</h1>
+  <p>По методике СН РК 4.02-07-2013 | Жилые дома и котельные | Все расчёты выполняются локально</p>
+</div>
+
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-logo" onclick="document.getElementById('logo-inp').click()" title="Загрузить логотип">
+      <div id="logo-preview">🔵 Лого</div>
+      <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+    </div>
+    <div class="hdr-fields">
+      <div class="hdr-fld" style="min-width:220px"><label>Организация</label><input type="text" id="doc-org" placeholder="ТОО «Проектная организация»"></div>
+      <div class="hdr-fld" style="min-width:240px"><label>Объект</label><input type="text" id="doc-obj" placeholder="Жилой дом по ул. ..."></div>
+      <div class="hdr-fld"><label>Шифр документа</label><input type="text" id="doc-num" placeholder="2026-ГСН-001"></div>
+      <div class="hdr-fld"><label>Исполнитель</label><input type="text" id="doc-exec" placeholder="Ф.И.О."></div>
+      <div class="hdr-fld"><label>Дата</label><input type="text" id="doc-date"></div>
+      <div class="hdr-fld"><label>Стадия</label><input type="text" id="doc-stage" placeholder="ПД / РД / ТЭО / ЭП"></div>
+    </div>
+  </div>
+
+<!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" onclick="switchTab('res')">Жилой дом</button>
+    <button class="tab-btn"        onclick="switchTab('bh')">Котельная</button>
+    <button class="tab-btn"        onclick="switchTab('gp')">Газопровод НД</button>
+    <button class="tab-btn"        onclick="switchTab('sd')">Газопровод СД</button>
+    <button class="tab-btn"        onclick="switchTab('ig')">Внутр. газопровод</button>
+  </div>
+
+  <!-- =============================== TAB 1: RESIDENTIAL =============================== -->
+  <div id="sec-res" class="sec active">
+
+    <div class="card">
+      <div class="card-title">1. Параметры здания</div>
+      <div class="g3">
+        <div class="fld">
+          <label>Количество квартир, шт</label>
+          <input type="number" id="r-nkv" value="40" min="1" max="5000">
+        </div>
+        <div class="fld">
+          <label>Жителей на квартиру, чел</label>
+          <input type="number" id="r-nchel" value="3" min="1" max="20" step="0.1">
+          <span class="hint">Среднее число проживающих</span>
+        </div>
+        <div class="fld">
+          <label>Город / климатическая зона</label>
+          <select id="r-city" onchange="fillClimate('r')">
+            <option value="">— ручной ввод —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Газовые приборы</div>
+
+      <label class="chk-row">
+        <input type="checkbox" id="r-plita" checked onchange="updateRes()">
+        <span>Газовая плита (4-конфорочная) <span class="tag">1.2 м³/ч ном.</span></span>
+      </label>
+
+      <label class="chk-row" style="margin-top:6px">
+        <input type="checkbox" id="r-gvn-flow" onchange="updateRes('flow')">
+        <span>Проточный водонагреватель <span class="tag">2.0 м³/ч ном.</span></span>
+      </label>
+
+      <label class="chk-row" style="margin-top:6px">
+        <input type="checkbox" id="r-gvn-stor" onchange="updateRes('stor')">
+        <span>Накопительный водонагреватель <span class="tag">0.7 м³/ч ном.</span></span>
+      </label>
+
+      <label class="chk-row" style="margin-top:6px">
+        <input type="checkbox" id="r-boiler" onchange="toggleBoiler()">
+        <span>Индивидуальный газовый котёл (отопление)</span>
+      </label>
+
+      <div class="info" style="margin-top:12px; margin-bottom:0;">
+        Примечание: в здании не должно устанавливаться одновременно проточный и накопительный водонагреватель.
+      </div>
+    </div>
+
+    <!-- HEATING BLOCK (conditional) -->
+    <div id="r-heat-block" class="card cond">
+      <div class="card-title">3. Отопление — параметры</div>
+      <div class="g3">
+        <div class="fld">
+          <label>Отапливаемая площадь, м² / кв</label>
+          <input type="number" id="r-area" value="60" min="10" max="500">
+        </div>
+        <div class="fld">
+          <label>Удельная теплопотеря, Вт/м²</label>
+          <input type="number" id="r-qud" value="80" min="20" max="200">
+          <span class="hint">Типово: 60–80 новые / 90–120 старые здания</span>
+        </div>
+        <div class="fld">
+          <label>КПД котла, %</label>
+          <input type="number" id="r-eta" value="92" min="60" max="99">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="g4">
+        <div class="fld">
+          <label>t внутренняя, °С</label>
+          <input type="number" id="r-tvn" value="20">
+        </div>
+        <div class="fld">
+          <label>t нар. расчётная, °С</label>
+          <input type="number" id="r-tnn" value="-25">
+          <span class="hint">t₅ по СП РК 2.04-107</span>
+        </div>
+        <div class="fld">
+          <label>t ср. за отоп. период, °С</label>
+          <input type="number" id="r-tsr" value="-3.1" step="0.1">
+        </div>
+        <div class="fld">
+          <label>Продолж. отоп. периода, сут</label>
+          <input type="number" id="r-ndays" value="175" min="50" max="365">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">4. Параметры газа</div>
+      <div class="g3">
+        <div class="fld">
+          <label>Теплота сгорания Q_нр, ккал/м³</label>
+          <input type="number" id="r-qnr" value="8300" min="6000" max="12000">
+          <span class="hint">Природный газ: 8000–8600 ккал/м³</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="calcResidential()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('res')">Очистить</button>
+    </div>
+
+    <!-- RESULTS RESIDENTIAL -->
+    <div id="res-results" class="results" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">Результаты — Жилой дом</div>
+        <div class="kpi-row" id="res-kpi"></div>
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th style="width:55%">Статья расхода / параметр</th>
+              <th>Ед. изм.</th>
+              <th style="text-align:right;width:22%">Значение</th>
+            </tr>
+          </thead>
+          <tbody id="res-tbody"></tbody>
+        </table>
+        <div class="note" id="res-note"></div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:12px;">
+          <button class="btn-pdf" onclick="exportPDF('res')">⬇ Сохранить PDF</button>
+          <button class="btn-print" onclick="window.print()">Печать</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sec-res -->
+
+
+  <!-- =============================== TAB 2: BOILER HOUSE =============================== -->
+  <div id="sec-bh" class="sec">
+
+    <div class="card">
+      <div class="card-title">1. Климатические данные</div>
+      <div class="g4">
+        <div class="fld">
+          <label>Город</label>
+          <select id="bh-city" onchange="fillClimate('bh')">
+            <option value="">— ручной ввод —</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>t расчётная нар., °С</label>
+          <input type="number" id="bh-tnn" value="-25">
+          <span class="hint">t₅ для отопления</span>
+        </div>
+        <div class="fld">
+          <label>t ср. отоп. периода, °С</label>
+          <input type="number" id="bh-tsr" value="-3.1" step="0.1">
+        </div>
+        <div class="fld">
+          <label>Продолжительность, сут</label>
+          <input type="number" id="bh-ndays" value="175" min="50" max="365">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Нагрузка отопления и вентиляции</div>
+
+      <div class="radio-tabs">
+        <input type="radio" name="bh-ot-mode" id="bh-ot-direct" value="direct" checked onchange="toggleBhOt()">
+        <label for="bh-ot-direct">Прямой ввод Q, Гкал/ч</label>
+        <input type="radio" name="bh-ot-mode" id="bh-ot-area" value="area" onchange="toggleBhOt()">
+        <label for="bh-ot-area">Из площади здания</label>
+      </div>
+
+      <div id="bh-ot-dir" class="g3">
+        <div class="fld">
+          <label>Q_от макс., Гкал/ч</label>
+          <input type="number" id="bh-qot" value="2.5" min="0" step="0.01">
+        </div>
+        <div class="fld">
+          <label>Q_вент макс., Гкал/ч</label>
+          <input type="number" id="bh-qvent" value="0" min="0" step="0.01">
+          <span class="hint">0 если вентиляция отсутствует</span>
+        </div>
+      </div>
+
+      <div id="bh-ot-ar" class="cond">
+        <div class="g4">
+          <div class="fld">
+            <label>Суммарная отапл. площадь, м²</label>
+            <input type="number" id="bh-area" value="10000" min="0">
+          </div>
+          <div class="fld">
+            <label>Удельная теплопотеря, Вт/м²</label>
+            <input type="number" id="bh-qud" value="80" min="10" max="200">
+          </div>
+          <div class="fld">
+            <label>t внутренняя, °С</label>
+            <input type="number" id="bh-tvn" value="20">
+          </div>
+          <div class="fld">
+            <label>Q_вент, Гкал/ч</label>
+            <input type="number" id="bh-qvent2" value="0" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. Нагрузка горячего водоснабжения (ГВС)</div>
+
+      <div class="radio-tabs">
+        <input type="radio" name="bh-gvs-mode" id="bh-gvs-direct" value="direct" checked onchange="toggleBhGvs()">
+        <label for="bh-gvs-direct">Прямой ввод Q_гвс, Гкал/ч</label>
+        <input type="radio" name="bh-gvs-mode" id="bh-gvs-occ" value="occ" onchange="toggleBhGvs()">
+        <label for="bh-gvs-occ">Из числа потребителей</label>
+      </div>
+
+      <div id="bh-gvs-dir" class="g3">
+        <div class="fld">
+          <label>Q_гвс макс., Гкал/ч</label>
+          <input type="number" id="bh-qgvs" value="0.5" min="0" step="0.001">
+        </div>
+        <div class="fld">
+          <label>Коэф. использ. β (0–1)</label>
+          <input type="number" id="bh-beta" value="0.7" min="0" max="1" step="0.05">
+          <span class="hint">Среднесуточный коэф. использования</span>
+        </div>
+      </div>
+
+      <div id="bh-gvs-occ" class="cond">
+        <div class="g4">
+          <div class="fld">
+            <label>Число потребителей, чел</label>
+            <input type="number" id="bh-ncons" value="500" min="1">
+          </div>
+          <div class="fld">
+            <label>Норма ГВС, л/(чел·сут)</label>
+            <input type="number" id="bh-qnorm" value="90" min="10" max="300">
+          </div>
+          <div class="fld">
+            <label>t горячей воды, °С</label>
+            <input type="number" id="bh-tgvs" value="60">
+          </div>
+          <div class="fld">
+            <label>t холодной (зима), °С</label>
+            <input type="number" id="bh-tcold" value="5">
+          </div>
+        </div>
+        <div class="g3" style="margin-top:12px">
+          <div class="fld">
+            <label>t холодной (лето), °С</label>
+            <input type="number" id="bh-tcold-s" value="15">
+          </div>
+          <div class="fld">
+            <label>Коэф. часовой неравномерности K_ч</label>
+            <input type="number" id="bh-kch" value="2.4" min="1" max="6" step="0.1">
+            <span class="hint">Жилые: 2.4 | Обществ.: 2.5–3.0</span>
+          </div>
+          <div class="fld">
+            <label>Коэф. использ. β (0–1)</label>
+            <input type="number" id="bh-beta2" value="0.7" min="0" max="1" step="0.05">
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="g3">
+        <div class="fld">
+          <label>t горячей воды, °С (лето)</label>
+          <input type="number" id="bh-tgvs-summer" value="60">
+          <span class="hint">Для годового расчёта ГВС</span>
+        </div>
+        <div class="fld">
+          <label>t холодной воды, °С (лето)</label>
+          <input type="number" id="bh-tcold-summer" value="15">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">4. Параметры котла и газа</div>
+      <div class="g3">
+        <div class="fld">
+          <label>КПД котла η, %</label>
+          <input type="number" id="bh-eta" value="92" min="60" max="99">
+        </div>
+        <div class="fld">
+          <label>Q_нр природного газа, ккал/м³</label>
+          <input type="number" id="bh-qnr" value="8300" min="6000" max="12000">
+          <span class="hint">Типово: 8000–8600 ккал/м³</span>
+        </div>
+        <div class="fld">
+          <label>Резерв мощности котла, %</label>
+          <input type="number" id="bh-reserve" value="5" min="0" max="30">
+          <span class="hint">Запас на горячий резерв</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="calcBoiler()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('bh')">Очистить</button>
+    </div>
+
+    <!-- RESULTS BOILER -->
+    <div id="bh-results" class="results" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">Результаты — Котельная</div>
+        <div class="kpi-row" id="bh-kpi"></div>
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th style="width:32%">Параметр</th>
+              <th>Обозначение</th>
+              <th>Формула / пояснение</th>
+              <th style="text-align:right; width:22%">Значение</th>
+            </tr>
+          </thead>
+          <tbody id="bh-tbody"></tbody>
+        </table>
+        <div class="note" id="bh-note"></div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:12px;">
+          <button class="btn-pdf" onclick="exportPDF('bh')">⬇ Сохранить PDF</button>
+          <button class="btn-print" onclick="window.print()">Печать</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sec-bh -->
+
+  <!-- =============================== TAB 3: GAS PIPELINE НД =============================== -->
+  <div id="sec-gp" class="sec">
+
+    <div class="card">
+      <div class="card-title">1. Общие параметры сети</div>
+      <div class="g4">
+        <div class="fld">
+          <label>Давление на выходе ГРП, Па</label>
+          <input type="number" id="gp-pin" value="2000" min="100" max="4900" oninput="updateDpDop()">
+          <span class="hint">После регулятора давления</span>
+        </div>
+        <div class="fld">
+          <label>Мин. давление у потребителя, Па</label>
+          <input type="number" id="gp-pmin" value="1200" min="100" max="4800" oninput="updateDpDop()">
+          <span class="hint">На вводе в здание / у прибора</span>
+        </div>
+        <div class="fld">
+          <label>ΔP_доп = P_ГРП − P_мин, Па</label>
+          <input type="text" id="gp-dp-dop" readonly value="800 Па" style="background:var(--blue-light);color:var(--blue-txt);font-weight:700">
+          <span class="hint">Допустимые потери в распредсети</span>
+        </div>
+        <div class="fld">
+          <label>Надбавка на мест. сопротивления, %</label>
+          <input type="number" id="gp-beta" value="10" min="0" max="50">
+          <span class="hint">Тройники, повороты, арматура. Типово: 10–20%</span>
+        </div>
+      </div>
+      <div class="g3" style="margin-top:12px">
+        <div class="fld">
+          <label>Плотность газа ρ, кг/м³</label>
+          <input type="number" id="gp-rho" value="0.73" min="0.5" max="2.0" step="0.01">
+          <span class="hint">Природный газ: 0.68–0.80</span>
+        </div>
+        <div class="fld">
+          <label>Кинем. вязкость ν, 10⁻⁶ м²/с</label>
+          <input type="number" id="gp-nu" value="14.5" min="5" max="30" step="0.5">
+          <span class="hint">При +20°С ≈ 14.5 × 10⁻⁶ м²/с</span>
+        </div>
+        <div class="fld">
+          <label>Доп. скорость газа v_доп, м/с</label>
+          <input type="number" id="gp-vmax" value="7" min="1" max="15" step="0.5">
+          <span class="hint">НД: ≤ 7 м/с (СН РК 4.02-42)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Участки газопровода</div>
+      <div style="overflow-x:auto; margin-bottom:12px">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:720px">
+          <thead style="background:var(--blue-light)">
+            <tr>
+              <th class="gp-th" style="width:34px; text-align:center">#</th>
+              <th class="gp-th">Участок</th>
+              <th class="gp-th">q, м³/ч</th>
+              <th class="gp-th">l, м</th>
+              <th class="gp-th">Материал</th>
+              <th class="gp-th" style="min-width:230px">DN / типоразмер</th>
+              <th class="gp-th">d_вн, мм</th>
+              <th class="gp-th" style="width:34px"></th>
+            </tr>
+          </thead>
+          <tbody id="gp-tbody"></tbody>
+        </table>
+      </div>
+      <button onclick="addGpRow()" class="btn-clear" style="font-size:13px; padding:8px 18px">＋ Добавить участок</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="calcGasPipeline()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('gp')">Очистить</button>
+    </div>
+
+    <!-- RESULTS GAS PIPELINE -->
+    <div id="gp-results" class="results" style="margin-top:20px">
+      <div class="card">
+        <div class="card-title">Результаты — Газопровод низкого давления</div>
+        <div class="kpi-row" id="gp-kpi"></div>
+        <div style="overflow-x:auto">
+          <table class="res-table" style="min-width:900px">
+            <thead>
+              <tr>
+                <th>Участок</th>
+                <th>q, м³/ч</th>
+                <th>l, м</th>
+                <th>d_вн, мм</th>
+                <th>v, м/с</th>
+                <th>Re</th>
+                <th>λ</th>
+                <th>ΔP_л, Па</th>
+                <th>ΔP_м, Па</th>
+                <th>ΔP_уч, Па</th>
+                <th>ΔP_нак, Па</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="gp-res-tbody"></tbody>
+          </table>
+        </div>
+        <div class="note" id="gp-note"></div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:12px;">
+          <button class="btn-pdf" onclick="exportPDF('gp')">⬇ Сохранить PDF</button>
+          <button class="btn-print" onclick="window.print()">Печать</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sec-gp -->
+
+  <!-- =============================== TAB 4: GAS PIPELINE СД =============================== -->
+  <div id="sec-sd" class="sec">
+
+    <div class="card">
+      <div class="card-title">1. Общие параметры сети</div>
+      <div class="g4">
+        <div class="fld">
+          <label>Давление на вводе P_вх, МПа (изб.)</label>
+          <input type="number" id="sd-pin" value="0.3" min="0.005" max="0.6" step="0.005" oninput="updateSdDpDop()">
+          <span class="hint">Среднее давление: 0.005 – 0.6 МПа</span>
+        </div>
+        <div class="fld">
+          <label>Мин. давление P_мин, МПа (изб.)</label>
+          <input type="number" id="sd-pmin" value="0.1" min="0.001" max="0.595" step="0.005" oninput="updateSdDpDop()">
+          <span class="hint">Мин. допустимое у потребителя</span>
+        </div>
+        <div class="fld">
+          <label>ΔP²_доп = P_вх² − P_мин², МПа²</label>
+          <input type="text" id="sd-dp2-dop" readonly style="background:var(--blue-light);color:var(--blue-txt);font-weight:700">
+          <span class="hint">Допустимая разность квадратов давлений</span>
+        </div>
+        <div class="fld">
+          <label>Надбавка на мест. сопротивления, %</label>
+          <input type="number" id="sd-beta" value="10" min="0" max="50">
+          <span class="hint">Тройники, повороты, арматура. Типово: 10–20%</span>
+        </div>
+      </div>
+      <div class="g3" style="margin-top:12px">
+        <div class="fld">
+          <label>Плотность газа ρ₀, кг/м³</label>
+          <input type="number" id="sd-rho" value="0.73" min="0.5" max="2.0" step="0.01">
+          <span class="hint">При станд. условиях: 0.68–0.80</span>
+        </div>
+        <div class="fld">
+          <label>Кинем. вязкость ν, 10⁻⁶ м²/с</label>
+          <input type="number" id="sd-nu" value="14.5" min="5" max="30" step="0.5">
+          <span class="hint">При +20°С ≈ 14.5 × 10⁻⁶ м²/с</span>
+        </div>
+        <div class="fld">
+          <label>Доп. скорость газа v_доп, м/с</label>
+          <input type="number" id="sd-vmax" value="15" min="1" max="25" step="0.5">
+          <span class="hint">СД: ≤ 15 м/с (СН РК 4.02-42)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Участки газопровода</div>
+      <div style="overflow-x:auto; margin-bottom:12px">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:720px">
+          <thead style="background:var(--blue-light)">
+            <tr>
+              <th class="gp-th" style="width:34px; text-align:center">#</th>
+              <th class="gp-th">Участок</th>
+              <th class="gp-th">q, м³/ч</th>
+              <th class="gp-th">l, м</th>
+              <th class="gp-th">Материал</th>
+              <th class="gp-th" style="min-width:230px">DN / типоразмер</th>
+              <th class="gp-th">d_вн, мм</th>
+              <th class="gp-th" style="width:34px"></th>
+            </tr>
+          </thead>
+          <tbody id="sd-tbody"></tbody>
+        </table>
+      </div>
+      <button onclick="addSdRow()" class="btn-clear" style="font-size:13px; padding:8px 18px">＋ Добавить участок</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="calcSDPipeline()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('sd')">Очистить</button>
+    </div>
+
+    <!-- RESULTS СД PIPELINE -->
+    <div id="sd-results" class="results" style="margin-top:20px">
+      <div class="card">
+        <div class="card-title">Результаты — Газопровод среднего давления</div>
+        <div class="kpi-row" id="sd-kpi"></div>
+        <div style="overflow-x:auto">
+          <table class="res-table" style="min-width:1020px">
+            <thead>
+              <tr>
+                <th>Участок</th>
+                <th>q, м³/ч</th>
+                <th>l, м</th>
+                <th>d, мм</th>
+                <th>P_вх, МПа</th>
+                <th>P_вых, МПа</th>
+                <th>ΔP, МПа</th>
+                <th>ΔP², МПа²</th>
+                <th>v, м/с</th>
+                <th>Re</th>
+                <th>λ</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="sd-res-tbody"></tbody>
+          </table>
+        </div>
+        <div class="note" id="sd-note"></div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:12px;">
+          <button class="btn-pdf" onclick="exportPDF('sd')">⬇ Сохранить PDF</button>
+          <button class="btn-print" onclick="window.print()">Печать</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sec-sd -->
+
+  <!-- =============================== TAB 5: INTERNAL GAS PIPELINE =============================== -->
+  <div id="sec-ig" class="sec">
+
+    <div class="card">
+      <div class="card-title">1. Общие параметры</div>
+      <div class="g4">
+        <div class="fld">
+          <label>Давление на вводе в здание, Па</label>
+          <input type="number" id="ig-pin" value="1800" min="100" max="4900" oninput="updateIgDpDop()">
+          <span class="hint">Мин. давление в точке подключения к НД сети</span>
+        </div>
+        <div class="fld">
+          <label>Мин. давление у прибора, Па</label>
+          <input type="number" id="ig-pmin" value="1274" min="100" max="4800" oninput="updateIgDpDop()">
+          <span class="hint">1274 Па ≈ 130 мм вод. ст. — по паспорту прибора</span>
+        </div>
+        <div class="fld">
+          <label>ΔP_доп = P_ввод − P_мин, Па</label>
+          <input type="text" id="ig-dp-dop" readonly style="background:var(--blue-light);color:var(--blue-txt);font-weight:700">
+          <span class="hint">Допустимые потери в внутр. газопроводе</span>
+        </div>
+        <div class="fld">
+          <label>Надбавка на мест. сопротивления, %</label>
+          <input type="number" id="ig-beta" value="15" min="0" max="50">
+          <span class="hint">Тройники, краны, отводы. Типово: 15–25%</span>
+        </div>
+      </div>
+      <div class="g3" style="margin-top:12px">
+        <div class="fld">
+          <label>Плотность газа ρ, кг/м³</label>
+          <input type="number" id="ig-rho" value="0.73" min="0.5" max="2.0" step="0.01">
+        </div>
+        <div class="fld">
+          <label>Кинем. вязкость ν, 10⁻⁶ м²/с</label>
+          <input type="number" id="ig-nu" value="14.5" min="5" max="30" step="0.5">
+        </div>
+        <div class="fld">
+          <label>Доп. скорость газа v_доп, м/с</label>
+          <input type="number" id="ig-vmax" value="7" min="1" max="15" step="0.5">
+          <span class="hint">НД внутри здания: ≤ 7 м/с (СН РК 4.02-42)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Участки газопровода (от ввода до приборов)</div>
+      <div class="info" style="margin-bottom:12px">
+        Задайте участки по порядку от ввода в здание до каждого прибора. Для ответвлений к приборам укажите тип прибора — программа проверит остаточное давление P_ост = P_ввод − ΔP_нак ≥ P_мин_прибора.
+      </div>
+      <div style="overflow-x:auto; margin-bottom:12px">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:820px">
+          <thead style="background:var(--blue-light)">
+            <tr>
+              <th class="gp-th" style="width:28px; text-align:center">#</th>
+              <th class="gp-th">Участок</th>
+              <th class="gp-th">q, м³/ч</th>
+              <th class="gp-th">l, м</th>
+              <th class="gp-th">Материал</th>
+              <th class="gp-th" style="min-width:200px">DN / типоразмер</th>
+              <th class="gp-th">d_вн, мм</th>
+              <th class="gp-th" style="min-width:160px">Прибор / P_мин, Па</th>
+              <th class="gp-th" style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="ig-tbody"></tbody>
+        </table>
+      </div>
+      <button onclick="addIgRow()" class="btn-clear" style="font-size:13px; padding:8px 18px">＋ Добавить участок</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="calcIGPipeline()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('ig')">Очистить</button>
+    </div>
+
+    <!-- RESULTS INTERNAL GAS PIPELINE -->
+    <div id="ig-results" class="results" style="margin-top:20px">
+      <div class="card">
+        <div class="card-title">Результаты — Внутренний газопровод</div>
+        <div class="kpi-row" id="ig-kpi"></div>
+        <div style="overflow-x:auto">
+          <table class="res-table" style="min-width:1250px">
+            <thead>
+              <tr>
+                <th>Участок</th>
+                <th>Прибор</th>
+                <th>q, м³/ч</th>
+                <th>l, м</th>
+                <th>d, мм</th>
+                <th>v, м/с</th>
+                <th>Re</th>
+                <th>λ</th>
+                <th>ΔP_л, Па</th>
+                <th>ΔP_м, Па</th>
+                <th>ΔP_уч, Па</th>
+                <th>ΔP_нак, Па</th>
+                <th>P_ост, Па</th>
+                <th>P_мин, Па</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="ig-res-tbody"></tbody>
+          </table>
+        </div>
+        <div class="note" id="ig-note"></div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:12px;">
+          <button class="btn-pdf" onclick="exportPDF('ig')">⬇ Сохранить PDF</button>
+          <button class="btn-print" onclick="window.print()">Печать</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sec-ig -->
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// CLIMATE DATA  (СП РК 2.04-107-2013, приложение)
+// ─────────────────────────────────────────────────────────────────
+const CITIES = [
+  { n:"Нур-Султан (Астана)",  tnn:-38, tsr:-9.4,  days:215 },
+  { n:"Алматы",               tnn:-25, tsr:-3.1,  days:175 },
+  { n:"Шымкент",              tnn:-18, tsr:-0.4,  days:150 },
+  { n:"Актобе",               tnn:-35, tsr:-8.7,  days:210 },
+  { n:"Атырау",               tnn:-30, tsr:-5.2,  days:182 },
+  { n:"Актау",                tnn:-17, tsr: 0.3,  days:150 },
+  { n:"Павлодар",             tnn:-39, tsr:-9.6,  days:215 },
+  { n:"Усть-Каменогорск",     tnn:-41, tsr:-9.0,  days:210 },
+  { n:"Тараз",                tnn:-22, tsr:-1.5,  days:170 },
+  { n:"Костанай",             tnn:-36, tsr:-10.0, days:215 },
+  { n:"Уральск",              tnn:-32, tsr:-8.2,  days:205 },
+  { n:"Петропавловск",        tnn:-40, tsr:-10.4, days:220 },
+  { n:"Семей",                tnn:-40, tsr:-8.9,  days:210 },
+  { n:"Кызылорда",            tnn:-26, tsr:-2.4,  days:165 },
+  { n:"Балхаш",               tnn:-30, tsr:-4.5,  days:185 },
+  { n:"Жезказган",            tnn:-35, tsr:-7.5,  days:200 },
+  { n:"Экибастуз",            tnn:-38, tsr:-9.8,  days:215 },
+  { n:"Талдыкорган",          tnn:-28, tsr:-4.6,  days:180 },
+  { n:"Туркестан",            tnn:-20, tsr:-0.8,  days:155 },
+  { n:"Риддер",               tnn:-42, tsr:-9.5,  days:215 },
+  { n:"Кокшетау",             tnn:-36, tsr:-9.4,  days:210 },
+  { n:"Темиртау",             tnn:-36, tsr:-9.5,  days:215 },
+  { n:"Жанаозен",             tnn:-16, tsr: 0.5,  days:148 },
+  { n:"Щучинск",              tnn:-37, tsr:-9.6,  days:215 },
+];
+
+// ─────────────────────────────────────────────────────────────────
+// SIMULTANEOUS USE COEFFICIENTS (К_од)  — СП 402.1325800
+// Interpolation between table values
+// ─────────────────────────────────────────────────────────────────
+const KOD_STOVE = [
+  [1,1.0],[2,0.65],[3,0.55],[4,0.45],[5,0.40],
+  [6,0.35],[9,0.30],[12,0.27],[15,0.25],[20,0.23],
+  [30,0.22],[40,0.21],[50,0.20],[100,0.18],[999,0.17]
+];
+const KOD_WHF = [  // проточный водонагреватель
+  [1,1.0],[2,0.72],[3,0.62],[4,0.56],[5,0.52],
+  [6,0.50],[7,0.48],[8,0.46],[10,0.44],[15,0.38],
+  [20,0.36],[30,0.33],[40,0.31],[50,0.29],[999,0.25]
+];
+const KOD_BOILER = [  // индивидуальный газовый котёл (СН РК 4.02-07, Табл. А.2)
+  [1,1.00],[2,1.00],[3,0.95],[5,0.90],[8,0.87],
+  [10,0.85],[15,0.82],[20,0.80],[30,0.76],[40,0.73],
+  [50,0.71],[100,0.68],[999,0.65]
+];
+
+// ─────────────────────────────────────────────────────────────────
+// PIPE TABLES  (внутренние диаметры, мм)
+// ─────────────────────────────────────────────────────────────────
+const STEEL_PIPES = [   // ГОСТ 3262 (водогазопроводные трубы)
+  {dn:15, d:15.7}, {dn:20, d:21.2}, {dn:25, d:27.1}, {dn:32, d:35.9},
+  {dn:40, d:41.0}, {dn:50, d:53.0}, {dn:65, d:67.5}, {dn:80, d:80.5},
+  {dn:100,d:105.0},{dn:125,d:131.0},{dn:150,d:156.0},{dn:200,d:207.0},
+];
+const PE_PIPES = [      // ГОСТ Р 50838 SDR11 (полиэтиленовые трубы)
+  {dn:20, d:16.0}, {dn:25, d:20.4}, {dn:32, d:26.0}, {dn:40, d:32.6},
+  {dn:50, d:40.8}, {dn:63, d:51.4}, {dn:75, d:61.4}, {dn:90, d:73.6},
+  {dn:110,d:90.0}, {dn:125,d:102.2},{dn:160,d:130.8},{dn:200,d:163.6},
+];
+
+// Типы газовых приборов и минимальное давление (Па) по СН РК 4.02-07-2013
+const IG_APPLIANCES = [
+  { val: '',      label: '— нет (стояк/магистраль) —', pmin: 0    },
+  { val: 'stove', label: 'Плита газовая 4-конф.',       pmin: 1274 },
+  { val: 'whf',   label: 'Проточный водонагреватель',   pmin: 1274 },
+  { val: 'whs',   label: 'Накопит. водонагреватель',    pmin: 1274 },
+  { val: 'boil',  label: 'Котёл индивидуальный',        pmin: 1274 },
+];
+
+function igAppOpts(selVal) {
+  return IG_APPLIANCES.map(a =>
+    `<option value="${a.val}"${a.val===selVal?' selected':''}>${a.label}</option>`
+  ).join('');
+}
+
+function getKod(n, table) {
+  if (n <= table[0][0]) return table[0][1];
+  if (n >= table[table.length-1][0]) return table[table.length-1][1];
+  for (let i = 0; i < table.length-1; i++) {
+    if (n >= table[i][0] && n <= table[i+1][0]) {
+      const t = (n - table[i][0]) / (table[i+1][0] - table[i][0]);
+      return table[i][1] + t * (table[i+1][1] - table[i][1]);
+    }
+  }
+  return table[table.length-1][1];
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ANNUAL NORMS (годовые нормы расхода газа бытовыми приборами)
+// СН РК 4.02-07-2013, Таблица А.1
+// ─────────────────────────────────────────────────────────────────
+const NORM_COOKING   = 70;   // м³/(чел·год)  плита
+const NORM_WHF       = 230;  // м³/(чел·год)  проточный водонагреватель
+const NORM_WHS       = 130;  // м³/(чел·год)  накопительный водонагреватель
+
+const NOM_STOVE  = 1.2; // м³/ч — номинальный расход плиты (4 конф.)
+const NOM_WHF    = 2.0; // м³/ч — проточный вод.нагреватель
+const NOM_WHS    = 0.7; // м³/ч — накопительный вод.нагреватель
+
+// ─────────────────────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────────────────────
+function $ (id) { return document.getElementById(id); }
+function v (id) { return parseFloat($(id).value) || 0; }
+
+function switchTab(t) {
+  const tabs = ['res','bh','gp','sd','ig'];
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>
+    b.classList.toggle('active', tabs[i]===t));
+  tabs.forEach(id => $('sec-'+id).classList.toggle('active', id===t));
+}
+
+function toggleBoiler() {
+  const on = $('r-boiler').checked;
+  $('r-heat-block').classList.toggle('show', on);
+}
+function updateRes(changed) {
+  // Проточный и накопительный водонагреватель — взаимоисключающие приборы
+  if (changed === 'flow' && $('r-gvn-flow').checked) {
+    $('r-gvn-stor').checked = false;
+  } else if (changed === 'stor' && $('r-gvn-stor').checked) {
+    $('r-gvn-flow').checked = false;
+  }
+}
+
+function toggleBhOt() {
+  const area = document.querySelector('input[name="bh-ot-mode"]:checked').value === 'area';
+  $('bh-ot-ar').classList.toggle('show', area);
+  $('bh-ot-dir').style.display = area ? 'none' : '';
+}
+function toggleBhGvs() {
+  const occ = document.querySelector('input[name="bh-gvs-mode"]:checked').value === 'occ';
+  $('bh-gvs-occ').classList.toggle('show', occ);
+  $('bh-gvs-dir').style.display = occ ? 'none' : '';
+}
+
+function clearResults(tab) {
+  const map = {res:'res-results',bh:'bh-results',gp:'gp-results',sd:'sd-results',ig:'ig-results'};
+  if (map[tab]) $(map[tab]).classList.remove('show');
+}
+
+function fmt(n, d=2) {
+  if (n===null||n===undefined||isNaN(n)) return '—';
+  return n.toLocaleString('ru-RU', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+// ─────────────────────────────────────────────────────────────────
+// POPULATE CITY SELECTS
+// ─────────────────────────────────────────────────────────────────
+function populateCities() {
+  ['r-city','bh-city'].forEach(id => {
+    const sel = $(id);
+    CITIES.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.n; o.textContent = c.n;
+      sel.appendChild(o);
+    });
+  });
+}
+
+function fillClimate(prefix) {
+  const sel = prefix==='r' ? $('r-city').value : $('bh-city').value;
+  const c = CITIES.find(x => x.n === sel);
+  if (!c) return;
+  if (prefix==='r') {
+    $('r-tnn').value = c.tnn;
+    $('r-tsr').value = c.tsr;
+    $('r-ndays').value = c.days;
+  } else {
+    $('bh-tnn').value = c.tnn;
+    $('bh-tsr').value = c.tsr;
+    $('bh-ndays').value = c.days;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CALCULATION: RESIDENTIAL
+// ─────────────────────────────────────────────────────────────────
+function calcResidential() {
+  const nkv   = v('r-nkv');
+  const nchel = v('r-nchel');
+  const N     = nkv * nchel;  // общее число жителей
+  const qnr   = v('r-qnr');
+
+  const hasStove = $('r-plita').checked;
+  const hasWhf   = $('r-gvn-flow').checked;
+  const hasWhs   = $('r-gvn-stor').checked;
+  const hasBoil  = $('r-boiler').checked;
+
+  let rows = [];
+  let q_god = 0;
+  let q_chas = 0;
+
+  // Коэффициенты одновременности
+  const kod_st  = getKod(nkv, KOD_STOVE);
+  const kod_whf = getKod(nkv, KOD_WHF);
+
+  // ── Плита ──
+  if (hasStove) {
+    const ann = N * NORM_COOKING;  // м³/год
+    const hr  = kod_st * nkv * NOM_STOVE;   // м³/ч
+    q_god  += ann;
+    q_chas += hr;
+    rows.push({
+      cat: 'Газовая плита (4-конф.)',
+      items: [
+        ['Число жителей N', 'чел', fmt(N,0)],
+        ['Норма расхода (СН РК 4.02-07, А.1)', 'м³/(чел·год)', NORM_COOKING],
+        ['Годовой расход  Q_год = N × n_плита', 'м³/год', fmt(ann)],
+        ['К_одновременности (табл. А.2)', '—', fmt(kod_st,3)],
+        ['Макс. часовой расход  q_ч = К_од × n_кв × q_ном', 'м³/ч', fmt(hr)],
+      ]
+    });
+  }
+
+  // ── Проточный водонагреватель ──
+  if (hasWhf) {
+    const ann = N * NORM_WHF;
+    const hr  = kod_whf * nkv * NOM_WHF;
+    q_god  += ann;
+    q_chas += hr;
+    rows.push({
+      cat: 'Проточный водонагреватель',
+      items: [
+        ['Норма расхода (СН РК 4.02-07, А.1)', 'м³/(чел·год)', NORM_WHF],
+        ['Годовой расход  Q_год = N × n_гвн', 'м³/год', fmt(ann)],
+        ['К_одновременности', '—', fmt(kod_whf,3)],
+        ['Макс. часовой расход', 'м³/ч', fmt(hr)],
+      ]
+    });
+  }
+
+  // ── Накопительный водонагреватель ──
+  if (hasWhs) {
+    const ann = N * NORM_WHS;
+    const hr  = 0.5 * nkv * NOM_WHS;  // К_од ≈ 0.5 для накопительных
+    q_god  += ann;
+    q_chas += hr;
+    rows.push({
+      cat: 'Накопительный водонагреватель',
+      items: [
+        ['Норма расхода (СН РК 4.02-07, А.1)', 'м³/(чел·год)', NORM_WHS],
+        ['Годовой расход  Q_год = N × n_нвн', 'м³/год', fmt(ann)],
+        ['К_одновременности', '—', fmt(0.5,2)],
+        ['Макс. часовой расход', 'м³/ч', fmt(hr)],
+      ]
+    });
+  }
+
+  // ── Индивидуальный котёл ──
+  let qot_ann_m3 = 0, qot_hr_m3 = 0;
+  let areaTotal = 0, qot_max_kkal = 0;
+  if (hasBoil) {
+    const area  = v('r-area');   // м² на квартиру
+    const qud   = v('r-qud');   // Вт/м²
+    const eta   = v('r-eta') / 100;
+    const tvn   = v('r-tvn');
+    const tnn   = v('r-tnn');
+    const tsr   = v('r-tsr');
+    const ndays = v('r-ndays');
+
+    areaTotal = area * nkv;     // общая площадь
+
+    // Макс. тепловая нагрузка [Вт] → [ккал/ч] (1 Вт = 0.86 ккал/ч)
+    const qot_max_w = qud * areaTotal;          // Вт
+    qot_max_kkal    = qot_max_w * 0.86;         // ккал/ч
+    const kod_boiler = getKod(nkv, KOD_BOILER);
+    qot_hr_m3       = kod_boiler * qot_max_kkal / (qnr * eta); // м³/ч
+
+    // Годовой расход тепла [ккал/год]
+    const beta_heat = (tvn - tsr) / (tvn - tnn); // коэф. снижения по температуре
+    const qot_ann_kkal = qot_max_kkal * 24 * ndays * beta_heat;  // ккал/год
+    qot_ann_m3 = qot_ann_kkal / (qnr * eta);    // м³/год
+
+    q_chas += qot_hr_m3;
+    q_god  += qot_ann_m3;
+
+    rows.push({
+      cat: 'Отопление (индивидуальный котёл)',
+      items: [
+        ['Отапл. площадь всего  A = n_кв × A_кв', 'м²', fmt(areaTotal,0)],
+        ['Удельная теплопотеря q_уд', 'Вт/м²', fmt(qud,0)],
+        ['Макс. тепл. нагрузка  Q_от = q_уд × A', 'кВт', fmt(qot_max_w/1000)],
+        ['То же в ккал/ч  (× 0.86)', 'ккал/ч', fmt(qot_max_kkal,0)],
+        ['КПД котла η', '%', fmt(eta*100,0)],
+        ['К_одновременности котлов  К_од (СН РК 4.02-07, Табл. А.2)', '—', fmt(kod_boiler,3)],
+        ['Макс. часовой расход газа  B_ч = К_од × Q_от / (Q_нр × η)', 'м³/ч', fmt(qot_hr_m3)],
+        ['t внутренняя / t расч. нар. / t ср. отоп.', '°С', `${tvn} / ${tnn} / ${tsr}`],
+        ['Продолжительность отоп. периода', 'сут', fmt(ndays,0)],
+        ['Коэф. β = (t_вн−t_ср)/(t_вн−t_нн)', '—', fmt(beta_heat,3)],
+        ['Годовой расход тепла  Q_год = Q_от × 24 × n × β', 'Гкал/год', fmt(qot_ann_kkal/1e6)],
+        ['Годовой расход газа  B_год = Q_год / (Q_нр × η)', 'м³/год', fmt(qot_ann_m3,0)],
+      ]
+    });
+  }
+
+  // ── Итог ──
+  const q_god_tys = q_god / 1000;
+
+  // KPI
+  const kpiEl = $('res-kpi');
+  kpiEl.innerHTML = `
+    <div class="kpi"><div class="v">${fmt(q_chas)}</div><div class="u">м³/ч</div><div class="lbl">Макс.-часовой расход</div></div>
+    <div class="kpi"><div class="v">${fmt(q_god,0)}</div><div class="u">м³/год</div><div class="lbl">Годовой расход</div></div>
+    <div class="kpi"><div class="v">${fmt(q_god_tys)}</div><div class="u">тыс.м³/год</div><div class="lbl">Годовой расход</div></div>
+    <div class="kpi"><div class="v">${fmt(q_god/nkv,0)}</div><div class="u">м³/(кв·год)</div><div class="lbl">На одну квартиру</div></div>
+  `;
+
+  // TABLE
+  const tbody = $('res-tbody');
+  tbody.innerHTML = '';
+
+  rows.forEach(r => {
+    const sepRow = tbody.insertRow();
+    sepRow.className = 'sep';
+    sepRow.innerHTML = `<td colspan="3">${r.cat}</td>`;
+    r.items.forEach(([p, u, val]) => {
+      const tr = tbody.insertRow();
+      tr.innerHTML = `<td>${p}</td><td>${u}</td><td style="text-align:right"><b>${val}</b></td>`;
+    });
+  });
+
+  // TOTAL ROW
+  const totRow = tbody.insertRow();
+  totRow.className = 'total';
+  totRow.innerHTML = `
+    <td><b>ИТОГО</b></td>
+    <td>м³/ч / м³/год</td>
+    <td style="text-align:right">
+      q_ч = <b>${fmt(q_chas)}</b><br>
+      Q_год = <b>${fmt(q_god,0)}</b> = <b>${fmt(q_god_tys)}</b> тыс.
+    </td>
+  `;
+
+  const noteEl = $('res-note');
+  noteEl.innerHTML = `
+    <b>Нормативная база:</b> СН РК 4.02-07-2013 «Газоснабжение», Приложение А.<br>
+    <b>Коэффициенты одновременности:</b> по таблице А.2 СН РК 4.02-07-2013 (аналогично СП 402.1325800.2018).<br>
+    <b>Годовые нормы:</b> плита — ${NORM_COOKING} м³/(чел·год), проточный водонагреватель — ${NORM_WHF} м³/(чел·год),
+    накопительный — ${NORM_WHS} м³/(чел·год).<br>
+    <b>Внимание:</b> расчёт является предварительным. Для проекта необходимо уточнить характеристики приборов по паспортам.
+  `;
+
+  $('res-results').classList.add('show');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CALCULATION: BOILER HOUSE
+// ─────────────────────────────────────────────────────────────────
+function calcBoiler() {
+  const tnn   = v('bh-tnn');
+  const tsr   = v('bh-tsr');
+  const ndays = v('bh-ndays');
+  const eta   = v('bh-eta') / 100;
+  const qnr   = v('bh-qnr');           // ккал/м³
+  const qnr_gcal = qnr / 1e6;          // Гкал/м³
+  const reserve = v('bh-reserve') / 100;
+
+  // ── Отопление ──
+  const otMode = document.querySelector('input[name="bh-ot-mode"]:checked').value;
+  let qot, qvent, tvn_bh;
+
+  if (otMode === 'direct') {
+    qot   = v('bh-qot');    // Гкал/ч
+    qvent = v('bh-qvent');  // Гкал/ч
+    tvn_bh = 20;            // не используется в прямом вводе
+  } else {
+    const area = v('bh-area');
+    const qud  = v('bh-qud');  // Вт/м²
+    tvn_bh = v('bh-tvn');
+    qot   = area * qud / 1e9 * 860;  // Гкал/ч: (Вт/м² × м²) → Вт → ккал/ч (/1.163e6 Гкал/ч)
+    // более точно: [Вт] × 0.86/1e6 = Гкал/ч
+    qot   = area * qud * 0.86 / 1e6;  // Гкал/ч
+    qvent = v('bh-qvent2');
+  }
+
+  // ── ГВС ──
+  const gvsMode = document.querySelector('input[name="bh-gvs-mode"]:checked').value;
+  let qgvs, beta;
+  let gvs_N=0, gvs_norm=0, gvs_tg=60, gvs_tc=5, gvs_tg_s=60, gvs_tc_s=15, gvs_kch=2.4;
+
+  if (gvsMode === 'direct') {
+    qgvs = v('bh-qgvs');  // Гкал/ч
+    beta = v('bh-beta');
+    gvs_tg   = 60; gvs_tc   = 5;
+    gvs_tg_s = v('bh-tgvs-summer'); gvs_tc_s = v('bh-tcold-summer');
+  } else {
+    gvs_N    = v('bh-ncons');
+    gvs_norm = v('bh-qnorm');   // л/(чел·сут)
+    gvs_tg   = v('bh-tgvs');
+    gvs_tc   = v('bh-tcold');
+    gvs_tg_s = v('bh-tgvs-summer');
+    gvs_tc_s = v('bh-tcold-summer');
+    gvs_kch  = v('bh-kch');
+    beta     = v('bh-beta2');
+
+    // G_max [л/ч] = N × q_сут × K_ч / 24
+    // Q_гвс_max [ккал/ч] = G_max × (t_г - t_хл)
+    // Q_гвс_max [Гкал/ч] = N × q_сут × K_ч / 24 × (t_г - t_хл) / 1e6
+    qgvs = gvs_N * gvs_norm * gvs_kch / 24 * (gvs_tg - gvs_tc) / 1e6; // Гкал/ч
+  }
+
+  // ── Суммарная нагрузка (максимум) ──
+  const qtotal_max = qot + qvent + qgvs;
+  const qtotal_with_reserve = qtotal_max * (1 + reserve);
+
+  // ── Макс. часовой расход газа ──
+  const bmax = qtotal_with_reserve / (qnr_gcal * eta);  // м³/ч
+
+  // ── Годовые расходы тепла ──
+  const tvn = 20;  // расчётная внутренняя (для отопительного уравнения)
+
+  // Отопление: Q_от_год = Q_от × 24 × n_от × (t_вн - t_ср) / (t_вн - t_нн)
+  const beta_heat = (tvn - tsr) / (tvn - tnn);
+  const qot_ann   = qot * 24 * ndays * beta_heat;   // Гкал/год
+
+  // Вентиляция: аналогично отоплению
+  const qvent_ann = qvent * 24 * ndays * beta_heat;  // Гкал/год
+
+  // ГВС годовой:
+  // Зима: Q_гвс × 24 × n_от × β
+  // Лето: Q_гвс × (t_г - t_хл_лето)/(t_г - t_хл_зима) × 24 × (365 - n_от) × β
+  const dt_winter = gvs_tg - gvs_tc;
+  const dt_summer = gvs_tg_s - gvs_tc_s;
+  const qgvs_summer_ratio = (dt_winter > 0) ? dt_summer / dt_winter : 1;
+
+  const qgvs_ann_winter = qgvs * 24 * ndays * beta;
+  const qgvs_ann_summer = qgvs * qgvs_summer_ratio * 24 * (365 - ndays) * beta;
+  const qgvs_ann        = qgvs_ann_winter + qgvs_ann_summer;
+
+  const qtotal_ann = qot_ann + qvent_ann + qgvs_ann;
+
+  // ── Годовой расход газа ──
+  const bann = qtotal_ann / (qnr_gcal * eta);  // м³/год
+  const bann_tys = bann / 1000;                // тыс.м³/год
+
+  // Расход по статьям
+  const bot_ann   = qot_ann   / (qnr_gcal * eta);
+  const bvent_ann = qvent_ann / (qnr_gcal * eta);
+  const bgvs_ann  = qgvs_ann  / (qnr_gcal * eta);
+
+  // ── RENDER ──
+  const kpiEl = $('bh-kpi');
+  kpiEl.innerHTML = `
+    <div class="kpi"><div class="v">${fmt(bmax)}</div><div class="u">м³/ч</div><div class="lbl">Макс.-часовой расход</div></div>
+    <div class="kpi"><div class="v">${fmt(bann_tys)}</div><div class="u">тыс.м³/год</div><div class="lbl">Годовой расход</div></div>
+    <div class="kpi"><div class="v">${fmt(qtotal_max,3)}</div><div class="u">Гкал/ч</div><div class="lbl">Суммарная нагрузка</div></div>
+    <div class="kpi"><div class="v">${fmt(qtotal_ann,1)}</div><div class="u">Гкал/год</div><div class="lbl">Годовое теплопотребление</div></div>
+  `;
+
+  const rows = [];
+
+  // Header: climate
+  rows.push(['sep', 'Климатические данные', '', '', '']);
+  rows.push(['',   't расчётная наружная (t₅)', 't_нн', 'по СП РК 2.04-107', `${tnn} °С`]);
+  rows.push(['',   't средняя за отоп. период', 't_ср', 'по СП РК 2.04-107', `${tsr} °С`]);
+  rows.push(['',   'Продолжительность отоп. периода', 'n_от', 'по СП РК 2.04-107', `${ndays} сут`]);
+  rows.push(['',   'Число суток вне отоп. сезона', '365 − n_от', '', `${365-ndays} сут`]);
+  rows.push(['',   'Коэффициент β_от = (t_вн − t_ср)/(t_вн − t_нн)', 'β_от', '', fmt(beta_heat,4)]);
+
+  // Heating load
+  rows.push(['sep', 'Нагрузка отопления', '', '', '']);
+  if (otMode === 'area') {
+    rows.push(['', 'Отапл. площадь', 'A', '', `${fmt(v('bh-area'),0)} м²`]);
+    rows.push(['', 'Удельная теплопотеря', 'q_уд', '', `${v('bh-qud')} Вт/м²`]);
+  }
+  rows.push(['', 'Макс. тепл. нагрузка отопления', 'Q_от', 'Гкал/ч', fmt(qot,4)]);
+  rows.push(['', 'Годовое теплопотребление на отопление', 'Q_от_год = Q_от × 24 × n_от × β_от', 'Гкал/год', fmt(qot_ann,1)]);
+
+  // Vent
+  if (qvent > 0) {
+    rows.push(['sep', 'Нагрузка вентиляции', '', '', '']);
+    rows.push(['', 'Макс. тепл. нагрузка вентиляции', 'Q_вент', 'Гкал/ч', fmt(qvent,4)]);
+    rows.push(['', 'Годовое теплопотребление вентиляции', 'Q_вент_год = Q_вент × 24 × n_от × β_от', 'Гкал/год', fmt(qvent_ann,1)]);
+  }
+
+  // GVS
+  rows.push(['sep', 'Нагрузка ГВС', '', '', '']);
+  if (gvsMode === 'occ') {
+    rows.push(['', 'Число потребителей', 'N', 'чел', fmt(gvs_N,0)]);
+    rows.push(['', 'Норма горячей воды', 'q_сут', 'л/(чел·сут)', fmt(gvs_norm,0)]);
+    rows.push(['', 'Коэф. часовой неравномерности', 'K_ч', '—', fmt(gvs_kch,1)]);
+    rows.push(['', 'Темп. горячей/холодной воды (зима)', '', '°С', `${gvs_tg} / ${gvs_tc}`]);
+  }
+  rows.push(['', 'Макс. нагрузка ГВС', 'Q_гвс', 'Гкал/ч', fmt(qgvs,4)]);
+  rows.push(['', 'Коэф. использования ГВС β', 'β', '—', fmt(beta,2)]);
+  rows.push(['', 'Отношение ΔT лето/зима для ГВС', '(t_г−t_хл_л)/(t_г−t_хл_з)', '—', fmt(qgvs_summer_ratio,3)]);
+  rows.push(['', 'Теплопотребление ГВС (зима)', 'Q_гвс_з = Q_гвс × 24 × n_от × β', 'Гкал/год', fmt(qgvs_ann_winter,1)]);
+  rows.push(['', 'Теплопотребление ГВС (лето)', 'Q_гвс_л = Q_гвс × r_ΔT × 24 × (365−n_от) × β', 'Гкал/год', fmt(qgvs_ann_summer,1)]);
+  rows.push(['', 'Итого ГВС за год', 'Q_гвс_год', 'Гкал/год', fmt(qgvs_ann,1)]);
+
+  // Gas summary
+  rows.push(['sep', 'Параметры газа и котла', '', '', '']);
+  rows.push(['', 'Теплота сгорания природного газа', 'Q_нр', 'ккал/м³', fmt(qnr,0)]);
+  rows.push(['', 'КПД котла', 'η', '%', fmt(eta*100,0)]);
+  rows.push(['', 'Запас мощности котла', '', '%', fmt(reserve*100,0)]);
+
+  rows.push(['sep', 'Максимально-часовой расход газа', '', '', '']);
+  rows.push(['', 'Суммарная макс. тепл. нагрузка', 'Q_total = Q_от + Q_гвс + Q_вент', 'Гкал/ч', fmt(qtotal_max,4)]);
+  rows.push(['', 'С учётом запаса', 'Q_total × (1 + δ)', 'Гкал/ч', fmt(qtotal_with_reserve,4)]);
+  rows.push(['subtotal', 'Макс.-часовой расход газа  B_ч = Q_total / (Q_нр × η)', 'B_ч', 'м³/ч', fmt(bmax)]);
+
+  rows.push(['sep', 'Годовой расход газа', '', '', '']);
+  rows.push(['', 'На отопление', 'B_от_год = Q_от_год / (Q_нр × η)', 'тыс.м³/год', fmt(bot_ann/1000)]);
+  if (qvent > 0)
+    rows.push(['', 'На вентиляцию', 'B_вент_год', 'тыс.м³/год', fmt(bvent_ann/1000)]);
+  rows.push(['', 'На ГВС', 'B_гвс_год = Q_гвс_год / (Q_нр × η)', 'тыс.м³/год', fmt(bgvs_ann/1000)]);
+  rows.push(['total', 'ИТОГО годовой расход газа  B_год', 'B_год', 'тыс.м³/год', fmt(bann_tys)]);
+
+  const tbody = $('bh-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(([cls, name, sym, unit, val]) => {
+    if (cls === 'sep') {
+      const tr = tbody.insertRow(); tr.className = 'sep';
+      tr.innerHTML = `<td colspan="4">${name}</td>`;
+    } else {
+      const tr = tbody.insertRow(); if (cls) tr.className = cls;
+      tr.innerHTML = `<td>${name}</td><td>${sym}</td><td>${unit}</td><td style="text-align:right"><b>${val}</b></td>`;
+    }
+  });
+
+  $('bh-note').innerHTML = `
+    <b>Нормативная база:</b> СН РК 4.02-07-2013 «Газоснабжение», СН РК 4.02-01 «Отопление, вентиляция, кондиционирование».<br>
+    <b>Годовой расход отопления:</b> формула теплового баланса с температурной поправкой β_от = (t_вн − t_ср.от)/(t_вн − t_нн).<br>
+    <b>Годовой расход ГВС:</b> раздельно по летнему и зимнему периодам с учётом температуры холодной воды.<br>
+    <b>Климатические данные:</b> ориентировочно по СП РК 2.04-107-2013. Уточнять по актуальной редакции нормативного документа.<br>
+    <b>Внимание:</b> расчёт является предварительным (ТЭО/ПЗ). Проектная документация выполняется в полном объёме.
+  `;
+
+  $('bh-results').classList.add('show');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LOGO & DOCUMENT SETTINGS
+// ─────────────────────────────────────────────────────────────────
+let logoBase64 = null;
+
+function loadLogo(input){
+  if(!input.files||!input.files[0]) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    logoBase64=e.target.result;
+    const prev=$('logo-preview');
+    if(prev) prev.innerHTML='<img src="'+logoBase64+'">';
+    try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// PDF EXPORT
+// ─────────────────────────────────────────────────────────────────
+function exportPDF(tab) {
+  const ridMap = {res:'res-results',bh:'bh-results',gp:'gp-results',sd:'sd-results',ig:'ig-results'};
+  const rid = ridMap[tab] || 'res-results';
+  if (!$(rid).classList.contains('show')) {
+    alert('Сначала выполните расчёт, затем нажмите «Сохранить PDF».');
+    return;
+  }
+
+  const org      = $('doc-org').value.trim();
+  const obj      = $('doc-obj').value.trim();
+  const docNum   = $('doc-num').value.trim();
+  const execName = $('doc-exec').value.trim();
+  const date     = $('doc-date').value.trim() || new Date().toLocaleDateString('ru-RU');
+  const stage    = $('doc-stage').value.trim();
+
+  const subtitleMap = {
+    res: 'Жилой дом — бытовые нужды и отопление',
+    bh:  'Котельная — теплоснабжение',
+    gp:  'Газопровод низкого давления — гидравлический расчёт',
+    sd:  'Газопровод среднего давления — гидравлический расчёт',
+    ig:  'Внутренний газопровод — гидравлический расчёт',
+  };
+  const subtitle = subtitleMap[tab] || '';
+
+  const logoImg = logoBase64
+    ? `<img src="${logoBase64}" style="max-height:72px;max-width:230px;object-fit:contain;">`
+    : '';
+
+  const inputsFnMap = {res:getResInputsHTML, bh:getBhInputsHTML, gp:getGpInputsHTML, sd:getSdInputsHTML, ig:getIgInputsHTML};
+  const inputsHTML = (inputsFnMap[tab] || getResInputsHTML)();
+
+  const kpiIdMap   = {res:'res-kpi',  bh:'bh-kpi',  gp:'gp-kpi',      sd:'sd-kpi',      ig:'ig-kpi'};
+  const tbodyIdMap = {res:'res-tbody',bh:'bh-tbody', gp:'gp-res-tbody',sd:'sd-res-tbody', ig:'ig-res-tbody'};
+  const noteIdMap  = {res:'res-note', bh:'bh-note',  gp:'gp-note',     sd:'sd-note',      ig:'ig-note'};
+  const kpiId   = kpiIdMap[tab];
+  const tbodyId = tbodyIdMap[tab];
+  const noteId  = noteIdMap[tab];
+  const theadMap = {
+    res: '<tr><th style="width:55%">Статья расхода / параметр</th><th>Ед. изм.</th><th style="text-align:right;width:22%">Значение</th></tr>',
+    bh:  '<tr><th style="width:35%">Параметр</th><th>Обозначение</th><th>Формула / пояснение</th><th style="text-align:right;width:20%">Значение</th></tr>',
+    gp:  '<tr><th>Участок</th><th>q,м³/ч</th><th>l,м</th><th>d,мм</th><th>v,м/с</th><th>Re</th><th>λ</th><th>ΔPл,Па</th><th>ΔPм,Па</th><th>ΔPуч,Па</th><th>ΔPнак,Па</th><th>Статус</th></tr>',
+    sd:  '<tr><th>Участок</th><th>q,м³/ч</th><th>l,м</th><th>d,мм</th><th>P_вх,МПа</th><th>P_вых,МПа</th><th>ΔP,МПа</th><th>ΔP²,МПа²</th><th>v,м/с</th><th>Re</th><th>λ</th><th>Статус</th></tr>',
+    ig:  '<tr><th>Участок</th><th>Прибор</th><th>q,м³/ч</th><th>l,м</th><th>d,мм</th><th>v,м/с</th><th>Re</th><th>λ</th><th>ΔPл,Па</th><th>ΔPм,Па</th><th>ΔPуч,Па</th><th>ΔPнак,Па</th><th>Pост,Па</th><th>Pмин,Па</th><th>Статус</th></tr>',
+  };
+  const thead = theadMap[tab];
+
+  const kpiHTML   = $(kpiId).innerHTML;
+  const tbodyHTML = $(tbodyId).innerHTML;
+  const noteHTML  = $(noteId).innerHTML;
+
+  const appendixHTML = (tab === 'res') ? buildKodTablesHTML(v('r-nkv')) : '';
+  const html = buildPrintHTML(subtitle, org, obj, docNum, execName, date, stage, logoImg, inputsHTML, kpiHTML, thead, tbodyHTML, noteHTML, appendixHTML);
+
+  const w = window.open('', '_blank');
+  if (!w) { alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для этой страницы и повторите.'); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { try { w.focus(); w.print(); } catch(e) {} }, 700);
+}
+
+// ── Сбор исходных данных: жилой дом ──
+function getResInputsHTML() {
+  const nkv = v('r-nkv'), nchel = v('r-nchel');
+  const city = $('r-city').value || 'ручной ввод';
+  const apps = [];
+  if ($('r-plita').checked)    apps.push('Газовая плита (4-конф.)');
+  if ($('r-gvn-flow').checked) apps.push('Проточный водонагреватель');
+  if ($('r-gvn-stor').checked) apps.push('Накопительный водонагреватель');
+  if ($('r-boiler').checked)   apps.push('Индивидуальный газовый котёл');
+  let rows = [
+    ['Количество квартир',        `${nkv} шт`],
+    ['Жителей на квартиру',       `${nchel} чел`],
+    ['Всего жителей',             `${(nkv * nchel).toFixed(0)} чел`],
+    ['Климатический район',        city],
+    ['Газовые приборы',            apps.join('; ') || '—'],
+    ['Теплота сгорания Q_нр',     `${v('r-qnr')} ккал/м³`],
+  ];
+  if ($('r-boiler').checked) {
+    rows = rows.concat([
+      ['Отапл. площадь (на квартиру)', `${v('r-area')} м²`],
+      ['Удельная теплопотеря q_уд',    `${v('r-qud')} Вт/м²`],
+      ['КПД котла η',                  `${v('r-eta')} %`],
+      ['t внутренняя / t расч. нар.',  `${v('r-tvn')} °С / ${v('r-tnn')} °С`],
+      ['t ср. за отоп. период',        `${v('r-tsr')} °С`],
+      ['Продолж. отоп. периода',       `${v('r-ndays')} сут`],
+    ]);
+  }
+  return makeInputTable(rows);
+}
+
+// ── Сбор исходных данных: котельная ──
+function getBhInputsHTML() {
+  const city    = $('bh-city').value || 'ручной ввод';
+  const otMode  = document.querySelector('input[name="bh-ot-mode"]:checked').value;
+  const gvsMode = document.querySelector('input[name="bh-gvs-mode"]:checked').value;
+  let rows = [
+    ['Климатический район',           city],
+    ['t расчётная наружная t_нн',     `${v('bh-tnn')} °С`],
+    ['t средняя за отоп. период',     `${v('bh-tsr')} °С`],
+    ['Продолж. отоп. периода',        `${v('bh-ndays')} сут`],
+  ];
+  if (otMode === 'direct') {
+    rows.push(['Q_от макс. (прямой ввод)', `${v('bh-qot')} Гкал/ч`]);
+    if (v('bh-qvent') > 0) rows.push(['Q_вент макс.', `${v('bh-qvent')} Гкал/ч`]);
+  } else {
+    rows.push(['Отапливаемая площадь',        `${v('bh-area')} м²`]);
+    rows.push(['Удельная теплопотеря q_уд',   `${v('bh-qud')} Вт/м²`]);
+    if (v('bh-qvent2') > 0) rows.push(['Q_вент макс.', `${v('bh-qvent2')} Гкал/ч`]);
+  }
+  if (gvsMode === 'direct') {
+    rows.push(['Q_гвс макс. (прямой ввод)', `${v('bh-qgvs')} Гкал/ч`]);
+    rows.push(['Коэф. использования ГВС β', String(v('bh-beta'))]);
+  } else {
+    rows.push(['Число потребителей ГВС',      `${v('bh-ncons')} чел`]);
+    rows.push(['Норма горячей воды',           `${v('bh-qnorm')} л/(чел·сут)`]);
+    rows.push(['t горячей / t холодной (зима)',`${v('bh-tgvs')} °С / ${v('bh-tcold')} °С`]);
+    rows.push(['Коэф. часовой неравномерн. K_ч', String(v('bh-kch'))]);
+    rows.push(['Коэф. использования β',        String(v('bh-beta2'))]);
+  }
+  rows.push(['КПД котла η',                `${v('bh-eta')} %`]);
+  rows.push(['Теплота сгорания Q_нр',      `${v('bh-qnr')} ккал/м³`]);
+  rows.push(['Резерв мощности котла',       `${v('bh-reserve')} %`]);
+  return makeInputTable(rows);
+}
+
+function makeInputTable(rows) {
+  const th = `<tr style="background:#e8f0fe"><th style="padding:6px 9px;text-align:left;border:1px solid #bfcfff;color:#1a44a0;font-size:9pt">Параметр</th><th style="padding:6px 9px;text-align:left;border:1px solid #bfcfff;color:#1a44a0;font-size:9pt">Значение</th></tr>`;
+  const trs = rows.map(([k, vl], i) =>
+    `<tr style="background:${i%2===0?'#f9fbff':'#fff'}">
+      <td style="padding:5px 9px;border:1px solid #ddd;font-weight:600;color:#444;width:55%">${k}</td>
+      <td style="padding:5px 9px;border:1px solid #ddd">${vl}</td>
+    </tr>`).join('');
+  return `<table style="width:100%;border-collapse:collapse;font-size:9.5pt">${th}${trs}</table>`;
+}
+
+// ── Таблицы К_од для PDF ──
+function buildKodTablesHTML(nkv) {
+  const kod_st = getKod(nkv, KOD_STOVE);
+  const kod_wf = getKod(nkv, KOD_WHF);
+  const kod_bo = getKod(nkv, KOD_BOILER);
+
+  function oneTable(title, table, kodVal) {
+    const rows = table.map(([n, k], i) => {
+      const nLabel = (i === table.length - 1) ? `&gt;${table[table.length-2][0]}` : String(n);
+      // подсвечиваем строки, между которыми лежит nkv
+      const inRange = (i < table.length - 1)
+        && (table[i][0] <= nkv && table[i+1][0] >= nkv);
+      const bg = inRange ? 'background:#fff8c5' : (i % 2 === 0 ? '#fff' : '#f9fbff');
+      return `<tr style="background:${bg}">
+        <td style="padding:3px 8px;border:1px solid #ddd;text-align:center">${nLabel}</td>
+        <td style="padding:3px 8px;border:1px solid #ddd;text-align:center">${k.toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="flex:1;min-width:150px">
+      <div style="font-size:9pt;font-weight:bold;color:#1a44a0;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #bfcfff">${title}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:5px">
+        <tr style="background:#e8f0fe;print-color-adjust:exact;-webkit-print-color-adjust:exact">
+          <th style="padding:4px 8px;border:1px solid #bfcfff;color:#1a44a0;text-align:center">n, кв.</th>
+          <th style="padding:4px 8px;border:1px solid #bfcfff;color:#1a44a0;text-align:center">К_од</th>
+        </tr>${rows}
+      </table>
+      <div style="font-size:8.5pt;background:#dde8ff;padding:4px 8px;border-radius:3px;color:#1a44a0;print-color-adjust:exact;-webkit-print-color-adjust:exact">
+        n = <b>${nkv}</b> кв. → К_од = <b>${kodVal.toFixed(3)}</b>
+      </div>
+    </div>`;
+  }
+
+  return `<div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+    ${oneTable('Газовая плита (4-конф.)', KOD_STOVE, kod_st)}
+    ${oneTable('Проточный водонагреватель', KOD_WHF, kod_wf)}
+    ${oneTable('Индивидуальный газовый котёл', KOD_BOILER, kod_bo)}
+  </div>
+  <div style="font-size:8pt;color:#888;margin-top:8px">
+    ★ Жёлтым выделен диапазон интерполяции для n = ${nkv} квартир.<br>
+    Источник: СН РК 4.02-07-2013 «Газоснабжение», Таблица А.2 / СП 402.1325800.2018.
+  </div>`;
+}
+
+// ── Сборка HTML для печати ──
+function buildPrintHTML(subtitle, org, obj, docNum, execName, date, stage, logoImg, inputsHTML, kpiHTML, thead, tbodyHTML, noteHTML, appendixHTML = '') {
+  // Адаптируем KPI-блок для печати (убираем классы экранных стилей)
+  const kpiPrint = kpiHTML
+    .replace(/class="kpi"/g, 'class="kpi-p"')
+    .replace(/class="v"/g,   'class="kpi-v"')
+    .replace(/class="u"/g,   'class="kpi-u"')
+    .replace(/class="lbl"/g, 'class="kpi-lbl"');
+
+  const metaRows = [
+    obj      ? `<tr><td>Объект:</td><td>${obj}</td></tr>` : '',
+    docNum   ? `<tr><td>Шифр:</td><td>${docNum}</td></tr>` : '',
+    execName ? `<tr><td>Исполнитель:</td><td>${execName}</td></tr>` : '',
+               `<tr><td>Дата:</td><td>${date}</td></tr>`,
+               `<tr><td>Норматив:</td><td>СН РК 4.02-07-2013 «Газоснабжение»; СП РК 2.04-107-2013</td></tr>`,
+    `<tr><td>Стадия проектирования:</td><td>${stage || '—'}</td></tr>`,
+  ].filter(Boolean).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8">
+<title>Расчёт газа${obj ? ' — '+obj : ''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;background:#fff}
+.page{max-width:210mm;margin:0 auto;padding:16mm 18mm 20mm}
+/* Шапка */
+.doc-hdr{display:flex;align-items:center;gap:20px;border-bottom:3px solid #1a56db;padding-bottom:12px;margin-bottom:16px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.doc-org{font-size:13pt;font-weight:bold;color:#1a56db}
+/* Титул */
+.doc-title{text-align:center;margin:14px 0}
+.doc-title h1{font-size:15pt;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+.doc-title h2{font-size:10.5pt;color:#555;font-weight:normal;margin-top:4px}
+/* Мета-таблица */
+.meta-tbl{width:100%;border-collapse:collapse;font-size:9.5pt;margin-bottom:16px}
+.meta-tbl td{padding:5px 8px;border:1px solid #ccc}
+.meta-tbl td:first-child{font-weight:bold;width:25%;background:#eef2ff;color:#1a44a0;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+/* Заголовок раздела */
+.sec-h{font-size:10pt;font-weight:bold;color:#fff;background:#1a56db;padding:5px 10px;margin:16px 0 10px;border-radius:3px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+/* KPI */
+.kpi-row-p{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.kpi-p{flex:1;min-width:110px;text-align:center;border:2px solid #bfcfff;border-radius:5px;padding:10px 6px;background:#f0f5ff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.kpi-v{font-size:16pt;font-weight:bold;color:#1a56db;display:block;line-height:1.1}
+.kpi-u{font-size:8pt;color:#555;display:block;margin-top:1px}
+.kpi-lbl{font-size:7.5pt;color:#666;display:block;margin-top:4px;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+/* Таблица результатов */
+.res-tbl{width:100%;border-collapse:collapse;font-size:9pt}
+.res-tbl th{background:#e8f0fe;color:#1a44a0;font-weight:bold;padding:6px 8px;text-align:left;border:1px solid #bfcfff;font-size:8.5pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl td{padding:5px 8px;border:1px solid #e0e0e0;vertical-align:top}
+.res-tbl .sep td{background:#efefef;font-weight:bold;font-size:8.5pt;color:#555;text-transform:uppercase;letter-spacing:.04em;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl .subtotal td{background:#dde8ff;font-weight:bold;color:#1a44a0;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl .total td{background:#1a56db;color:#fff;font-weight:bold;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+/* Примечание */
+.pdf-note{background:#fffbeb;border:1px solid #fbbf24;border-radius:3px;padding:8px 11px;font-size:8.5pt;color:#7a4200;margin-top:12px;line-height:1.6}
+/* Подписи */
+.signatures{margin-top:32px;display:flex;gap:24px;border-top:1px solid #ccc;padding-top:14px}
+.sig{flex:1}
+.sig-label{font-size:8.5pt;color:#666;margin-bottom:18px}
+.sig-line{border-bottom:1px solid #333;width:80%;margin-top:2px}
+.sig-name{font-size:8pt;color:#888;margin-top:3px}
+/* Колонтитул */
+.pdf-footer{margin-top:16px;border-top:1px solid #ddd;padding-top:7px;text-align:center;font-size:8pt;color:#aaa}
+@page{margin:14mm 18mm;size:A4 portrait}
+@media print{.page{max-width:100%;padding:0}}
+</style></head>
+<body><div class="page">
+
+  <div class="doc-hdr">
+    ${logoImg ? `<div style="flex-shrink:0">${logoImg}</div>` : ''}
+    ${org ? `<div class="doc-org">${org}</div>` : ''}
+  </div>
+
+  <div class="doc-title">
+    <h1>Расчёт расхода природного газа</h1>
+    <h2>${subtitle}</h2>
+  </div>
+
+  ${metaRows ? `<table class="meta-tbl">${metaRows}</table>` : ''}
+
+  <div class="sec-h">Исходные данные</div>
+  ${inputsHTML}
+
+  <div class="sec-h">Результаты расчёта</div>
+  <div class="kpi-row-p">${kpiPrint}</div>
+  <table class="res-tbl"><thead>${thead}</thead><tbody>${tbodyHTML}</tbody></table>
+  <div class="pdf-note">${noteHTML}</div>
+
+  <div class="signatures">
+    <div class="sig"><div class="sig-label">Исполнитель</div><div class="sig-line"></div><div class="sig-name">${execName || '&nbsp;'}</div></div>
+    <div class="sig"><div class="sig-label">Проверил</div><div class="sig-line"></div><div class="sig-name">&nbsp;</div></div>
+    <div class="sig"><div class="sig-label">Дата</div><div class="sig-line"></div><div class="sig-name">${date}</div></div>
+  </div>
+
+  ${appendixHTML ? `<div class="sec-h" style="margin-top:24px">Коэффициенты одновременности К_од (СН РК 4.02-07-2013, Табл. А.2)</div>${appendixHTML}` : ''}
+
+  <div class="pdf-footer">Расчёт по методике СН РК 4.02-07-2013 | Стадия: ${stage || 'предварительный'} | Дата: ${date}</div>
+
+</div></body></html>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ГАЗОПРОВОД НД — UI
+// ─────────────────────────────────────────────────────────────────
+let gpRowIdx = 0;
+const gpActiveRows = [];
+
+function updateDpDop() {
+  const dp = (v('gp-pin') - v('gp-pmin'));
+  $('gp-dp-dop').value = (dp > 0 ? dp.toFixed(0) : 0) + ' Па';
+}
+
+function pipeOpts(mat, selD) {
+  const pipes = mat === 'pe' ? PE_PIPES : STEEL_PIPES;
+  const std   = mat === 'pe' ? 'ГОСТ 50838 SDR11' : 'ГОСТ 3262';
+  return pipes.map(p => {
+    const sel = (selD !== undefined && Math.abs(p.d - selD) < 0.05) ? 'selected' : '';
+    return `<option value="${p.d}" ${sel}>DN${p.dn} — d_вн=${p.d} мм (${std})</option>`;
+  }).join('');
+}
+
+function addGpRow(qDef, lDef) {
+  const idx = gpRowIdx++;
+  gpActiveRows.push(idx);
+  const num  = gpActiveRows.length;
+  const defD = STEEL_PIPES[5].d; // DN50 по умолчанию
+  const tr   = document.createElement('tr');
+  tr.id = `gp-row-${idx}`;
+  tr.style.borderBottom = '1px solid #f0f1f3';
+  tr.innerHTML = `
+    <td style="padding:6px 5px;text-align:center;color:var(--text-s);font-size:12px;white-space:nowrap">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="gpr-name-${idx}" value="Уч. ${num}" class="gp-inp"></td>
+    <td style="padding:4px 5px"><input type="number" id="gpr-q-${idx}" value="${qDef||10}" min="0" step="0.1" class="gp-inp" style="width:72px"></td>
+    <td style="padding:4px 5px"><input type="number" id="gpr-l-${idx}" value="${lDef||50}" min="0" step="1" class="gp-inp" style="width:66px"></td>
+    <td style="padding:4px 5px">
+      <select id="gpr-mat-${idx}" class="gp-sel" onchange="onGpMat(${idx})" style="width:80px">
+        <option value="steel">Сталь</option>
+        <option value="pe">ПЭ</option>
+      </select>
+    </td>
+    <td style="padding:4px 5px">
+      <select id="gpr-dn-${idx}" class="gp-sel" onchange="onGpDn(${idx})">${pipeOpts('steel', defD)}</select>
+    </td>
+    <td style="padding:4px 5px"><input type="number" id="gpr-d-${idx}" value="${defD}" step="0.1" class="gp-inp" style="width:66px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeGpRow(${idx})" title="Удалить участок"
+        style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px;line-height:1">✕</button>
+    </td>`;
+  $('gp-tbody').appendChild(tr);
+}
+
+function removeGpRow(idx) {
+  const row = $(`gp-row-${idx}`);
+  if (row) row.remove();
+  const pos = gpActiveRows.indexOf(idx);
+  if (pos > -1) gpActiveRows.splice(pos, 1);
+}
+
+function onGpMat(idx) {
+  const mat = $(`gpr-mat-${idx}`).value;
+  $(`gpr-dn-${idx}`).innerHTML = pipeOpts(mat);
+  onGpDn(idx);
+}
+
+function onGpDn(idx) {
+  $(`gpr-d-${idx}`).value = $(`gpr-dn-${idx}`).value;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ГАЗОПРОВОД НД — ГИДРАВЛИЧЕСКИЙ РАСЧЁТ
+// ─────────────────────────────────────────────────────────────────
+function calcHydraulics(q_std, l, d_mm, material, rho, nu, beta_local) {
+  const d    = d_mm / 1000;             // мм → м
+  const area = Math.PI * d * d / 4;     // площадь сечения, м²
+  const vel  = (q_std / 3600) / area;   // скорость, м/с
+  const Re   = vel * d / nu;            // число Рейнольдса
+  const k    = material === 'pe' ? 7e-6 : 1e-4; // шероховатость, м
+
+  // Формула Альтшуля (универсальная, квадратичная и переходная зоны)
+  const lambda = Re < 2300
+    ? 64 / Re
+    : 0.11 * Math.pow(68 / Re + k / d, 0.25);
+
+  const dP_l = lambda * (l / d) * rho * vel * vel / 2; // линейные потери, Па
+  const dP_m = beta_local * dP_l;                       // местные потери, Па
+
+  return { vel, Re, lambda, dP_l, dP_m, dP: dP_l + dP_m };
+}
+
+function calcGasPipeline() {
+  const P_in   = v('gp-pin');
+  const P_min  = v('gp-pmin');
+  const dP_dop = P_in - P_min;
+  const rho    = v('gp-rho');
+  const nu     = v('gp-nu') * 1e-6;
+  const beta   = v('gp-beta') / 100;
+  const v_max  = v('gp-vmax');
+
+  const rows = gpActiveRows.filter(i => $(`gp-row-${i}`));
+  if (!rows.length) { alert('Добавьте хотя бы один участок газопровода.'); return; }
+
+  let results = [], dP_cum = 0;
+
+  rows.forEach(i => {
+    const name = $(`gpr-name-${i}`).value || `Уч.${i+1}`;
+    const q    = parseFloat($(`gpr-q-${i}`).value) || 0;
+    const l    = parseFloat($(`gpr-l-${i}`).value) || 0;
+    const d_mm = parseFloat($(`gpr-d-${i}`).value) || 1;
+    const mat  = $(`gpr-mat-${i}`).value;
+    const c    = calcHydraulics(q, l, d_mm, mat, rho, nu, beta);
+    dP_cum += c.dP;
+    results.push({ name, q, l, d_mm, mat, ...c, dP_cum,
+      okV: c.vel <= v_max, okP: dP_cum <= dP_dop });
+  });
+
+  renderGpResults(results, dP_dop, v_max);
+}
+
+function renderGpResults(results, dP_dop, v_max) {
+  const last   = results[results.length - 1] || {};
+  const dP_tot = last.dP_cum || 0;
+  const reserve = dP_dop - dP_tot;
+  const allOk  = results.every(r => r.okV && r.okP);
+  const statusColor = allOk ? 'var(--green)' : '#dc2626';
+
+  $('gp-kpi').innerHTML = `
+    <div class="kpi"><div class="v" style="color:${statusColor}">${allOk ? '✓ OK' : '✗ Нарушение'}</div>
+      <div class="u"></div><div class="lbl">Статус расчёта</div></div>
+    <div class="kpi"><div class="v">${fmt(dP_tot,1)}</div>
+      <div class="u">Па</div><div class="lbl">Суммарные потери ΔP</div></div>
+    <div class="kpi"><div class="v">${fmt(dP_dop,0)}</div>
+      <div class="u">Па</div><div class="lbl">Допустимые потери ΔP_доп</div></div>
+    <div class="kpi"><div class="v" style="color:${reserve>=0?'var(--green)':'#dc2626'}">${fmt(reserve,1)}</div>
+      <div class="u">Па</div><div class="lbl">Запас давления</div></div>
+  `;
+
+  const tbody = $('gp-res-tbody');
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const ok  = r.okV && r.okP;
+    const vCl = r.okV ? '' : 'gp-status-err';
+    const pCl = r.okP ? '' : 'gp-status-err';
+    const statusHtml = ok
+      ? '<span class="gp-status-ok">✓ OK</span>'
+      : [!r.okV ? `<span class="gp-status-err">v &gt; ${v_max} м/с</span>` : '',
+         !r.okP ? '<span class="gp-status-err">ΔP превышен</span>' : '']
+          .filter(Boolean).join('<br>');
+    const tr = tbody.insertRow();
+    if (!ok) tr.style.background = '#fff5f5';
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td>${fmt(r.q,2)}</td>
+      <td>${fmt(r.l,0)}</td>
+      <td>${fmt(r.d_mm,1)}</td>
+      <td class="${vCl}">${fmt(r.vel,3)}</td>
+      <td>${Math.round(r.Re).toLocaleString('ru-RU')}</td>
+      <td>${r.lambda.toFixed(4)}</td>
+      <td>${fmt(r.dP_l,1)}</td>
+      <td>${fmt(r.dP_m,1)}</td>
+      <td>${fmt(r.dP,1)}</td>
+      <td class="${pCl}" style="font-weight:700">${fmt(r.dP_cum,1)}</td>
+      <td>${statusHtml}</td>`;
+  });
+
+  $('gp-note').innerHTML = `
+    <b>Метод:</b> Дарси–Вейсбах; коэффициент λ по формуле Альтшуля.<br>
+    <b>Шероховатость:</b> сталь k = 0.1 мм (ГОСТ 3262); ПЭ k = 0.007 мм (ГОСТ Р 50838).<br>
+    <b>Местные сопротивления:</b> надбавка ${v('gp-beta')}% к линейным потерям.<br>
+    <b>Нормативная база:</b> СН РК 4.02-42-2011 «Газораспределительные системы».<br>
+    <b>Ограничения:</b> скорость ≤ ${v('gp-vmax')} м/с; ΔP_нак ≤ ${fmt(dP_dop,0)} Па.
+  `;
+  $('gp-results').classList.add('show');
+}
+
+// ── PDF: сбор исходных данных газопровода ──
+function getGpInputsHTML() {
+  const rows = gpActiveRows.filter(i => $(`gp-row-${i}`));
+  const secRows = rows.map(i => {
+    const name  = $(`gpr-name-${i}`).value || '';
+    const q     = $(`gpr-q-${i}`).value;
+    const l     = $(`gpr-l-${i}`).value;
+    const d_mm  = $(`gpr-d-${i}`).value;
+    const mat   = $(`gpr-mat-${i}`).value === 'pe' ? 'ПЭ' : 'Сталь';
+    const dn    = $(`gpr-dn-${i}`).options[$(`gpr-dn-${i}`).selectedIndex]?.text || '';
+    return `<tr><td>${name}</td><td>${q}</td><td>${l}</td><td>${mat}</td><td>${dn}</td><td>${d_mm}</td></tr>`;
+  }).join('');
+  const head = `<tr style="background:#e8f0fe"><th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Участок</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">q, м³/ч</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">l, м</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Материал</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">DN / типоразмер</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">d_вн, мм</th></tr>`;
+  const paramRows = [
+    ['Давление на выходе ГРП', `${v('gp-pin')} Па`],
+    ['Мин. давление у потребителя', `${v('gp-pmin')} Па`],
+    ['Допустимые потери ΔP_доп', `${v('gp-pin') - v('gp-pmin')} Па`],
+    ['Плотность газа ρ', `${v('gp-rho')} кг/м³`],
+    ['Кинем. вязкость ν', `${v('gp-nu')} × 10⁻⁶ м²/с`],
+    ['Надбавка на мест. сопротивления', `${v('gp-beta')} %`],
+    ['Доп. скорость газа', `≤ ${v('gp-vmax')} м/с`],
+  ];
+  return makeInputTable(paramRows) +
+    `<div style="font-size:9.5pt;font-weight:bold;color:#1a44a0;margin:14px 0 6px">Участки газопровода:</div>
+     <table style="width:100%;border-collapse:collapse;font-size:9pt">${head}
+     <tbody style="font-size:9pt">${secRows.replace(/<td>/g,'<td style="padding:5px 9px;border:1px solid #ddd">')}</tbody></table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ГАЗОПРОВОД СД — UI
+// ─────────────────────────────────────────────────────────────────
+let sdRowIdx = 0;
+const sdActiveRows = [];
+
+// C_SD = 16 × P₀ × 10³ / (π² × 3600²), P₀ = 101325 Па
+const C_SD = 16 * 101325 * 1e3 / (Math.PI * Math.PI * 3600 * 3600); // ≈ 12.674
+
+function updateSdDpDop() {
+  const P0 = 0.101325; // МПа абс
+  const p1 = v('sd-pin')  + P0;
+  const p2 = v('sd-pmin') + P0;
+  const dp2 = p1 * p1 - p2 * p2;
+  $('sd-dp2-dop').value = (dp2 > 0 ? dp2.toFixed(6) : '0') + ' МПа²';
+}
+
+function addSdRow(qDef, lDef) {
+  const idx = sdRowIdx++;
+  sdActiveRows.push(idx);
+  const num  = sdActiveRows.length;
+  const defD = STEEL_PIPES[5].d; // DN50
+  const tr   = document.createElement('tr');
+  tr.id = `sd-row-${idx}`;
+  tr.style.borderBottom = '1px solid #f0f1f3';
+  tr.innerHTML = `
+    <td style="padding:6px 5px;text-align:center;color:var(--text-s);font-size:12px;white-space:nowrap">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="sdr-name-${idx}" value="Уч. ${num}" class="gp-inp"></td>
+    <td style="padding:4px 5px"><input type="number" id="sdr-q-${idx}" value="${qDef||50}" min="0" step="1" class="gp-inp" style="width:72px"></td>
+    <td style="padding:4px 5px"><input type="number" id="sdr-l-${idx}" value="${lDef||100}" min="0" step="1" class="gp-inp" style="width:66px"></td>
+    <td style="padding:4px 5px">
+      <select id="sdr-mat-${idx}" class="gp-sel" onchange="onSdMat(${idx})" style="width:80px">
+        <option value="steel">Сталь</option>
+        <option value="pe">ПЭ</option>
+      </select>
+    </td>
+    <td style="padding:4px 5px">
+      <select id="sdr-dn-${idx}" class="gp-sel" onchange="onSdDn(${idx})">${pipeOpts('steel', defD)}</select>
+    </td>
+    <td style="padding:4px 5px"><input type="number" id="sdr-d-${idx}" value="${defD}" step="0.1" class="gp-inp" style="width:66px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeSdRow(${idx})" title="Удалить участок"
+        style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px;line-height:1">✕</button>
+    </td>`;
+  $('sd-tbody').appendChild(tr);
+}
+
+function removeSdRow(idx) {
+  const row = $(`sd-row-${idx}`);
+  if (row) row.remove();
+  const pos = sdActiveRows.indexOf(idx);
+  if (pos > -1) sdActiveRows.splice(pos, 1);
+}
+
+function onSdMat(idx) {
+  const mat = $(`sdr-mat-${idx}`).value;
+  $(`sdr-dn-${idx}`).innerHTML = pipeOpts(mat);
+  onSdDn(idx);
+}
+
+function onSdDn(idx) {
+  $(`sdr-d-${idx}`).value = $(`sdr-dn-${idx}`).value;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ГАЗОПРОВОД СД — ГИДРАВЛИЧЕСКИЙ РАСЧЁТ (формула P₁² − P₂²)
+// ─────────────────────────────────────────────────────────────────
+function calcHydraulicsSD(q_std, l, d_mm, material, rho, nu, P1_abs_MPa, beta_local) {
+  const d_m   = d_mm / 1000;
+  const area  = Math.PI * d_m * d_m / 4;
+  const v_std = (q_std / 3600) / area;          // скорость при стандартных условиях
+  const Re    = v_std * d_m / nu;               // Re не зависит от давления для идеального газа
+  const k     = material === 'pe' ? 7e-6 : 1e-4;
+  const lam   = Re < 2300
+    ? 64 / Re
+    : 0.11 * Math.pow(68 / Re + k / d_m, 0.25);
+
+  // P₁² − P₂² [МПа²] = C_SD × λ × l × (1 + β) × ρ₀ × Q₀² / d_мм⁵
+  const dP2 = C_SD * lam * l * (1 + beta_local) * rho * q_std * q_std / Math.pow(d_mm, 5);
+
+  const P1sq  = P1_abs_MPa * P1_abs_MPa;
+  const P2sq  = P1sq - dP2;
+  const P2_abs = P2sq > 0 ? Math.sqrt(P2sq) : 0;
+
+  // Скорость при среднем давлении
+  const P0_MPa = 0.101325;
+  const P_avg  = (P1_abs_MPa + P2_abs) / 2;
+  const v_avg  = v_std * P0_MPa / (P_avg > 0 ? P_avg : P0_MPa);
+
+  return { v_std, v_avg, Re, lambda: lam, dP2, P2_abs, P_avg, valid: P2sq > 0 };
+}
+
+function calcSDPipeline() {
+  const P0      = 0.101325;
+  const P_in    = v('sd-pin')  + P0;   // МПа абс
+  const P_min   = v('sd-pmin') + P0;   // МПа абс
+  const dP2_dop = P_in * P_in - P_min * P_min;  // МПа²
+  const rho     = v('sd-rho');
+  const nu      = v('sd-nu') * 1e-6;
+  const beta    = v('sd-beta') / 100;
+  const vmax    = v('sd-vmax');
+
+  const rows = sdActiveRows.filter(i => $(`sd-row-${i}`));
+  if (!rows.length) { alert('Добавьте хотя бы один участок газопровода.'); return; }
+
+  let results = [];
+  let P1_abs  = P_in;
+
+  rows.forEach(i => {
+    const name  = $(`sdr-name-${i}`).value || `Уч.${i+1}`;
+    const q     = parseFloat($(`sdr-q-${i}`).value)   || 0;
+    const l     = parseFloat($(`sdr-l-${i}`).value)   || 0;
+    const d_mm  = parseFloat($(`sdr-d-${i}`).value)   || 1;
+    const mat   = $(`sdr-mat-${i}`).value;
+    const c     = calcHydraulicsSD(q, l, d_mm, mat, rho, nu, P1_abs, beta);
+
+    const P1_gauge = P1_abs   - P0;
+    const P2_gauge = c.P2_abs - P0;
+    const dP_lin   = P1_abs   - c.P2_abs;
+
+    results.push({
+      name, q, l, d_mm, mat,
+      P1_gauge, P2_gauge, dP_lin,
+      dP2: c.dP2,
+      v_avg: c.v_avg, Re: c.Re, lambda: c.lambda,
+      valid: c.valid,
+      okV: c.v_avg <= vmax,
+      okP: c.P2_abs >= P_min,
+    });
+    P1_abs = c.P2_abs;
+  });
+
+  renderSDResults(results, dP2_dop, v('sd-pmin'), vmax);
+}
+
+function renderSDResults(results, dP2_dop, P_min_g, vmax) {
+  const last      = results[results.length - 1] || {};
+  const dP2_tot   = results.reduce((s, r) => s + r.dP2, 0);
+  const reserve   = dP2_dop - dP2_tot;
+  const allOk     = results.every(r => r.valid && r.okV && r.okP);
+  const statusColor = allOk ? 'var(--green)' : '#dc2626';
+
+  $('sd-kpi').innerHTML = `
+    <div class="kpi"><div class="v" style="color:${statusColor}">${allOk ? '✓ OK' : '✗ Нарушение'}</div>
+      <div class="u"></div><div class="lbl">Статус расчёта</div></div>
+    <div class="kpi"><div class="v">${fmt(last.P2_gauge !== undefined ? last.P2_gauge : 0, 4)}</div>
+      <div class="u">МПа (изб.)</div><div class="lbl">Давление на выходе</div></div>
+    <div class="kpi"><div class="v">${fmt(dP2_tot, 6)}</div>
+      <div class="u">МПа²</div><div class="lbl">Суммарные потери P₁²−P₂²</div></div>
+    <div class="kpi"><div class="v" style="color:${reserve>=0?'var(--green)':'#dc2626'}">${fmt(reserve, 6)}</div>
+      <div class="u">МПа²</div><div class="lbl">Запас ΔP²</div></div>
+  `;
+
+  const tbody = $('sd-res-tbody');
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const ok = r.valid && r.okV && r.okP;
+    const vCl = r.okV ? '' : 'gp-status-err';
+    const pCl = r.okP ? '' : 'gp-status-err';
+    const statusHtml = ok
+      ? '<span class="gp-status-ok">✓ OK</span>'
+      : [!r.valid ? '<span class="gp-status-err">P² &lt; 0</span>' : '',
+         !r.okV   ? `<span class="gp-status-err">v &gt; ${vmax} м/с</span>` : '',
+         !r.okP   ? `<span class="gp-status-err">P &lt; ${P_min_g} МПа</span>` : '']
+          .filter(Boolean).join('<br>');
+    const tr = tbody.insertRow();
+    if (!ok) tr.style.background = '#fff5f5';
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td>${fmt(r.q, 1)}</td>
+      <td>${fmt(r.l, 0)}</td>
+      <td>${fmt(r.d_mm, 1)}</td>
+      <td>${fmt(r.P1_gauge, 4)}</td>
+      <td class="${pCl}">${fmt(r.P2_gauge, 4)}</td>
+      <td>${fmt(r.dP_lin, 5)}</td>
+      <td>${fmt(r.dP2, 6)}</td>
+      <td class="${vCl}">${fmt(r.v_avg, 2)}</td>
+      <td>${Math.round(r.Re).toLocaleString('ru-RU')}</td>
+      <td>${r.lambda.toFixed(4)}</td>
+      <td>${statusHtml}</td>`;
+  });
+
+  $('sd-note').innerHTML = `
+    <b>Метод:</b> Точная формула для изотермического течения сжимаемого газа: P₁² − P₂² [МПа²] = C × λ × l × (1 + β) × ρ₀ × Q₀² / d⁵.<br>
+    <b>Константа:</b> C = 16 × P₀ × 10³ / (π² × 3600²) ≈ ${C_SD.toFixed(4)} [МПа²·мм⁵/(м·(кг/м³)·(м³/ч)²)], P₀ = 101325 Па.<br>
+    <b>Шероховатость:</b> сталь k = 0.1 мм (ГОСТ 3262); ПЭ k = 0.007 мм (ГОСТ Р 50838). λ — формула Альтшуля.<br>
+    <b>Скорость</b> приведена при среднем давлении участка; Re не зависит от давления для идеального газа.<br>
+    <b>Нормативная база:</b> СН РК 4.02-42-2011 «Газораспределительные системы».<br>
+    <b>Ограничения:</b> скорость ≤ ${v('sd-vmax')} м/с; P_вых ≥ ${v('sd-pmin')} МПа (изб.).
+  `;
+  $('sd-results').classList.add('show');
+}
+
+// ── PDF: сбор исходных данных газопровода СД ──
+function getSdInputsHTML() {
+  const P0  = 0.101325;
+  const p1  = v('sd-pin')  + P0;
+  const p2  = v('sd-pmin') + P0;
+  const paramRows = [
+    ['Давление на вводе P_вх (изб.)',       `${v('sd-pin')} МПа`],
+    ['Давление на вводе P_вх (абс.)',       `${p1.toFixed(4)} МПа`],
+    ['Мин. давление P_мин (изб.)',          `${v('sd-pmin')} МПа`],
+    ['Мин. давление P_мин (абс.)',          `${p2.toFixed(4)} МПа`],
+    ['ΔP²_доп = P_вх² − P_мин²',           `${(p1*p1 - p2*p2).toFixed(6)} МПа²`],
+    ['Плотность газа ρ₀',                   `${v('sd-rho')} кг/м³`],
+    ['Кинем. вязкость ν',                   `${v('sd-nu')} × 10⁻⁶ м²/с`],
+    ['Надбавка на мест. сопротивления',     `${v('sd-beta')} %`],
+    ['Доп. скорость газа',                  `≤ ${v('sd-vmax')} м/с`],
+  ];
+  const rows = sdActiveRows.filter(i => $(`sd-row-${i}`));
+  const secRows = rows.map(i => {
+    const name = $(`sdr-name-${i}`).value || '';
+    const q    = $(`sdr-q-${i}`).value;
+    const l    = $(`sdr-l-${i}`).value;
+    const d    = $(`sdr-d-${i}`).value;
+    const mat  = $(`sdr-mat-${i}`).value === 'pe' ? 'ПЭ' : 'Сталь';
+    const dn   = $(`sdr-dn-${i}`).options[$(`sdr-dn-${i}`).selectedIndex]?.text || '';
+    return `<tr><td>${name}</td><td>${q}</td><td>${l}</td><td>${mat}</td><td>${dn}</td><td>${d}</td></tr>`;
+  }).join('');
+  const head = `<tr style="background:#e8f0fe">
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Участок</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">q, м³/ч</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">l, м</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Материал</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">DN / типоразмер</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">d_вн, мм</th></tr>`;
+  return makeInputTable(paramRows) +
+    `<div style="font-size:9.5pt;font-weight:bold;color:#1a44a0;margin:14px 0 6px">Участки газопровода:</div>
+     <table style="width:100%;border-collapse:collapse;font-size:9pt">${head}
+     <tbody style="font-size:9pt">${secRows.replace(/<td>/g,'<td style="padding:5px 9px;border:1px solid #ddd">')}</tbody></table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ВНУТРЕННИЙ ГАЗОПРОВОД — UI
+// ─────────────────────────────────────────────────────────────────
+let igRowIdx = 0;
+const igActiveRows = [];
+
+function updateIgDpDop() {
+  const dp = v('ig-pin') - v('ig-pmin');
+  $('ig-dp-dop').value = (dp > 0 ? dp.toFixed(0) : 0) + ' Па';
+}
+
+function addIgRow(qDef, lDef) {
+  const idx = igRowIdx++;
+  igActiveRows.push(idx);
+  const num  = igActiveRows.length;
+  const defD = STEEL_PIPES[0].d; // DN15 — типично для внутреннего газопровода
+  const tr   = document.createElement('tr');
+  tr.id = `ig-row-${idx}`;
+  tr.style.borderBottom = '1px solid #f0f1f3';
+  tr.innerHTML = `
+    <td style="padding:6px 5px;text-align:center;color:var(--text-s);font-size:12px;white-space:nowrap">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="igr-name-${idx}" value="Уч. ${num}" class="gp-inp"></td>
+    <td style="padding:4px 5px"><input type="number" id="igr-q-${idx}" value="${qDef||1.5}" min="0" step="0.1" class="gp-inp" style="width:64px"></td>
+    <td style="padding:4px 5px"><input type="number" id="igr-l-${idx}" value="${lDef||5}" min="0" step="0.5" class="gp-inp" style="width:58px"></td>
+    <td style="padding:4px 5px">
+      <select id="igr-mat-${idx}" class="gp-sel" onchange="onIgMat(${idx})" style="width:72px">
+        <option value="steel">Сталь</option>
+        <option value="pe">ПЭ</option>
+      </select>
+    </td>
+    <td style="padding:4px 5px">
+      <select id="igr-dn-${idx}" class="gp-sel" onchange="onIgDn(${idx})">${pipeOpts('steel', defD)}</select>
+    </td>
+    <td style="padding:4px 5px"><input type="number" id="igr-d-${idx}" value="${defD}" step="0.1" class="gp-inp" style="width:58px"></td>
+    <td style="padding:4px 5px">
+      <select id="igr-app-${idx}" class="gp-sel" onchange="onIgApp(${idx})" style="width:100%;margin-bottom:3px">${igAppOpts('')}</select>
+      <input type="number" id="igr-pmin-${idx}" value="0" min="0" step="10" class="gp-inp" style="width:100%;font-size:11px" placeholder="P_мин, Па">
+    </td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeIgRow(${idx})" title="Удалить участок"
+        style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px;line-height:1">✕</button>
+    </td>`;
+  $('ig-tbody').appendChild(tr);
+}
+
+function removeIgRow(idx) {
+  const row = $(`ig-row-${idx}`);
+  if (row) row.remove();
+  const pos = igActiveRows.indexOf(idx);
+  if (pos > -1) igActiveRows.splice(pos, 1);
+}
+
+function onIgMat(idx) {
+  const mat = $(`igr-mat-${idx}`).value;
+  $(`igr-dn-${idx}`).innerHTML = pipeOpts(mat);
+  onIgDn(idx);
+}
+
+function onIgDn(idx) {
+  $(`igr-d-${idx}`).value = $(`igr-dn-${idx}`).value;
+}
+
+function onIgApp(idx) {
+  const val = $(`igr-app-${idx}`).value;
+  const app = IG_APPLIANCES.find(a => a.val === val);
+  $(`igr-pmin-${idx}`).value = app ? app.pmin : 0;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ВНУТРЕННИЙ ГАЗОПРОВОД — ГИДРАВЛИЧЕСКИЙ РАСЧЁТ
+// ─────────────────────────────────────────────────────────────────
+function calcIGPipeline() {
+  const P_in  = v('ig-pin');
+  const P_min = v('ig-pmin');
+  const rho   = v('ig-rho');
+  const nu    = v('ig-nu') * 1e-6;
+  const beta  = v('ig-beta') / 100;
+  const vmax  = v('ig-vmax');
+
+  const rows = igActiveRows.filter(i => $(`ig-row-${i}`));
+  if (!rows.length) { alert('Добавьте хотя бы один участок газопровода.'); return; }
+
+  let results = [], dP_cum = 0;
+
+  rows.forEach(i => {
+    const name    = $(`igr-name-${i}`).value || `Уч.${i+1}`;
+    const q       = parseFloat($(`igr-q-${i}`).value)    || 0;
+    const l       = parseFloat($(`igr-l-${i}`).value)    || 0;
+    const d_mm    = parseFloat($(`igr-d-${i}`).value)    || 1;
+    const mat     = $(`igr-mat-${i}`).value;
+    const appVal  = $(`igr-app-${i}`).value;
+    const p_min_r = parseFloat($(`igr-pmin-${i}`).value) || 0;
+    const appObj  = IG_APPLIANCES.find(a => a.val === appVal);
+    const appLabel = appObj && appObj.val ? appObj.label : '';
+
+    const c = calcHydraulics(q, l, d_mm, mat, rho, nu, beta);  // переиспользуем функцию НД
+    dP_cum += c.dP;
+    const p_ost = P_in - dP_cum;
+
+    results.push({
+      name, q, l, d_mm, appLabel, p_min_r, ...c, dP_cum, p_ost,
+      okV: c.vel <= vmax,
+      okP: p_min_r > 0 ? p_ost >= p_min_r : true,
+    });
+  });
+
+  renderIGResults(results, P_in, P_min, vmax);
+}
+
+function renderIGResults(results, P_in, P_min_def, vmax) {
+  const last     = results[results.length - 1] || {};
+  const dP_tot   = last.dP_cum || 0;
+  const p_ost_min = results.length ? Math.min(...results.map(r => r.p_ost)) : P_in;
+  const reserve  = p_ost_min - P_min_def;
+  const allOk    = results.every(r => r.okV && r.okP);
+  const statusColor = allOk ? 'var(--green)' : '#dc2626';
+
+  $('ig-kpi').innerHTML = `
+    <div class="kpi"><div class="v" style="color:${statusColor}">${allOk ? '✓ OK' : '✗ Нарушение'}</div>
+      <div class="u"></div><div class="lbl">Статус расчёта</div></div>
+    <div class="kpi"><div class="v">${fmt(dP_tot,1)}</div>
+      <div class="u">Па</div><div class="lbl">Суммарные потери ΔP_нак</div></div>
+    <div class="kpi"><div class="v">${fmt(p_ost_min,0)}</div>
+      <div class="u">Па</div><div class="lbl">Мин. остат. давление</div></div>
+    <div class="kpi"><div class="v" style="color:${reserve>=0?'var(--green)':'#dc2626'}">${fmt(reserve,0)}</div>
+      <div class="u">Па</div><div class="lbl">Запас давления</div></div>
+  `;
+
+  const tbody = $('ig-res-tbody');
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const ok = r.okV && r.okP;
+    const vCl = r.okV ? '' : 'gp-status-err';
+    const pCl = r.okP ? '' : 'gp-status-err';
+    const statusHtml = ok
+      ? '<span class="gp-status-ok">✓ OK</span>'
+      : [!r.okV ? `<span class="gp-status-err">v &gt; ${vmax} м/с</span>` : '',
+         !r.okP ? `<span class="gp-status-err">P_ост &lt; P_мин</span>` : '']
+          .filter(Boolean).join('<br>');
+    const tr = tbody.insertRow();
+    if (!ok) tr.style.background = '#fff5f5';
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td style="font-size:11px;color:var(--text-s)">${r.appLabel || '—'}</td>
+      <td>${fmt(r.q,2)}</td>
+      <td>${fmt(r.l,0)}</td>
+      <td>${fmt(r.d_mm,1)}</td>
+      <td class="${vCl}">${fmt(r.vel,3)}</td>
+      <td>${Math.round(r.Re).toLocaleString('ru-RU')}</td>
+      <td>${r.lambda.toFixed(4)}</td>
+      <td>${fmt(r.dP_l,2)}</td>
+      <td>${fmt(r.dP_m,2)}</td>
+      <td>${fmt(r.dP,2)}</td>
+      <td style="font-weight:700">${fmt(r.dP_cum,2)}</td>
+      <td class="${pCl}" style="font-weight:700">${fmt(r.p_ost,1)}</td>
+      <td style="color:var(--text-s)">${r.p_min_r > 0 ? fmt(r.p_min_r,0) : '—'}</td>
+      <td>${statusHtml}</td>`;
+  });
+
+  $('ig-note').innerHTML = `
+    <b>Метод:</b> Дарси–Вейсбах; коэффициент λ по формуле Альтшуля.<br>
+    <b>Остаточное давление:</b> P_ост = P_ввод − ΔP_нак; должно быть ≥ P_мин у каждого прибора.<br>
+    <b>Мин. давление у приборов:</b> 1274 Па (≈ 130 мм вод. ст.) — по СН РК 4.02-07-2013; уточнять по паспорту прибора.<br>
+    <b>Шероховатость:</b> сталь k = 0.1 мм; ПЭ k = 0.007 мм. Надбавка на мест. сопротивления: ${v('ig-beta')}%.<br>
+    <b>Нормативная база:</b> СН РК 4.02-42-2011; СН РК 4.02-07-2013; СП 402.1325800.2018.
+  `;
+  $('ig-results').classList.add('show');
+}
+
+// ── PDF: сбор исходных данных внутр. газопровода ──
+function getIgInputsHTML() {
+  const rows = igActiveRows.filter(i => $(`ig-row-${i}`));
+  const secRows = rows.map(i => {
+    const name   = $(`igr-name-${i}`).value || '';
+    const q      = $(`igr-q-${i}`).value;
+    const l      = $(`igr-l-${i}`).value;
+    const d_mm   = $(`igr-d-${i}`).value;
+    const mat    = $(`igr-mat-${i}`).value === 'pe' ? 'ПЭ' : 'Сталь';
+    const dn     = $(`igr-dn-${i}`).options[$(`igr-dn-${i}`).selectedIndex]?.text || '';
+    const appVal = $(`igr-app-${i}`).value;
+    const app    = IG_APPLIANCES.find(a => a.val === appVal);
+    const pmin   = $(`igr-pmin-${i}`).value;
+    const appStr = app && app.val ? `${app.label} (P_мин=${pmin} Па)` : '—';
+    return `<tr><td>${name}</td><td>${q}</td><td>${l}</td><td>${mat}</td><td>${dn}</td><td>${d_mm}</td><td>${appStr}</td></tr>`;
+  }).join('');
+  const head = `<tr style="background:#e8f0fe">
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Участок</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">q, м³/ч</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">l, м</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Материал</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">DN / типоразмер</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">d_вн, мм</th>
+    <th style="padding:6px 9px;border:1px solid #bfcfff;color:#1a44a0">Прибор / P_мин</th></tr>`;
+  const paramRows = [
+    ['Давление на вводе в здание P_ввод',  `${v('ig-pin')} Па`],
+    ['Мин. давление у прибора P_мин',      `${v('ig-pmin')} Па`],
+    ['Допустимые потери ΔP_доп',           `${v('ig-pin') - v('ig-pmin')} Па`],
+    ['Плотность газа ρ',                   `${v('ig-rho')} кг/м³`],
+    ['Кинем. вязкость ν',                  `${v('ig-nu')} × 10⁻⁶ м²/с`],
+    ['Надбавка на мест. сопротивления',    `${v('ig-beta')} %`],
+    ['Доп. скорость газа',                 `≤ ${v('ig-vmax')} м/с`],
+  ];
+  return makeInputTable(paramRows) +
+    `<div style="font-size:9.5pt;font-weight:bold;color:#1a44a0;margin:14px 0 6px">Участки газопровода:</div>
+     <table style="width:100%;border-collapse:collapse;font-size:9pt">${head}
+     <tbody style="font-size:9pt">${secRows.replace(/<td>/g,'<td style="padding:5px 9px;border:1px solid #ddd">')}</tbody></table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  populateCities();
+  toggleBhOt();
+  toggleBhGvs();
+  $('doc-date').value = new Date().toLocaleDateString('ru-RU');
+  updateDpDop();
+  updateSdDpDop();
+  updateIgDpDop();
+  addGpRow();  // одна строка по умолчанию
+  addSdRow();  // одна строка по умолчанию
+  addIgRow();  // одна строка по умолчанию
+});
+</script>
+<script>(function(){function apply(){try{var prev=document.getElementById("logo-preview");var shared=localStorage.getItem("wsLogo");if(shared&&prev&&prev.querySelector&&!prev.querySelector("img")){prev.innerHTML="<img src=\""+shared+"\">";try{logoBase64=shared;}catch(_){}try{window.logoBase64=shared;}catch(_){}}}catch(_){}}window.addEventListener("load",function(){setTimeout(apply,60);});try{var inp=document.getElementById("logo-inp");if(inp)inp.addEventListener("change",function(){try{var f=inp.files&&inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{localStorage.setItem("wsLogo",e.target.result);}catch(_){}};r.readAsDataURL(f);}catch(_){}});}catch(_){}})();</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
