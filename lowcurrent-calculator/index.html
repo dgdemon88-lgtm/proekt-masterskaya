@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Слаботочные системы — СКС, видеонаблюдение, сигнализация</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0ea5e9;--accent2:#0284c7;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#04222b;font-weight:700}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#38bdf8;font-size:22px}
+.rec-box{background:#062a3a;border:1px solid #0284c7;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#7dd3fc;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">📡 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="СС-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('scs')">🔌 СКС / ЛВС</button>
+  <button class="tab-btn" onclick="switchTab('cctv')">📹 Видеонаблюдение</button>
+  <button class="tab-btn" onclick="switchTab('fire')">🚨 Сигнализация (АПС)</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== SCS ===== -->
+<div id="sec-scs" class="sec active">
+  <div class="card">
+    <div class="card-title">Структурированная кабельная сеть (СКС) / ЛВС</div>
+    <div class="grid4">
+      <div class="fld"><label>Число рабочих мест</label><input id="s-seats" type="number" step="1" value="50" oninput="calcScs()"></div>
+      <div class="fld"><label>Портов на рабочее место</label><input id="s-ports" type="number" step="1" value="2" oninput="calcScs()"></div>
+      <div class="fld"><label>Средняя длина линии, м</label><input id="s-len" type="number" step="1" value="45" oninput="calcScs()"><span class="hint">горизонт. подсистема, макс. 90 м</span></div>
+      <div class="fld"><label>Запас кабеля, %</label><input id="s-zap" type="number" step="5" value="15" oninput="calcScs()"></div>
+      <div class="fld"><label>Портов в патч-панели</label><input id="s-pp" type="number" step="1" value="24" oninput="calcScs()"></div>
+      <div class="fld"><label>Портов в коммутаторе</label><input id="s-sw" type="number" step="1" value="48" oninput="calcScs()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="s-kpi"></div>
+    <div class="formula" id="s-formula"></div>
+    <div class="rec-box" id="s-rec"></div>
+    <div class="btn-row"><button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button></div>
+    <div class="note">Число портов = места × порты/место. Кабель (в бухтах по 305 м) = порты × средняя длина × (1+запас). Патч-панели и коммутаторы — по числу портов. Горизонтальная линия — не более 90 м (+10 м патч-корды).</div>
+  </div>
+</div>
+
+<!-- ===== CCTV ===== -->
+<div id="sec-cctv" class="sec">
+  <div class="card">
+    <div class="card-title">Видеонаблюдение — объём архива и оборудование</div>
+    <div class="grid4">
+      <div class="fld"><label>Число камер</label><input id="c-cams" type="number" step="1" value="16" oninput="calcCctv()"></div>
+      <div class="fld"><label>Разрешение / битрейт</label>
+        <select id="c-res" onchange="onRes()">
+          <option value="2">2 Мп (1080p) — 2 Мбит/с</option>
+          <option value="4" selected>4 Мп — 4 Мбит/с</option>
+          <option value="8">8 Мп (4K) — 8 Мбит/с</option>
+          <option value="custom">задать вручную…</option>
+        </select></div>
+      <div class="fld"><label>Битрейт вручную, Мбит/с</label><input id="c-bitrate" type="number" step="0.5" value="4" oninput="calcCctv()"></div>
+      <div class="fld"><label>Глубина архива, суток</label><input id="c-days" type="number" step="1" value="30" oninput="calcCctv()"></div>
+      <div class="fld"><label>Доля записи в сутки, %</label><input id="c-duty" type="number" step="5" value="100" oninput="calcCctv()"><span class="hint">100% — постоянно; меньше при детекции</span></div>
+      <div class="fld"><label>Каналов в 1 регистраторе (NVR)</label><input id="c-nvr" type="number" step="1" value="16" oninput="calcCctv()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="c-kpi"></div>
+    <div class="formula" id="c-formula"></div>
+    <div class="rec-box" id="c-rec"></div>
+    <div class="note">Объём = битрейт(Мбит/с)·3600/8/1024 (ГБ/ч на камеру) · 24 · сутки · камеры · доля записи. PoE-коммутаторы и регистраторы (NVR) — по числу камер.</div>
+  </div>
+</div>
+
+<!-- ===== FIRE ALARM ===== -->
+<div id="sec-fire" class="sec">
+  <div class="card">
+    <div class="card-title">Автоматическая пожарная сигнализация (АПС)</div>
+    <div class="grid4">
+      <div class="fld"><label>Защищаемая площадь, м²</label><input id="f-area" type="number" step="10" value="800" oninput="calcFire()"></div>
+      <div class="fld"><label>Тип извещателя (площадь на 1 шт)</label>
+        <select id="f-type" onchange="onFireType()">
+          <option value="85" selected>Дымовой (до 85 м², H≤3,5 м)</option>
+          <option value="70">Дымовой (до 70 м², H 3,5–6 м)</option>
+          <option value="25">Тепловой (до 25 м²)</option>
+          <option value="custom">задать вручную…</option>
+        </select></div>
+      <div class="fld"><label>Площадь на 1 извещатель, м²</label><input id="f-per" type="number" step="1" value="85" oninput="calcFire()"></div>
+      <div class="fld"><label>Извещателей на шлейф (адресный до 200)</label><input id="f-loop" type="number" step="1" value="20" oninput="calcFire()"></div>
+      <div class="fld"><label>Число помещений (мин. 2 датчика/помещ.)</label><input id="f-rooms" type="number" step="1" value="10" oninput="calcFire()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="f-kpi"></div>
+    <div class="formula" id="f-formula"></div>
+    <div class="rec-box" id="f-rec"></div>
+    <div class="note">Число извещателей = площадь / (площадь на извещатель), но не менее 2 на каждое помещение (для формирования сигнала «Пожар» и защиты от ложных срабатываний). Шлейфы — по вместимости прибора.</div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Площадь, контролируемая пожарным извещателем</div>
+    <table class="ref-table"><thead><tr><th>Тип / высота</th><th>Площадь, м²</th><th>Радиус, м</th></tr></thead>
+      <tbody>
+        <tr><td>Дымовой, H ≤ 3,5 м</td><td class="c">до 85</td><td class="c">4,5</td></tr>
+        <tr><td>Дымовой, H 3,5–6 м</td><td class="c">до 70</td><td class="c">4,0</td></tr>
+        <tr><td>Дымовой, H 6–10 м</td><td class="c">до 65</td><td class="c">4,0</td></tr>
+        <tr><td>Тепловой, H ≤ 3,5 м</td><td class="c">до 25</td><td class="c">2,5</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">По СП 484.1311500 / нормам пожарной автоматики. В помещении — не менее 2 извещателей.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Битрейт видеопотока (H.265, ориентировочно)</div>
+    <table class="ref-table"><thead><tr><th>Разрешение</th><th>Битрейт, Мбит/с</th><th>ГБ/сутки на камеру</th></tr></thead>
+      <tbody>
+        <tr><td>2 Мп (1080p)</td><td class="c">2–4</td><td class="c">≈ 21–42</td></tr>
+        <tr><td>4 Мп</td><td class="c">4–6</td><td class="c">≈ 42–63</td></tr>
+        <tr><td>8 Мп (4K)</td><td class="c">8–12</td><td class="c">≈ 84–127</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=0)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+/* ===== SCS ===== */
+function calcScs(){
+  const seats=parseFloat($('s-seats').value)||0,pps=parseFloat($('s-ports').value)||1,len=parseFloat($('s-len').value)||45;
+  const zap=parseFloat($('s-zap').value)||15,pp=parseFloat($('s-pp').value)||24,swp=parseFloat($('s-sw').value)||48;
+  const ports=seats*pps;
+  const cable=ports*len*(1+zap/100);
+  const reels=Math.ceil(cable/305);
+  const panels=Math.ceil(ports/pp),switches=Math.ceil(ports/swp);
+  $('s-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(ports)}</span><span class="u">шт</span><span class="lbl">Портов (розеток)</span></div>
+    <div class="kpi"><span class="v">${fmt(cable)}</span><span class="u">м</span><span class="lbl">Кабель UTP (${reels} бухт)</span></div>
+    <div class="kpi"><span class="v">${panels}</span><span class="u">шт</span><span class="lbl">Патч-панелей</span></div>
+    <div class="kpi"><span class="v">${switches}</span><span class="u">шт</span><span class="lbl">Коммутаторов</span></div>`;
+  $('s-formula').innerHTML=`Портов = ${fmt(seats)}×${fmt(pps)} = ${fmt(ports)}; кабель = ${fmt(ports)}×${fmt(len)}×${fmt(1+zap/100,2)} = <b>${fmt(cable)} м</b> (${reels} бухт по 305 м)`;
+  $('s-rec').className='rec-box';
+  $('s-rec').innerHTML=`СКС: <b>${fmt(ports)} портов</b> (${fmt(seats)} мест), кабеля <b>${fmt(cable)} м</b> (${reels} бухт), ${panels} патч-панелей по ${fmt(pp)}, ${switches} коммутатор(а/ов) по ${fmt(swp)} портов. Плюс патч-корды 2×${fmt(ports)} шт.`;
+  window._s={ports,cable,panels,switches,reels};
+}
+
+/* ===== CCTV ===== */
+function onRes(){const v=$('c-res').value;if(v!=='custom')$('c-bitrate').value=v;calcCctv();}
+function calcCctv(){
+  const cams=parseFloat($('c-cams').value)||0,br=parseFloat($('c-bitrate').value)||4,days=parseFloat($('c-days').value)||30;
+  const duty=parseFloat($('c-duty').value)||100,nvr=parseFloat($('c-nvr').value)||16;
+  const perHourGB=br*3600/8/1024;
+  const perCamDay=perHourGB*24*(duty/100);
+  const totalGB=perCamDay*days*cams;
+  const totalTB=totalGB/1024;
+  const nNVR=Math.ceil(cams/nvr);
+  $('c-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(perCamDay,1)}</span><span class="u">ГБ/сут</span><span class="lbl">На 1 камеру</span></div>
+    <div class="kpi big"><span class="v">${fmt(totalTB,1)}</span><span class="u">ТБ</span><span class="lbl">Объём архива</span></div>
+    <div class="kpi"><span class="v">${fmt(totalGB,0)}</span><span class="u">ГБ</span><span class="lbl">Объём архива</span></div>
+    <div class="kpi"><span class="v">${nNVR}</span><span class="u">шт</span><span class="lbl">Регистраторов (NVR)</span></div>`;
+  $('c-formula').innerHTML=`Объём = ${fmt(br,1)}·3600/8/1024·24·${fmt(days)}·${fmt(cams)}·${fmt(duty/100,2)} = <b>${fmt(totalTB,1)} ТБ</b>`;
+  $('c-rec').className='rec-box';
+  $('c-rec').innerHTML=`Для ${fmt(cams)} камер (${fmt(br,1)} Мбит/с, ${fmt(days)} сут) требуется <b>≈ ${fmt(totalTB,1)} ТБ</b> дискового массива (с учётом ${fmt(duty)}% записи). Регистраторов ${nNVR} шт, PoE-коммутаторы на ${fmt(cams)} портов.`;
+  window._c={perCamDay,totalGB,totalTB,nNVR};
+}
+
+/* ===== FIRE ===== */
+function onFireType(){const v=$('f-type').value;if(v!=='custom')$('f-per').value=v;calcFire();}
+function calcFire(){
+  const area=parseFloat($('f-area').value)||0,per=parseFloat($('f-per').value)||85,loop=parseFloat($('f-loop').value)||20,rooms=parseFloat($('f-rooms').value)||1;
+  const byArea=Math.ceil(area/per);
+  const byRooms=rooms*2;
+  const n=Math.max(byArea,byRooms);
+  const loops=Math.ceil(n/loop);
+  $('f-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${byArea}</span><span class="u">шт</span><span class="lbl">По площади</span></div>
+    <div class="kpi"><span class="v">${byRooms}</span><span class="u">шт</span><span class="lbl">По помещениям (×2)</span></div>
+    <div class="kpi big"><span class="v">${n}</span><span class="u">шт</span><span class="lbl">Извещателей</span></div>
+    <div class="kpi"><span class="v">${loops}</span><span class="u">шт</span><span class="lbl">Шлейфов/лучей</span></div>`;
+  $('f-formula').innerHTML=`n = max(площадь/S<sub>изв</sub>; помещения×2) = max(${fmt(area)}/${fmt(per)}=${byArea}; ${fmt(rooms)}×2=${byRooms}) = <b>${n} извещателей</b>`;
+  $('f-rec').className='rec-box';
+  $('f-rec').innerHTML=`Принять <b>${n} пожарных извещателей</b> (${loops} шлейф/лучей по ${fmt(loop)}). Не менее 2 извещателей на помещение. Добавить ручные извещатели у выходов, ППКП, оповещение.`;
+  window._f={n,byArea,byRooms,loops};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['scs','cctv','fire','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,s:{seats:$('s-seats').value,ports:$('s-ports').value,len:$('s-len').value,zap:$('s-zap').value,pp:$('s-pp').value,sw:$('s-sw').value},
+    c:{cams:$('c-cams').value,res:$('c-res').value,bitrate:$('c-bitrate').value,days:$('c-days').value,duty:$('c-duty').value,nvr:$('c-nvr').value},
+    f:{area:$('f-area').value,type:$('f-type').value,per:$('f-per').value,loop:$('f-loop').value,rooms:$('f-rooms').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj)=>{if(!obj)return;Object.keys(obj).forEach(k=>{if($(pfx+k)&&obj[k]!=null)$(pfx+k).value=obj[k];});};
+  set('s-',d.s);set('c-',d.c);set('f-',d.f);
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcScs();calcCctv();calcFire();}
+function saveLS(){localStorage.setItem('lowcurrentCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('lowcurrentCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0284c7;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcScs();calcCctv();calcFire();
+  const s=window._s||{},c=window._c||{},f=window._f||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Слаботочные системы</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#0ea5e9;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>СЛАБОТОЧНЫЕ СИСТЕМЫ</h1>
+  <h2>1. СКС / ЛВС</h2>
+  <p>Портов ${fmt(s.ports)}; кабеля ${fmt(s.cable)} м (${s.reels} бухт); патч-панелей ${s.panels}; коммутаторов ${s.switches}.</p>
+  <h2>2. Видеонаблюдение</h2>
+  <p>Объём архива ≈ ${fmt(c.totalTB,1)} ТБ (${fmt(c.totalGB)} ГБ); регистраторов ${c.nNVR}.</p>
+  <h2>3. Пожарная сигнализация</h2>
+  <p>Извещателей ${f.n} шт; шлейфов ${f.loops}.</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СП 484.1311500 (пожарная автоматика), стандарты СКС (ISO/IEC 11801). Оценочный расчёт объёмов.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('lowcurrentCalc');
+  if(saved){apply(JSON.parse(saved));}else{calcScs();calcCctv();calcFire();}
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
