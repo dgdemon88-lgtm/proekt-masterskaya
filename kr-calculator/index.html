@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Нагрузки на конструкции — снег, ветер, сбор нагрузок (КР)</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#b45309;--accent2:#92400e;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fbbf24;font-size:22px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#2a1a06;border:1px solid #92400e;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#fcd34d;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🏗 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Элемент</label><input id="doc-el" placeholder="Покрытие / прогон"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="КР-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('snow')">❄ Снеговая нагрузка</button>
+  <button class="tab-btn" onclick="switchTab('wind')">💨 Ветровая нагрузка</button>
+  <button class="tab-btn" onclick="switchTab('comb')">📊 Сбор нагрузок</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== SNOW ===== -->
+<div id="sec-snow" class="sec active">
+  <div class="card">
+    <div class="card-title">Снеговая нагрузка · S = 0,7·c<sub>e</sub>·c<sub>t</sub>·μ·S<sub>g</sub></div>
+    <div class="grid4">
+      <div class="fld"><label>Снеговой район</label>
+        <select id="sn-dist" onchange="onSnowDist();calcSnow()">
+          <option value="0.8">I — 0,8 кПа</option>
+          <option value="1.2" selected>II — 1,2 кПа</option>
+          <option value="1.8">III — 1,8 кПа</option>
+          <option value="2.4">IV — 2,4 кПа</option>
+          <option value="3.2">V — 3,2 кПа</option>
+          <option value="4.0">VI — 4,0 кПа</option>
+          <option value="4.8">VII — 4,8 кПа</option>
+          <option value="5.6">VIII — 5,6 кПа</option>
+          <option value="custom">задать вручную…</option>
+        </select>
+      </div>
+      <div class="fld"><label>S<sub>g</sub> — вес снега на грунте, кПа</label><input id="sn-sg" type="number" step="0.1" value="1.2" oninput="calcSnow()"></div>
+      <div class="fld"><label>Уклон кровли α, град</label><input id="sn-alpha" type="number" step="1" value="0" oninput="onAlpha();calcSnow()"></div>
+      <div class="fld"><label>μ — коэф. формы (по уклону)</label><input id="sn-mu" type="number" step="0.05" value="1" oninput="calcSnow()"></div>
+      <div class="fld"><label>c<sub>e</sub> — коэф. сноса ветром</label>
+        <select id="sn-ce" onchange="calcSnow()">
+          <option value="1" selected>1,0 — обычные условия</option>
+          <option value="0.85">0,85 — открытая местность, продуваемое</option>
+          <option value="0.7">0,7 — сильно продуваемое покрытие</option>
+        </select>
+      </div>
+      <div class="fld"><label>c<sub>t</sub> — термический коэф.</label>
+        <select id="sn-ct" onchange="calcSnow()">
+          <option value="1" selected>1,0 — обычная кровля</option>
+          <option value="0.8">0,8 — кровля с повышенным тепловыделением</option>
+        </select>
+      </div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="sn-kpi"></div>
+    <div class="formula" id="sn-formula"></div>
+    <div class="btn-row"><button class="btn" onclick="snowToComb()">→ Добавить снег в сбор нагрузок</button></div>
+    <div class="note">
+      μ = 1,0 при α ≤ 30°; линейно снижается до 0 при α = 60°. При перепадах высот, фонарях, парапетах образуются снеговые «мешки» —
+      μ может быть значительно выше (см. СП). S<sub>g</sub> — по карте районирования СП РК 2.01-101 (уточняйте по месту строительства).
+    </div>
+  </div>
+</div>
+
+<!-- ===== WIND ===== -->
+<div id="sec-wind" class="sec">
+  <div class="card">
+    <div class="card-title">Ветровая нагрузка (средняя) · w<sub>m</sub> = w<sub>0</sub>·k(z<sub>e</sub>)·c</div>
+    <div class="grid4">
+      <div class="fld"><label>Ветровой район</label>
+        <select id="wn-dist" onchange="onWindDist();calcWind()">
+          <option value="0.17">Iа — 0,17 кПа</option>
+          <option value="0.23">I — 0,23 кПа</option>
+          <option value="0.30" selected>II — 0,30 кПа</option>
+          <option value="0.38">III — 0,38 кПа</option>
+          <option value="0.48">IV — 0,48 кПа</option>
+          <option value="0.60">V — 0,60 кПа</option>
+          <option value="0.73">VI — 0,73 кПа</option>
+          <option value="0.85">VII — 0,85 кПа</option>
+          <option value="custom">задать вручную…</option>
+        </select>
+      </div>
+      <div class="fld"><label>w<sub>0</sub> — норм. давление, кПа</label><input id="wn-w0" type="number" step="0.01" value="0.30" oninput="calcWind()"></div>
+      <div class="fld"><label>Тип местности</label>
+        <select id="wn-ter" onchange="calcWind()">
+          <option value="A">A — открытая (степь, побережья)</option>
+          <option value="B" selected>B — города, лесопокрытые (h ≤ 10 м)</option>
+          <option value="C">C — плотная застройка (h &gt; 25 м)</option>
+        </select>
+      </div>
+      <div class="fld"><label>Высота z<sub>e</sub>, м</label><input id="wn-z" type="number" step="0.5" value="10" oninput="calcWind()"></div>
+      <div class="fld"><label>Аэродинамический коэф. c</label>
+        <select id="wn-cpick" onchange="onCPick();calcWind()">
+          <option value="0.8" selected>+0,8 — наветренная стена (напор)</option>
+          <option value="-0.6">−0,6 — подветренная стена (отсос)</option>
+          <option value="-0.7">−0,7 — боковая стена</option>
+          <option value="-1.4">−1,4 — угловая зона покрытия</option>
+          <option value="1.4">+1,4 — суммарный (наветр.+подветр.)</option>
+          <option value="custom">задать вручную…</option>
+        </select>
+      </div>
+      <div class="fld"><label>c вручную</label><input id="wn-c" type="number" step="0.1" value="0.8" oninput="calcWind()"></div>
+    </div>
+    <div class="grid4" style="margin-top:6px">
+      <div class="fld"><label>Учитывать пульсации</label>
+        <select id="wn-puls" onchange="calcWind()">
+          <option value="0" selected>Нет (только средняя)</option>
+          <option value="1">Да (упрощённо, коэф. ниже)</option>
+        </select>
+      </div>
+      <div class="fld"><label>ζ·ν — коэф. пульсаций (упрощённо)</label><input id="wn-zeta" type="number" step="0.05" value="0.5" oninput="calcWind()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="wn-kpi"></div>
+    <div class="formula" id="wn-formula"></div>
+    <div class="btn-row"><button class="btn" onclick="windToComb()">→ Добавить ветер в сбор нагрузок</button></div>
+    <div class="note">
+      k(z<sub>e</sub>) = k<sub>10</sub>·(z/10)<sup>2α</sup>: тип A — k<sub>10</sub>=1,0 (2α=0,30); B — 0,65 (0,40); C — 0,40 (0,50).
+      Пульсационная составляющая здесь оценивается упрощённо (w<sub>p</sub> = w<sub>m</sub>·ζν); для ответственных сооружений выполняется полный расчёт по СП.
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMBINATION ===== -->
+<div id="sec-comb" class="sec">
+  <div class="card">
+    <div class="card-title">Сбор нагрузок на элемент</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr>
+          <th>Наименование нагрузки</th>
+          <th style="width:80px">Тип</th>
+          <th style="width:130px">Норм. q<sub>н</sub>, кПа</th>
+          <th style="width:110px">γ<sub>f</sub></th>
+          <th style="width:130px">Расч. q = q<sub>н</sub>·γ<sub>f</sub></th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="comb-rows"></tbody>
+        <tfoot>
+          <tr class="total"><td colspan="2">ИТОГО, кПа</td><td id="comb-qn" style="text-align:right"></td><td></td><td id="comb-qd" style="text-align:right"></td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addComb()">＋ Добавить нагрузку</button>
+    <div class="grid3" style="margin-top:14px">
+      <div class="fld"><label>Грузовая ширина b, м (для линейной нагрузки)</label><input id="comb-b" type="number" step="0.1" value="1" oninput="calcComb()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:14px" id="comb-kpi"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">
+      q<sub>н</sub> — нормативная нагрузка, q — расчётная (с коэффициентом надёжности γ<sub>f</sub>). Типовые γ<sub>f</sub>: собственный вес ж/б 1,1;
+      стяжки/утеплитель 1,3; снег 1,4; полезная 1,2–1,3. Линейная нагрузка на балку/прогон = q · b (грузовая ширина).
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Снеговые районы — S<sub>g</sub>, кПа (кгс/м²)</div>
+    <table class="ref-table">
+      <thead><tr><th>Район</th><th>S<sub>g</sub>, кПа</th><th>кгс/м²</th></tr></thead>
+      <tbody>
+        <tr><td class="c">I</td><td>0,8</td><td>80</td></tr><tr><td class="c">II</td><td>1,2</td><td>120</td></tr>
+        <tr><td class="c">III</td><td>1,8</td><td>180</td></tr><tr><td class="c">IV</td><td>2,4</td><td>240</td></tr>
+        <tr><td class="c">V</td><td>3,2</td><td>320</td></tr><tr><td class="c">VI</td><td>4,0</td><td>400</td></tr>
+        <tr><td class="c">VII</td><td>4,8</td><td>480</td></tr><tr><td class="c">VIII</td><td>5,6</td><td>560</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Значения ориентировочные (по СНиП «Нагрузки и воздействия»). Для РК — по карте районирования СП РК 2.01-101 или по городу.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ветровые районы — w<sub>0</sub>, кПа</div>
+    <table class="ref-table">
+      <thead><tr><th>Район</th><th>w<sub>0</sub>, кПа</th><th>кгс/м²</th></tr></thead>
+      <tbody>
+        <tr><td class="c">Iа</td><td>0,17</td><td>17</td></tr><tr><td class="c">I</td><td>0,23</td><td>23</td></tr>
+        <tr><td class="c">II</td><td>0,30</td><td>30</td></tr><tr><td class="c">III</td><td>0,38</td><td>38</td></tr>
+        <tr><td class="c">IV</td><td>0,48</td><td>48</td></tr><tr><td class="c">V</td><td>0,60</td><td>60</td></tr>
+        <tr><td class="c">VI</td><td>0,73</td><td>73</td></tr><tr><td class="c">VII</td><td>0,85</td><td>85</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">Коэффициент k(z<sub>e</sub>) по высоте и типу местности</div>
+    <table class="ref-table">
+      <thead><tr><th>Высота z, м</th><th>Тип A</th><th>Тип B</th><th>Тип C</th></tr></thead>
+      <tbody id="kz-ref-body"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+const KGF=101.97; // кПа -> кгс/м²
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let combRows=[]; // {name,type,qn,gf}
+
+/* ===== SNOW ===== */
+function onSnowDist(){const v=$('sn-dist').value;if(v!=='custom')$('sn-sg').value=v;}
+function onAlpha(){const a=parseFloat($('sn-alpha').value)||0;let mu;if(a<=30)mu=1;else if(a>=60)mu=0;else mu=1-(a-30)/30;$('sn-mu').value=+mu.toFixed(3);}
+function calcSnow(){
+  const Sg=parseFloat($('sn-sg').value)||0;
+  const mu=parseFloat($('sn-mu').value)||0;
+  const ce=parseFloat($('sn-ce').value)||1;
+  const ct=parseFloat($('sn-ct').value)||1;
+  const S=0.7*ce*ct*mu*Sg;
+  const Sd=S*1.4; // расчётная (γf=1.4)
+  $('sn-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(S,3)}</span><span class="u">кПа</span><span class="lbl">S нормативная</span></div>
+    <div class="kpi"><span class="v">${fmt(S*KGF,1)}</span><span class="u">кгс/м²</span><span class="lbl">S нормативная</span></div>
+    <div class="kpi"><span class="v">${fmt(Sd,3)}</span><span class="u">кПа</span><span class="lbl">S расчётная (γf=1,4)</span></div>`;
+  $('sn-formula').innerHTML=`S = 0,7 · c<sub>e</sub>(${ce}) · c<sub>t</sub>(${ct}) · μ(${fmt(mu,2)}) · S<sub>g</sub>(${fmt(Sg,2)}) = <b>${fmt(S,3)} кПа</b> = ${fmt(S*KGF,1)} кгс/м²`;
+  window._S=S;
+}
+function snowToComb(){combRows.push({name:'Снеговая нагрузка',type:'кратк.',qn:+(window._S||0).toFixed(3),gf:1.4});switchTab('comb');renderComb();}
+
+/* ===== WIND ===== */
+const TER={A:{k10:1.0,a2:0.30},B:{k10:0.65,a2:0.40},C:{k10:0.40,a2:0.50}};
+function kz(z,ter){const t=TER[ter];return t.k10*Math.pow(Math.max(z,5)/10,t.a2);}
+function onWindDist(){const v=$('wn-dist').value;if(v!=='custom')$('wn-w0').value=v;}
+function onCPick(){const v=$('wn-cpick').value;if(v!=='custom')$('wn-c').value=v;}
+function calcWind(){
+  const w0=parseFloat($('wn-w0').value)||0;
+  const ter=$('wn-ter').value;
+  const z=parseFloat($('wn-z').value)||10;
+  const c=parseFloat($('wn-c').value)||0;
+  const k=kz(z,ter);
+  const wm=w0*k*c;
+  const puls=$('wn-puls').value==='1';
+  const zeta=parseFloat($('wn-zeta').value)||0;
+  const wp=puls?wm*zeta:0;
+  const wn=wm+wp; // нормативная суммарная
+  const wd=wn*1.4; // расчётная γf=1.4
+  $('wn-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(k,3)}</span><span class="u">—</span><span class="lbl">k(z)</span></div>
+    <div class="kpi big"><span class="v">${fmt(wm,3)}</span><span class="u">кПа</span><span class="lbl">w средняя</span></div>
+    ${puls?`<div class="kpi"><span class="v">${fmt(wp,3)}</span><span class="u">кПа</span><span class="lbl">w пульсац.</span></div>`:''}
+    <div class="kpi"><span class="v">${fmt(wn,3)}</span><span class="u">кПа</span><span class="lbl">w норм. (${fmt(wn*KGF,1)} кгс/м²)</span></div>
+    <div class="kpi"><span class="v">${fmt(wd,3)}</span><span class="u">кПа</span><span class="lbl">w расч. (γf=1,4)</span></div>`;
+  $('wn-formula').innerHTML=`w<sub>m</sub> = w<sub>0</sub>(${fmt(w0,2)}) · k(${fmt(k,3)}) · c(${fmt(c,2)}) = <b>${fmt(wm,3)} кПа</b>`+(puls?` ; w = w<sub>m</sub>·(1+${zeta}) = <b>${fmt(wn,3)} кПа</b>`:'');
+  window._W=wn;
+}
+function windToComb(){combRows.push({name:'Ветровая нагрузка',type:'кратк.',qn:+(window._W||0).toFixed(3),gf:1.4});switchTab('comb');renderComb();}
+
+/* ===== COMBINATION ===== */
+function addComb(){combRows.push({name:'',type:'пост.',qn:0,gf:1.1});renderComb();}
+function delComb(i){combRows.splice(i,1);renderComb();}
+function updComb(i,f,v){combRows[i][f]=(f==='name'||f==='type')?v:(parseFloat(v)||0);renderComb();}
+function renderComb(){
+  const tb=$('comb-rows');
+  if(!combRows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-s)">Нет нагрузок. Добавьте вручную или перенесите снег/ветер.</td></tr>';}
+  else tb.innerHTML=combRows.map((r,i)=>{
+    const qd=r.qn*r.gf;
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updComb(${i},'name',this.value)"></td>
+      <td><select class="ap-inp" onchange="updComb(${i},'type',this.value)">
+        <option${r.type==='пост.'?' selected':''}>пост.</option>
+        <option${r.type==='длит.'?' selected':''}>длит.</option>
+        <option${r.type==='кратк.'?' selected':''}>кратк.</option></select></td>
+      <td><input class="ap-inp num" type="number" step="0.001" value="${r.qn}" oninput="updComb(${i},'qn',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.05" value="${r.gf}" oninput="updComb(${i},'gf',this.value)"></td>
+      <td class="num">${fmt(qd,3)}</td>
+      <td><button class="btn-del" onclick="delComb(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  calcComb();
+}
+function calcComb(){
+  const qn=combRows.reduce((a,r)=>a+r.qn,0);
+  const qd=combRows.reduce((a,r)=>a+r.qn*r.gf,0);
+  $('comb-qn').textContent=fmt(qn,3);
+  $('comb-qd').textContent=fmt(qd,3);
+  const b=parseFloat($('comb-b').value)||1;
+  $('comb-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(qn,3)}</span><span class="u">кПа</span><span class="lbl">Σ норм. нагрузка</span></div>
+    <div class="kpi big"><span class="v">${fmt(qd,3)}</span><span class="u">кПа</span><span class="lbl">Σ расч. нагрузка</span></div>
+    <div class="kpi"><span class="v">${fmt(qn*b,3)}</span><span class="u">кН/м</span><span class="lbl">Линейн. норм. (b=${fmt(b,1)})</span></div>
+    <div class="kpi"><span class="v">${fmt(qd*b,3)}</span><span class="u">кН/м</span><span class="lbl">Линейн. расч. (b=${fmt(b,1)})</span></div>`;
+}
+
+/* ===== utils ===== */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['snow','wind','comb','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function fillKzRef(){const zs=[5,10,20,40,60,100,200];$('kz-ref-body').innerHTML=zs.map(z=>`<tr><td class="c">${z}</td><td>${fmt(kz(z,'A'),3)}</td><td>${fmt(kz(z,'B'),3)}</td><td>${fmt(kz(z,'C'),3)}</td></tr>`).join('');}
+
+function collect(){const o={};['org','obj','el','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,
+    snow:{dist:$('sn-dist').value,sg:$('sn-sg').value,alpha:$('sn-alpha').value,mu:$('sn-mu').value,ce:$('sn-ce').value,ct:$('sn-ct').value},
+    wind:{dist:$('wn-dist').value,w0:$('wn-w0').value,ter:$('wn-ter').value,z:$('wn-z').value,cpick:$('wn-cpick').value,c:$('wn-c').value,puls:$('wn-puls').value,zeta:$('wn-zeta').value},
+    comb:combRows,b:$('comb-b').value,logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','el','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const s=d.snow||{};['dist','sg','alpha','mu','ce','ct'].forEach(k=>{if(s[k]!=null)$('sn-'+(k==='sg'?'sg':k)).value=s[k];});
+  const w=d.wind||{};['dist','w0','ter','z','cpick','c','puls','zeta'].forEach(k=>{if(w[k]!=null)$('wn-'+k).value=w[k];});
+  if(Array.isArray(d.comb))combRows=d.comb;if(d.b!=null)$('comb-b').value=d.b;
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcSnow();calcWind();renderComb();}
+function saveLS(){localStorage.setItem('krCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('krCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#92400e;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcSnow();calcWind();calcComb();
+  const S=window._S||0, W=window._W||0;
+  const qn=combRows.reduce((a,r)=>a+r.qn,0),qd=combRows.reduce((a,r)=>a+r.qn*r.gf,0);
+  const b=parseFloat($('comb-b').value)||1;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:4px 7px;font-size:9pt';const th='border:1px solid #88a;padding:5px 7px;font-size:9pt;background:#fdf0e0;text-align:left';
+  let cRows=combRows.map(r=>`<tr><td style="${td}">${esc(r.name)}</td><td style="${td}">${esc(r.type)}</td><td style="${td};text-align:right">${fmt(r.qn,3)}</td><td style="${td};text-align:right">${fmt(r.gf,2)}</td><td style="${td};text-align:right">${fmt(r.qn*r.gf,3)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Сбор нагрузок</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:14px 0 6px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#b45309;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Элемент: ${esc($('doc-el').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>СБОР НАГРУЗОК НА КОНСТРУКЦИЮ</h1>
+  <h2>1. Снеговая нагрузка</h2>
+  <p>S = 0,7·c<sub>e</sub>·c<sub>t</sub>·μ·S<sub>g</sub> = <b>${fmt(S,3)} кПа</b> (${fmt(S*KGF,1)} кгс/м²); расчётная (γ<sub>f</sub>=1,4) = ${fmt(S*1.4,3)} кПа.</p>
+  <h2>2. Ветровая нагрузка</h2>
+  <p>w<sub>m</sub> = w<sub>0</sub>·k(z)·c; нормативная w = <b>${fmt(W,3)} кПа</b> (${fmt(W*KGF,1)} кгс/м²); расчётная = ${fmt(W*1.4,3)} кПа.</p>
+  <h2>3. Сбор нагрузок</h2>
+  <table><thead><tr><th style="${th}">Наименование</th><th style="${th}">Тип</th><th style="${th}">qн, кПа</th><th style="${th}">γf</th><th style="${th}">q, кПа</th></tr></thead>
+  <tbody>${cRows||'<tr><td colspan="5" style="text-align:center">нет данных</td></tr>'}
+  <tr class="tot"><td colspan="2" style="${td}">ИТОГО</td><td style="${td};text-align:right">${fmt(qn,3)}</td><td style="${td}"></td><td style="${td};text-align:right">${fmt(qd,3)}</td></tr></tbody></table>
+  <p>Линейная нагрузка при грузовой ширине b = ${fmt(b,1)} м: нормативная ${fmt(qn*b,3)} кН/м; расчётная <b>${fmt(qd*b,3)} кН/м</b>.</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СП РК 2.01-101 «Нагрузки и воздействия» / СНиП РК 2.01-01.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  fillKzRef();
+  const saved=localStorage.getItem('krCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    combRows=[
+      {name:'Ж/б плита покрытия',type:'пост.',qn:3.0,gf:1.1},
+      {name:'Стяжка + утеплитель + кровля',type:'пост.',qn:1.5,gf:1.3}
+    ];
+    calcSnow();calcWind();renderComb();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
