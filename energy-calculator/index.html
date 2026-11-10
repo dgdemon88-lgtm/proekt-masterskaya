@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Энергетический паспорт здания — энергоэффективность</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#16a34a;--accent2:#15803d;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#4ade80;font-size:24px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#06301f;border:1px solid #15803d;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#6ee7b7;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.class-badge{display:inline-flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#fff;border-radius:10px;padding:8px 22px;letter-spacing:.02em}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;font-weight:600}
+.scale{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.scale-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.scale-bar{height:20px;border-radius:4px;color:#fff;font-weight:700;display:flex;align-items:center;padding:0 8px;font-size:11px}
+.scale-row.on{outline:2px solid #fff;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🌿 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование здания"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ЭЭ-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('geo')">🏢 Геометрия и климат</button>
+  <button class="tab-btn" onclick="switchTab('env')">🧱 Теплозащита ограждений</button>
+  <button class="tab-btn" onclick="switchTab('vent')">💨 Вентиляция и теплопоступления</button>
+  <button class="tab-btn" onclick="switchTab('res')">📗 Энергопаспорт</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== GEO ===== -->
+<div id="sec-geo" class="sec active">
+  <div class="card">
+    <div class="card-title">Геометрия здания</div>
+    <div class="grid4">
+      <div class="fld"><label>Отапливаемый объём V<sub>от</sub>, м³</label><input id="g-V" type="number" step="10" value="3000" oninput="recalc()"></div>
+      <div class="fld"><label>Отапливаемая площадь A<sub>от</sub>, м²</label><input id="g-Aot" type="number" step="1" value="900" oninput="recalc()"></div>
+      <div class="fld"><label>Полезная / жилая площадь A<sub>ж</sub>, м²</label><input id="g-Azh" type="number" step="1" value="700" oninput="recalc()"></div>
+      <div class="fld"><label>Тип здания</label>
+        <select id="g-type" onchange="recalc()">
+          <option value="res">Жилое</option>
+          <option value="pub">Общественное / административное</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Климат отопительного периода</div>
+    <div class="grid4">
+      <div class="fld"><label>Внутренняя t<sub>в</sub>, °С</label><input id="g-tin" type="number" step="0.5" value="20" oninput="recalc()"></div>
+      <div class="fld"><label>Средняя t<sub>от</sub> за период, °С</label><input id="g-tot" type="number" step="0.1" value="-7" oninput="recalc()"></div>
+      <div class="fld"><label>Продолжительность z<sub>от</sub>, сут</label><input id="g-z" type="number" step="1" value="200" oninput="recalc()"></div>
+      <div class="fld"><label>ГСОП, °С·сут</label><input id="g-gsop" type="number" readonly style="opacity:.8"></div>
+    </div>
+    <div class="hint" style="margin-top:6px">ГСОП = (t<sub>в</sub> − t<sub>от</sub>) · z<sub>от</sub>. Значения t<sub>от</sub> и z<sub>от</sub> — по строительной климатологии для города строительства.</div>
+  </div>
+</div>
+
+<!-- ===== ENVELOPE ===== -->
+<div id="sec-env" class="sec">
+  <div class="card">
+    <div class="card-title">Ограждающие конструкции — удельная теплозащитная характеристика k<sub>об</sub></div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr>
+          <th>Конструкция</th>
+          <th style="width:110px">Площадь A, м²</th>
+          <th style="width:130px">R<sub>пр</sub>, м²·°С/Вт</th>
+          <th style="width:90px">n</th>
+          <th style="width:120px">A/R·n, Вт/°С</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="env-rows"></tbody>
+        <tfoot><tr class="total"><td colspan="4">Σ n·A/R, Вт/°С</td><td id="env-sum" style="text-align:right"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addEnv()">＋ Добавить конструкцию</button>
+    <div class="kpi-row" style="margin-top:16px" id="env-kpi"></div>
+    <div class="note">
+      k<sub>об</sub> = Σ(n·A/R<sub>пр</sub>) / V<sub>от</sub>. R<sub>пр</sub> — приведённое сопротивление теплопередаче конструкции; n — коэффициент, учитывающий положение
+      (для наружных ограждений n = 1; для перекрытий над подвалом/проездами n = 0,6…0,9). Площади — по наружному обмеру.
+    </div>
+  </div>
+</div>
+
+<!-- ===== VENT ===== -->
+<div id="sec-vent" class="sec">
+  <div class="card">
+    <div class="card-title">Удельная вентиляционная характеристика k<sub>вент</sub></div>
+    <div class="grid4">
+      <div class="fld"><label>Кратность воздухообмена n<sub>в</sub>, 1/ч</label><input id="v-nv" type="number" step="0.1" value="0.5" oninput="recalc()"></div>
+      <div class="fld"><label>β<sub>v</sub> — доля вентилир. объёма</label><input id="v-beta" type="number" step="0.05" value="0.85" oninput="recalc()"></div>
+      <div class="fld"><label>k<sub>эф</sub> — эффективность рекуперации</label><input id="v-keff" type="number" step="0.05" min="0" max="0.9" value="0" oninput="recalc()"></div>
+      <div class="fld"><label>ρ<sub>в</sub>, кг/м³ (авто по t<sub>в</sub>)</label><input id="v-rho" type="number" step="0.001" value="1.205" readonly style="opacity:.8"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Теплопоступления (снижают расход)</div>
+    <div class="grid4">
+      <div class="fld"><label>Бытовые q<sub>быт</sub>, Вт/м²</label><input id="v-qbyt" type="number" step="1" value="17" oninput="recalc()"></div>
+      <div class="fld"><label>k<sub>рад</sub> — от солнечной радиации</label><input id="v-krad" type="number" step="0.005" value="0.03" oninput="recalc()"></div>
+      <div class="fld"><label>ν — коэф. снижения теплопост.</label><input id="v-nu" type="number" step="0.05" value="0.8" oninput="recalc()"></div>
+      <div class="fld"><label>ζ — эфф. авторегулирования</label><input id="v-zeta" type="number" step="0.05" value="0.9" oninput="recalc()"></div>
+      <div class="fld"><label>β<sub>h</sub> — доп. теплопотери</label><input id="v-bh" type="number" step="0.05" value="1.05" oninput="recalc()"></div>
+    </div>
+    <div class="note">
+      k<sub>вент</sub> = 0,28·c·n<sub>в</sub>·β<sub>v</sub>·ρ<sub>в</sub>·(1 − k<sub>эф</sub>), c = 1 кДж/(кг·°С).
+      k<sub>быт</sub> = q<sub>быт</sub>·A<sub>ж</sub> / (V<sub>от</sub>·(t<sub>в</sub> − t<sub>от</sub>)). Типовые q<sub>быт</sub>: жилые 10–17, общественные по расчёту.
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="sec-res" class="sec">
+  <div class="card">
+    <div class="card-title">Удельная характеристика расхода тепловой энергии</div>
+    <div class="grid4">
+      <div class="fld"><label>Нормируемая q<sub>от</sub><sup>тр</sup>, Вт/(м³·°С)</label><input id="r-qnorm" type="number" step="0.001" value="0.29" oninput="recalc()">
+        <span class="hint">По таблице норм для типа/объёма здания (см. справочник).</span></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="r-kpi"></div>
+    <div class="formula" id="r-formula"></div>
+    <div style="text-align:center;margin:18px 0">
+      <span id="r-class" class="class-badge">—</span>
+      <div class="hint" id="r-class-txt" style="margin-top:6px"></div>
+    </div>
+    <div class="scale" id="r-scale"></div>
+    <div class="rec-box" id="r-rec" style="margin-top:14px"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать энергопаспорта</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Классы энергоэффективности по отклонению от нормы</div>
+    <table class="ref-table"><thead><tr><th>Класс</th><th>Отклонение q<sub>от</sub><sup>расч</sup> от нормы, %</th><th>Характеристика</th></tr></thead>
+      <tbody>
+        <tr><td class="c" style="color:#059669">A++</td><td>≤ −60</td><td>Очень высокий</td></tr>
+        <tr><td class="c" style="color:#059669">A+</td><td>−60 … −50</td><td>Очень высокий</td></tr>
+        <tr><td class="c" style="color:#22c55e">A</td><td>−50 … −40</td><td>Высокий</td></tr>
+        <tr><td class="c" style="color:#84cc16">B+</td><td>−40 … −30</td><td>Высокий</td></tr>
+        <tr><td class="c" style="color:#84cc16">B</td><td>−30 … −15</td><td>Повышенный</td></tr>
+        <tr><td class="c" style="color:#eab308">C+</td><td>−15 … −5</td><td>Нормальный</td></tr>
+        <tr><td class="c" style="color:#eab308">C</td><td>−5 … +5</td><td>Нормальный</td></tr>
+        <tr><td class="c" style="color:#f97316">D</td><td>+5 … +15</td><td>Пониженный</td></tr>
+        <tr><td class="c" style="color:#ef4444">E</td><td>+15 … +50</td><td>Низкий</td></tr>
+        <tr><td class="c" style="color:#dc2626">F</td><td>&gt; +50</td><td>Очень низкий</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">По СП 50.13330 / СН РК 2.04-04. Классы C и выше требуются для новых зданий.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ориентировочные нормируемые q<sub>от</sub><sup>тр</sup>, Вт/(м³·°С)</div>
+    <table class="ref-table"><thead><tr><th>Тип / этажность</th><th>q<sub>от</sub><sup>тр</sup></th></tr></thead>
+      <tbody>
+        <tr><td>Жилые 1–3 этажа</td><td class="c">0,45 … 0,29</td></tr>
+        <tr><td>Жилые 4–9 этажей</td><td class="c">0,29 … 0,32</td></tr>
+        <tr><td>Жилые 10+ этажей</td><td class="c">0,26 … 0,28</td></tr>
+        <tr><td>Общественные (по объёму)</td><td class="c">0,22 … 0,54</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Точное значение — по таблицам СП 50.13330 (таблицы 14, 15) в зависимости от отапливаемого объёма/этажности.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let envRows=[]; // {name,A,R,n}
+
+const CLASSES=[
+  [-60,'A++','#059669','Очень высокий'],[-50,'A+','#059669','Очень высокий'],[-40,'A','#22c55e','Высокий'],
+  [-30,'B+','#84cc16','Высокий'],[-15,'B','#84cc16','Повышенный'],[-5,'C+','#eab308','Нормальный'],
+  [5,'C','#eab308','Нормальный'],[15,'D','#f97316','Пониженный'],[50,'E','#ef4444','Низкий'],[1e9,'F','#dc2626','Очень низкий']
+];
+
+function addEnv(){envRows.push({name:'',A:0,R:1,n:1});renderEnv();}
+function delEnv(i){envRows.splice(i,1);renderEnv();}
+function updEnv(i,f,v){envRows[i][f]=(f==='name')?v:(parseFloat(v)||0);renderEnv();}
+function renderEnv(){
+  const tb=$('env-rows');
+  if(!envRows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-s)">Нет конструкций. Нажмите «＋ Добавить конструкцию».</td></tr>';}
+  else tb.innerHTML=envRows.map((r,i)=>{
+    const v=r.R>0?r.n*r.A/r.R:0;
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updEnv(${i},'name',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="1" value="${r.A}" oninput="updEnv(${i},'A',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.05" value="${r.R}" oninput="updEnv(${i},'R',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.05" value="${r.n}" oninput="updEnv(${i},'n',this.value)"></td>
+      <td class="num">${fmt(v,2)}</td>
+      <td><button class="btn-del" onclick="delEnv(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  recalc();
+}
+
+function recalc(){
+  const V=parseFloat($('g-V').value)||1, Aot=parseFloat($('g-Aot').value)||1, Azh=parseFloat($('g-Azh').value)||0;
+  const tin=parseFloat($('g-tin').value)||20, tot=parseFloat($('g-tot').value)||0, z=parseFloat($('g-z').value)||0;
+  const dt=tin-tot, G=dt*z;
+  $('g-gsop').value=Math.round(G);
+  const rho=353/(273+tin); $('v-rho').value=rho.toFixed(3);
+
+  const envSum=envRows.reduce((a,r)=>a+(r.R>0?r.n*r.A/r.R:0),0);
+  const kob=envSum/V;
+  $('env-sum').textContent=fmt(envSum,2);
+  $('env-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(envSum,1)}</span><span class="u">Вт/°С</span><span class="lbl">Σ n·A/R</span></div>
+    <div class="kpi big"><span class="v">${fmt(kob,4)}</span><span class="u">Вт/(м³·°С)</span><span class="lbl">k_об</span></div>`;
+
+  const nv=parseFloat($('v-nv').value)||0, beta=parseFloat($('v-beta').value)||0.85, keff=parseFloat($('v-keff').value)||0;
+  const kvent=0.28*1*nv*beta*rho*(1-keff);
+  const qbyt=parseFloat($('v-qbyt').value)||0;
+  const kbyt=dt!==0?qbyt*Azh/(V*dt):0;
+  const krad=parseFloat($('v-krad').value)||0;
+  const nu=parseFloat($('v-nu').value)||0.8, zeta=parseFloat($('v-zeta').value)||0.9, bh=parseFloat($('v-bh').value)||1.05;
+
+  const qot=(kob+kvent-(kbyt+krad)*nu*zeta)*bh;
+  const Qyear=0.024*G*V*qot;
+  const qud=Qyear/Aot;
+
+  const qnorm=parseFloat($('r-qnorm').value)||0.29;
+  const dev=(qot-qnorm)/qnorm*100;
+  let cls=CLASSES[CLASSES.length-1];
+  for(const c of CLASSES){if(dev<=c[0]){cls=c;break;}}
+
+  $('r-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(kob,4)}</span><span class="u">Вт/(м³·°С)</span><span class="lbl">k_об теплозащита</span></div>
+    <div class="kpi"><span class="v">${fmt(kvent,4)}</span><span class="u">Вт/(м³·°С)</span><span class="lbl">k_вент вентиляция</span></div>
+    <div class="kpi"><span class="v">${fmt(kbyt+krad,4)}</span><span class="u">Вт/(м³·°С)</span><span class="lbl">k_быт + k_рад</span></div>
+    <div class="kpi big"><span class="v">${fmt(qot,4)}</span><span class="u">Вт/(м³·°С)</span><span class="lbl">q_от расчётная</span></div>`;
+  $('r-formula').innerHTML=`q<sub>от</sub> = [k<sub>об</sub>(${fmt(kob,3)}) + k<sub>вент</sub>(${fmt(kvent,3)}) − (k<sub>быт</sub>(${fmt(kbyt,3)})+k<sub>рад</sub>(${fmt(krad,3)}))·ν(${nu})·ζ(${zeta})]·β<sub>h</sub>(${bh}) = <b>${fmt(qot,4)}</b><br>`+
+    `Q<sub>от</sub> = 0,024·ГСОП(${Math.round(G)})·V(${fmt(V,0)})·q<sub>от</sub> = <b>${fmt(Qyear,0)} кВт·ч/год</b>; удельный = <b>${fmt(qud,1)} кВт·ч/(м²·год)</b>`;
+
+  $('r-class').textContent=cls[1];
+  $('r-class').style.background=cls[2];
+  $('r-class-txt').textContent=cls[3]+' · отклонение от нормы '+(dev>=0?'+':'')+fmt(dev,1)+'%';
+
+  // scale
+  $('r-scale').innerHTML=CLASSES.map(c=>`<div class="scale-row${c[1]===cls[1]?' on':''}"><span style="width:34px;color:${c[2]};font-weight:700">${c[1]}</span><div class="scale-bar" style="background:${c[2]};width:${c[1]===cls[1]?'260px':'120px'}">${c[1]===cls[1]?'← ваше здание':''}</div></div>`).join('');
+
+  $('r-rec').innerHTML=`Удельный расход тепловой энергии на отопление и вентиляцию — <b>${fmt(qud,1)} кВт·ч/(м²·год)</b>. `+
+    `Расчётная удельная характеристика q<sub>от</sub> = ${fmt(qot,4)} Вт/(м³·°С) при норме ${fmt(qnorm,3)} — отклонение ${(dev>=0?'+':'')}${fmt(dev,1)}%. `+
+    `<b>Класс энергоэффективности: ${cls[1]} (${cls[3].toLowerCase()})</b>.`;
+
+  window._r={kob,kvent,kbyt,krad,qot,Qyear,qud,dev,cls,G,V,Aot,qnorm};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['geo','env','vent','res','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,g:{V:$('g-V').value,Aot:$('g-Aot').value,Azh:$('g-Azh').value,type:$('g-type').value,tin:$('g-tin').value,tot:$('g-tot').value,z:$('g-z').value},
+    env:envRows,v:{nv:$('v-nv').value,beta:$('v-beta').value,keff:$('v-keff').value,qbyt:$('v-qbyt').value,krad:$('v-krad').value,nu:$('v-nu').value,zeta:$('v-zeta').value,bh:$('v-bh').value},
+    qnorm:$('r-qnorm').value,logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const g=d.g||{};Object.keys(g).forEach(k=>{if($('g-'+k)&&g[k]!=null)$('g-'+k).value=g[k];});
+  if(Array.isArray(d.env))envRows=d.env;
+  const v=d.v||{};Object.keys(v).forEach(k=>{if($('v-'+k)&&v[k]!=null)$('v-'+k).value=v[k];});
+  if(d.qnorm!=null)$('r-qnorm').value=d.qnorm;
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  renderEnv();}
+function saveLS(){localStorage.setItem('energyCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('energyCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#15803d;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  recalc();const r=window._r||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  let envR=envRows.map(x=>`<tr><td style="${td}">${esc(x.name)}</td><td style="${td};text-align:right">${fmt(x.A,1)}</td><td style="${td};text-align:right">${fmt(x.R,2)}</td><td style="${td};text-align:right">${fmt(x.n,2)}</td><td style="${td};text-align:right">${fmt(x.R>0?x.n*x.A/x.R:0,2)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Энергетический паспорт</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#16a34a;color:#fff;font-weight:bold}
+  .cls{font-size:30pt;font-weight:bold;text-align:center;color:${(r.cls||[])[2]||'#111'}}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>ЭНЕРГЕТИЧЕСКИЙ ПАСПОРТ ЗДАНИЯ</h1>
+  <h2>1. Геометрия и климат</h2>
+  <p>Отапливаемый объём V = ${esc($('g-V').value)} м³; площадь A<sub>от</sub> = ${esc($('g-Aot').value)} м²; ГСОП = ${Math.round(r.G||0)} °С·сут.</p>
+  <h2>2. Ограждающие конструкции</h2>
+  <table><thead><tr><th style="${td};background:#e0f5e8">Конструкция</th><th style="${td};background:#e0f5e8">A, м²</th><th style="${td};background:#e0f5e8">R</th><th style="${td};background:#e0f5e8">n</th><th style="${td};background:#e0f5e8">n·A/R</th></tr></thead>
+  <tbody>${envR}<tr class="tot"><td colspan="4" style="${td}">k_об = ${fmt(r.kob,4)} Вт/(м³·°С)</td><td style="${td};text-align:right">${fmt((r.kob||0)*(r.V||0),1)}</td></tr></tbody></table>
+  <h2>3. Удельные характеристики</h2>
+  <table><tbody>
+  <tr><td style="${td}">Теплозащитная k<sub>об</sub></td><td style="${td};text-align:right">${fmt(r.kob,4)}</td></tr>
+  <tr><td style="${td}">Вентиляционная k<sub>вент</sub></td><td style="${td};text-align:right">${fmt(r.kvent,4)}</td></tr>
+  <tr><td style="${td}">Теплопоступления k<sub>быт</sub>+k<sub>рад</sub></td><td style="${td};text-align:right">${fmt((r.kbyt||0)+(r.krad||0),4)}</td></tr>
+  <tr class="tot"><td style="${td}">Расчётная q<sub>от</sub></td><td style="${td};text-align:right">${fmt(r.qot,4)} Вт/(м³·°С)</td></tr>
+  <tr><td style="${td}">Нормируемая q<sub>от</sub><sup>тр</sup></td><td style="${td};text-align:right">${fmt(r.qnorm,3)}</td></tr>
+  <tr><td style="${td}">Расход за год Q<sub>от</sub></td><td style="${td};text-align:right">${fmt(r.Qyear,0)} кВт·ч</td></tr>
+  <tr><td style="${td}">Удельный расход</td><td style="${td};text-align:right">${fmt(r.qud,1)} кВт·ч/(м²·год)</td></tr>
+  </tbody></table>
+  <p>Отклонение от нормы: ${(r.dev>=0?'+':'')}${fmt(r.dev,1)}%</p>
+  <div class="cls">Класс энергоэффективности: ${(r.cls||[])[1]||'—'}</div>
+  <p style="text-align:center">(${(r.cls||[])[3]||''})</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СП 50.13330 «Тепловая защита зданий» / СН РК 2.04-04.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('energyCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    envRows=[
+      {name:'Наружные стены',A:800,R:3.0,n:1},
+      {name:'Покрытие / чердак',A:350,R:4.5,n:1},
+      {name:'Перекрытие над подвалом',A:350,R:4.0,n:0.6},
+      {name:'Окна и балконные двери',A:150,R:0.6,n:1},
+      {name:'Наружные двери',A:10,R:0.8,n:1}
+    ];
+    renderEnv();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
