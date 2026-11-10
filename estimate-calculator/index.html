@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ведомость объёмов работ и локальная смета — СН РК 8.02</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#059669;--accent2:#047857;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1320px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:860px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:9px 18px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-doc{padding:9px 18px;background:#1d4ed8;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-sm{padding:3px 9px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:5px;cursor:pointer;font-size:11.5px}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:130px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:19px;font-weight:700;color:#34d399;display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fbbf24;font-size:21px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:3px 6px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.res-table tr.sect td{background:#16283a;color:#7dd3fc;font-weight:700}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.res-table tr.sum td{background:#1a2a3a;color:#a7f3d0;font-weight:600}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 6px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.warn{background:#2a0f0f;border:1px solid #7f1d1d;border-radius:6px;padding:10px 14px;font-size:12px;color:#fca5a5;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:#f87171;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:#34d399;font-weight:600}
+.empty{text-align:center;color:var(--text-s);padding:24px 16px;font-size:13px;line-height:1.7}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🧮 Лого</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:220px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр сметы</label><input id="doc-num" placeholder="ЛС-01-01"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('vor')">📋 Ведомость объёмов</button>
+  <button class="tab-btn" onclick="switchTab('price')">💵 База расценок</button>
+  <button class="tab-btn" onclick="switchTab('est')">🧾 Локальная смета</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== ВОР ===== -->
+<div id="sec-vor" class="sec active">
+  <div class="card">
+    <div class="card-title">Ведомость объёмов работ</div>
+    <div class="btn-row" style="margin-top:0;margin-bottom:12px">
+      <button class="btn" onclick="addRow()">＋ Добавить позицию</button>
+      <button class="btn-clear" onclick="addSect()">＋ Добавить раздел</button>
+      <button class="btn-clear" onclick="openImport()">📥 Импорт объёмов из калькуляторов</button>
+      <button class="btn-clear" onclick="loadDemo()">⟳ Демо-пример</button>
+      <button class="btn-clear" onclick="clearAll()">🗑 Очистить</button>
+    </div>
+    <div id="imp-box" style="display:none;margin-bottom:12px"></div>
+    <div class="scroll">
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:46px">№</th>
+          <th style="width:130px">Обоснование</th>
+          <th>Наименование работ и затрат</th>
+          <th style="width:80px">Ед. изм.</th>
+          <th style="width:110px">Объём</th>
+          <th style="width:150px">Вид работ (НР/СП)</th>
+          <th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="vor-rows"></tbody>
+      </table>
+    </div>
+    <div class="note">
+      Обоснование — шифр расценки из действующей сметно-нормативной базы РК. Позиция попадает в смету, если её шифр найден в базе расценок
+      на соседней вкладке; иначе строка останется в ведомости объёмов, но не будет оценена.
+    </div>
+  </div>
+</div>
+
+<!-- ===== РАСЦЕНКИ ===== -->
+<div id="sec-price" class="sec">
+  <div class="card">
+    <div class="card-title">База расценок — стоимость на единицу измерения, тенге</div>
+    <div class="warn">
+      Встроенный набор расценок — <b>демонстрационный, ориентировочный</b>. Это не сметно-нормативная база РК.
+      Перед выпуском сметы замените значения на данные действующей базы (СН РК 8.02-05, сборники ЕНиР/РСН в редакции на дату расчёта)
+      или загрузите свою базу из файла.
+    </div>
+    <div class="btn-row" style="margin-top:12px;margin-bottom:12px">
+      <button class="btn" onclick="addPrice()">＋ Добавить расценку</button>
+      <button class="btn-clear" onclick="loadDemoPrices()">⟳ Загрузить демо-набор</button>
+      <button class="btn-clear" onclick="exportPrices()">⬇ Выгрузить базу (JSON)</button>
+      <button class="btn-clear" onclick="$('imp-file').click()">📂 Загрузить базу из файла</button>
+      <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importPrices(this)">
+    </div>
+    <div class="scroll">
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:130px">Шифр</th>
+          <th>Наименование</th>
+          <th style="width:70px">Ед.</th>
+          <th style="width:110px">ЗП рабочих</th>
+          <th style="width:110px">Экспл. машин</th>
+          <th style="width:110px">в т.ч. ЗП маш.</th>
+          <th style="width:120px">Материалы</th>
+          <th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="price-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== СМЕТА ===== -->
+<div id="sec-est" class="sec">
+  <div class="card">
+    <div class="card-title">Начисления и лимитированные затраты</div>
+    <div class="grid4">
+      <div class="fld"><label>Индекс пересчёта к базе</label><input id="e-idx" type="number" step="0.01" value="1" oninput="calc()"><span class="hint">на СМР в целом</span></div>
+      <div class="fld"><label>Временные здания и сооружения, %</label><input id="e-vzs" type="number" step="0.1" value="1.5" oninput="calc()"></div>
+      <div class="fld"><label>Зимнее удорожание, %</label><input id="e-win" type="number" step="0.1" value="2" oninput="calc()"></div>
+      <div class="fld"><label>Непредвиденные затраты, %</label><input id="e-unf" type="number" step="0.1" value="3" oninput="calc()"></div>
+      <div class="fld"><label>Ставка НДС, %</label><input id="e-nds" type="number" step="0.5" value="16" oninput="calc()"></div>
+      <div class="fld"><label>Учитывать НДС</label>
+        <select id="e-ndson" onchange="calc()"><option value="1" selected>Да</option><option value="0">Нет</option></select>
+      </div>
+      <div class="fld"><label>Округление итогов</label>
+        <select id="e-round" onchange="calc()">
+          <option value="1">до тенге</option>
+          <option value="1000" selected>до тыс. тенге</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Локальная смета</div>
+    <div class="kpi-row" id="e-kpi"></div>
+    <div class="scroll">
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:40px">№</th>
+          <th style="width:120px">Обоснование</th>
+          <th>Наименование</th>
+          <th style="width:60px">Ед.</th>
+          <th style="width:80px">Объём</th>
+          <th style="width:110px">ЗП, тг</th>
+          <th style="width:110px">ЭМ, тг</th>
+          <th style="width:120px">Материалы, тг</th>
+          <th style="width:110px">НР, тг</th>
+          <th style="width:110px">СП, тг</th>
+          <th style="width:130px">Всего, тг</th>
+        </tr></thead>
+        <tbody id="est-rows"></tbody>
+      </table>
+    </div>
+    <div class="scroll" style="margin-top:14px">
+      <table class="res-table" id="est-summary"></table>
+    </div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="printDoc()">⬇ PDF / Печать</button>
+      <button class="btn-doc" onclick="downloadDoc()">📝 Скачать .doc (Word)</button>
+      <button class="btn-clear" onclick="save()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="restore(true)">📂 Загрузить</button>
+    </div>
+    <div class="note">
+      Порядок начислений: прямые затраты (ЗП + эксплуатация машин + материалы) → накладные расходы и сметная прибыль от фонда оплаты труда
+      (ЗП рабочих + ЗП машинистов) по видам работ → итого СМР → лимитированные затраты → НДС.
+      Нормативы НР и СП, размеры лимитированных затрат и порядок их начисления принимайте по действующей редакции СН РК 8.02.
+    </div>
+  </div>
+</div>
+
+<!-- ===== СПРАВОЧНИКИ ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Нормативы накладных расходов и сметной прибыли (% от ФОТ)</div>
+    <table class="ref-table">
+      <thead><tr><th>Вид работ</th><th>НР, %</th><th>СП, %</th></tr></thead>
+      <tbody id="ref-nr"></tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">
+      Значения ориентировочные, приведены для порядка расчёта. Действующие нормативы — по СН РК 8.02-01 / 8.02-05 и указаниям по применению
+      сметных норм на дату составления сметы. Проценты можно менять по каждому виду работ прямо в таблице.
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Структура локальной сметы</div>
+    <table class="ref-table">
+      <thead><tr><th>Элемент</th><th>База начисления</th></tr></thead>
+      <tbody>
+        <tr><td>Прямые затраты (ПЗ)</td><td>ЗП рабочих + эксплуатация машин + материалы</td></tr>
+        <tr><td>Фонд оплаты труда (ФОТ)</td><td>ЗП рабочих + ЗП машинистов</td></tr>
+        <tr><td>Накладные расходы (НР)</td><td>% от ФОТ по виду работ</td></tr>
+        <tr><td>Сметная прибыль (СП)</td><td>% от ФОТ по виду работ</td></tr>
+        <tr><td>Итого СМР</td><td>ПЗ + НР + СП, с индексом пересчёта</td></tr>
+        <tr><td>Временные здания и сооружения</td><td>% от СМР</td></tr>
+        <tr><td>Зимнее удорожание</td><td>% от СМР</td></tr>
+        <tr><td>Непредвиденные затраты</td><td>% от (СМР + лимитированные)</td></tr>
+        <tr><td>НДС</td><td>% от итога с лимитированными и непредвиденными</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=2)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+/* виды работ: нормативы НР и СП в % от ФОТ (ориентировочные — правятся пользователем) */
+let WORK={
+  'earth'  :{name:'Земляные работы',            nr:80,  sp:50},
+  'concr'  :{name:'Бетонные и ж/б конструкции', nr:105, sp:62},
+  'metal'  :{name:'Металлические конструкции',  nr:90,  sp:60},
+  'mason'  :{name:'Каменные работы',            nr:95,  sp:58},
+  'finish' :{name:'Отделочные работы',          nr:100, sp:55},
+  'roof'   :{name:'Кровельные работы',          nr:95,  sp:55},
+  'inner'  :{name:'Внутренние инженерные сети', nr:88,  sp:52},
+  'outer'  :{name:'Наружные сети и дороги',     nr:85,  sp:50},
+  'mount'  :{name:'Монтаж оборудования',        nr:90,  sp:60}
+};
+let VOR=[];     // {kind:'sect'|'row', name, code, unit, qty, work}
+let PRICES=[];  // {code,name,unit,zp,em,zpm,mat}
+
+/* ===== ВОР ===== */
+function addRow(){ VOR.push({kind:'row',code:'',name:'',unit:'м³',qty:0,work:'concr'}); renderVor(); }
+function addSect(){ VOR.push({kind:'sect',name:'Новый раздел'}); renderVor(); }
+function delRow(i){ VOR.splice(i,1); renderVor(); }
+function updRow(i,f,v){ VOR[i][f]=(f==='qty')?(parseFloat(v)||0):v; if(f==='code')autoFill(i); renderVor(); }
+function autoFill(i){
+  const p=PRICES.find(p=>p.code&&p.code===VOR[i].code);
+  if(p){ if(!VOR[i].name)VOR[i].name=p.name; VOR[i].unit=p.unit; }
+}
+function renderVor(){
+  const tb=$('vor-rows');
+  if(!VOR.length){ tb.innerHTML='<tr><td colspan="7"><div class="empty">Ведомость пуста. Добавьте позиции, загрузите демо-пример или импортируйте объёмы из других калькуляторов.</div></td></tr>'; calc(); return; }
+  let n=0;
+  tb.innerHTML=VOR.map((r,i)=>{
+    if(r.kind==='sect'){
+      return `<tr class="sect"><td>—</td><td colspan="5"><input class="ap-inp" style="background:transparent;border:none;font-weight:700;color:#7dd3fc" value="${esc(r.name)}" oninput="updRow(${i},'name',this.value)"></td>
+        <td><button class="btn-del" onclick="delRow(${i})">×</button></td></tr>`;
+    }
+    n++;
+    const known=PRICES.some(p=>p.code&&p.code===r.code);
+    return `<tr>
+      <td class="num">${n}</td>
+      <td><input class="ap-inp" value="${esc(r.code)}" oninput="updRow(${i},'code',this.value)" style="${known?'':'border-color:#7f1d1d'}" title="${known?'расценка найдена':'шифр не найден в базе расценок'}"></td>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updRow(${i},'name',this.value)"></td>
+      <td><input class="ap-inp" value="${esc(r.unit)}" oninput="updRow(${i},'unit',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.01" value="${r.qty}" oninput="updRow(${i},'qty',this.value)"></td>
+      <td><select class="ap-inp" onchange="updRow(${i},'work',this.value)">
+        ${Object.keys(WORK).map(k=>`<option value="${k}"${r.work===k?' selected':''}>${esc(WORK[k].name)}</option>`).join('')}
+      </select></td>
+      <td><button class="btn-del" onclick="delRow(${i})">×</button></td></tr>`;
+  }).join('');
+  calc();
+}
+
+/* ===== импорт объёмов из общего канала результатов ===== */
+function openImport(){
+  const box=$('imp-box');
+  if(box.style.display==='block'){ box.style.display='none'; return; }
+  let RES={}; try{ RES=JSON.parse(localStorage.getItem('wsResults')||'{}')||{}; }catch(_){}
+  const ids=Object.keys(RES);
+  if(!ids.length){
+    box.innerHTML='<div class="empty">Канал результатов пуст. Откройте нужный калькулятор (например «Земляные работы») и выполните расчёт — его показатели появятся здесь.</div>';
+    box.style.display='block'; return;
+  }
+  let html='<div class="card" style="margin:0"><div class="card-title">Показатели из калькуляторов — отметьте, что перенести в ведомость</div><div class="scroll"><table class="res-table"><tbody>';
+  ids.forEach(id=>{
+    const r=RES[id];
+    html+=`<tr class="sect"><td colspan="4">${esc((r.title||id).split('—')[0].trim())}${r.obj?' · '+esc(r.obj):''}</td></tr>`;
+    (r.kpis||[]).forEach((k,ki)=>{
+      const num=parseFloat(String(k.v).replace(/\s| /g,'').replace(',','.'));
+      if(!isFinite(num)) return;
+      html+=`<tr><td style="width:40px;text-align:center"><input type="checkbox" data-id="${esc(id)}" data-ki="${ki}"></td>
+        <td>${esc(k.lbl)}</td><td class="num" style="width:120px">${esc(k.v)}</td><td style="width:70px">${esc(k.u||'')}</td></tr>`;
+    });
+  });
+  html+='</tbody></table></div><div class="btn-row" style="margin-top:12px"><button class="btn" onclick="doImport()">Перенести отмеченные</button>'+
+        '<button class="btn-clear" onclick="$(\'imp-box\').style.display=\'none\'">Отмена</button></div></div>';
+  box.innerHTML=html; box.style.display='block';
+}
+function doImport(){
+  let RES={}; try{ RES=JSON.parse(localStorage.getItem('wsResults')||'{}')||{}; }catch(_){}
+  let added=0;
+  $('imp-box').querySelectorAll('input[type=checkbox]:checked').forEach(cb=>{
+    const r=RES[cb.dataset.id]; if(!r)return;
+    const k=(r.kpis||[])[+cb.dataset.ki]; if(!k)return;
+    const num=parseFloat(String(k.v).replace(/\s| /g,'').replace(',','.'));
+    VOR.push({kind:'row',code:'',name:k.lbl,unit:k.u||'',qty:isFinite(num)?num:0,work:'earth'});
+    added++;
+  });
+  $('imp-box').style.display='none';
+  renderVor();
+  toast(added?('Перенесено позиций: '+added):'Ничего не отмечено');
+}
+
+/* ===== расценки ===== */
+function addPrice(){ PRICES.push({code:'',name:'',unit:'',zp:0,em:0,zpm:0,mat:0}); renderPrices(); }
+function delPrice(i){ PRICES.splice(i,1); renderPrices(); }
+function updPrice(i,f,v){ PRICES[i][f]=(f==='code'||f==='name'||f==='unit')?v:(parseFloat(v)||0); renderPrices(); }
+function renderPrices(){
+  const tb=$('price-rows');
+  if(!PRICES.length){ tb.innerHTML='<tr><td colspan="8"><div class="empty">База пуста. Загрузите демо-набор, свой файл или добавьте расценки вручную.</div></td></tr>'; renderVor(); return; }
+  tb.innerHTML=PRICES.map((p,i)=>`<tr>
+    <td><input class="ap-inp" value="${esc(p.code)}" oninput="updPrice(${i},'code',this.value)"></td>
+    <td><input class="ap-inp" value="${esc(p.name)}" oninput="updPrice(${i},'name',this.value)"></td>
+    <td><input class="ap-inp" value="${esc(p.unit)}" oninput="updPrice(${i},'unit',this.value)"></td>
+    <td><input class="ap-inp num" type="number" step="1" value="${p.zp}" oninput="updPrice(${i},'zp',this.value)"></td>
+    <td><input class="ap-inp num" type="number" step="1" value="${p.em}" oninput="updPrice(${i},'em',this.value)"></td>
+    <td><input class="ap-inp num" type="number" step="1" value="${p.zpm}" oninput="updPrice(${i},'zpm',this.value)"></td>
+    <td><input class="ap-inp num" type="number" step="1" value="${p.mat}" oninput="updPrice(${i},'mat',this.value)"></td>
+    <td><button class="btn-del" onclick="delPrice(${i})">×</button></td></tr>`).join('');
+  calc();
+}
+function exportPrices(){
+  const blob=new Blob([JSON.stringify(PRICES,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='база_расценок.json';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+function importPrices(inp){
+  const f=inp.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!Array.isArray(d)) throw 0;
+      PRICES=d.map(p=>({code:String(p.code||''),name:String(p.name||''),unit:String(p.unit||''),
+        zp:+p.zp||0,em:+p.em||0,zpm:+p.zpm||0,mat:+p.mat||0}));
+      renderPrices(); toast('Загружено расценок: '+PRICES.length);
+    }catch(_){ alert('Не удалось прочитать файл: ожидается JSON-массив расценок.'); }
+    inp.value='';
+  };
+  rd.readAsText(f);
+}
+
+/* ===== расчёт сметы ===== */
+function calc(){
+  const idx=parseFloat($('e-idx').value)||1;
+  const rnd=parseFloat($('e-round').value)||1;
+  const unitName=rnd===1000?'тыс. тг':'тг';
+  let n=0, html='', tZP=0,tEM=0,tMAT=0,tNR=0,tSP=0,tALL=0, unpriced=0;
+
+  VOR.forEach(r=>{
+    if(r.kind==='sect'){ html+=`<tr class="sect"><td colspan="11">${esc(r.name)}</td></tr>`; return; }
+    const p=PRICES.find(p=>p.code&&p.code===r.code);
+    if(!p){ unpriced++; return; }
+    n++;
+    const q=r.qty||0;
+    const zp=q*p.zp, em=q*p.em, zpm=q*p.zpm, mat=q*p.mat;
+    const fot=zp+zpm;
+    const w=WORK[r.work]||{nr:0,sp:0};
+    const nr=fot*w.nr/100, sp=fot*w.sp/100;
+    const all=zp+em+mat+nr+sp;
+    tZP+=zp; tEM+=em; tMAT+=mat; tNR+=nr; tSP+=sp; tALL+=all;
+    html+=`<tr>
+      <td class="num">${n}</td><td>${esc(r.code)}</td><td>${esc(r.name||p.name)}</td>
+      <td>${esc(r.unit||p.unit)}</td><td class="num">${fmt(q,2)}</td>
+      <td class="num">${fmt(zp,0)}</td><td class="num">${fmt(em,0)}</td><td class="num">${fmt(mat,0)}</td>
+      <td class="num">${fmt(nr,0)}</td><td class="num">${fmt(sp,0)}</td><td class="num">${fmt(all,0)}</td></tr>`;
+  });
+  if(!n) html='<tr><td colspan="11"><div class="empty">Оценённых позиций нет. Проставьте в ведомости шифры расценок, которые есть в базе.</div></td></tr>';
+  $('est-rows').innerHTML=html;
+
+  const smr=(tZP+tEM+tMAT+tNR+tSP)*idx;
+  const vzs=smr*(parseFloat($('e-vzs').value)||0)/100;
+  const win=smr*(parseFloat($('e-win').value)||0)/100;
+  const base2=smr+vzs+win;
+  const unf=base2*(parseFloat($('e-unf').value)||0)/100;
+  const beforeNds=base2+unf;
+  const ndsOn=$('e-ndson').value==='1';
+  const ndsRate=parseFloat($('e-nds').value)||0;
+  const nds=ndsOn?beforeNds*ndsRate/100:0;
+  const total=beforeNds+nds;
+  const k=1/rnd, d=rnd===1000?3:0;
+
+  const rows=[
+    ['Заработная плата рабочих', tZP*idx],
+    ['Эксплуатация машин и механизмов', tEM*idx],
+    ['Материальные ресурсы', tMAT*idx],
+    ['Накладные расходы', tNR*idx],
+    ['Сметная прибыль', tSP*idx],
+    ['ИТОГО строительно-монтажных работ', smr, 'sum'],
+    ['Временные здания и сооружения', vzs],
+    ['Зимнее удорожание', win],
+    ['Непредвиденные затраты', unf],
+    ['ИТОГО до НДС', beforeNds, 'sum'],
+    [ndsOn?('НДС '+fmt(ndsRate,0)+'%'):'НДС (не учитывается)', nds],
+    ['ВСЕГО по смете', total, 'total']
+  ];
+  $('est-summary').innerHTML='<thead><tr><th>Наименование затрат</th><th style="width:200px">Сумма, '+unitName+'</th></tr></thead><tbody>'+
+    rows.map(r=>`<tr class="${r[2]||''}"><td>${esc(r[0])}</td><td class="num">${fmt(r[1]*k,d)}</td></tr>`).join('')+'</tbody>';
+
+  $('e-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(n,0)}</span><span class="u">поз.</span><span class="lbl">Оценено позиций</span></div>
+    <div class="kpi"><span class="v">${fmt(smr*k,d)}</span><span class="u">${unitName}</span><span class="lbl">Итого СМР</span></div>
+    <div class="kpi"><span class="v">${fmt((tZP+tzpmSafe())*idx*k,d)}</span><span class="u">${unitName}</span><span class="lbl">Фонд оплаты труда</span></div>
+    <div class="kpi big"><span class="v">${fmt(total*k,d)}</span><span class="u">${unitName}</span><span class="lbl">Всего по смете</span></div>
+    ${unpriced?`<div class="kpi"><span class="v" style="color:#f87171">${fmt(unpriced,0)}</span><span class="u">поз.</span><span class="lbl">Без расценки</span></div>`:''}`;
+
+  window._est={rows:rows,unitName:unitName,k:k,d:d,n:n,unpriced:unpriced,total:total,smr:smr};
+  saveQuiet();
+}
+/* ФОТ по позициям, посчитанный отдельно (ЗП машинистов) */
+function tzpmSafe(){
+  let s=0;
+  VOR.forEach(r=>{ if(r.kind!=='row')return; const p=PRICES.find(p=>p.code&&p.code===r.code); if(p)s+=(r.qty||0)*p.zpm; });
+  return s;
+}
+
+/* ===== справочник видов работ ===== */
+function renderRef(){
+  $('ref-nr').innerHTML=Object.keys(WORK).map(k=>`<tr>
+    <td>${esc(WORK[k].name)}</td>
+    <td class="c"><input class="ap-inp num" style="width:80px" type="number" step="1" value="${WORK[k].nr}" oninput="WORK['${k}'].nr=parseFloat(this.value)||0;calc()"></td>
+    <td class="c"><input class="ap-inp num" style="width:80px" type="number" step="1" value="${WORK[k].sp}" oninput="WORK['${k}'].sp=parseFloat(this.value)||0;calc()"></td>
+  </tr>`).join('');
+}
+
+/* ===== демо ===== */
+function loadDemoPrices(){
+  PRICES=[
+    {code:'Е1-01-01',  name:'Разработка грунта экскаватором с погрузкой в автосамосвалы', unit:'м³',  zp:120, em:640, zpm:210, mat:0},
+    {code:'Е1-02-05',  name:'Обратная засыпка пазух с уплотнением',                        unit:'м³',  zp:180, em:260, zpm:90,  mat:0},
+    {code:'Е6-01-01',  name:'Устройство бетонной подготовки',                              unit:'м³',  zp:1450,em:520, zpm:180, mat:22500},
+    {code:'Е6-01-15',  name:'Устройство монолитных фундаментов, бетон В25',                unit:'м³',  zp:3800,em:1250,zpm:420, mat:31500},
+    {code:'Е6-01-30',  name:'Устройство монолитных стен и колонн',                          unit:'м³',  zp:5600,em:1600,zpm:520, mat:33800},
+    {code:'Е6-08-02',  name:'Армирование конструкций арматурой А500С',                      unit:'т',   zp:24000,em:6800,zpm:2100,mat:365000},
+    {code:'Е8-02-01',  name:'Кладка стен из керамического кирпича',                         unit:'м³',  zp:6200,em:1450,zpm:380, mat:41000},
+    {code:'Е7-05-07',  name:'Монтаж плит перекрытия',                                       unit:'шт',  zp:2400,em:5200,zpm:1800,mat:48000},
+    {code:'Е12-01-02', name:'Устройство кровли из наплавляемых материалов в 2 слоя',        unit:'м²',  zp:520, em:80,  zpm:25,  mat:3900},
+    {code:'Е15-02-16', name:'Штукатурка внутренних поверхностей стен',                      unit:'м²',  zp:640, em:45,  zpm:12,  mat:1250},
+    {code:'Е11-01-11', name:'Устройство цементно-песчаной стяжки, 40 мм',                   unit:'м²',  zp:380, em:60,  zpm:18,  mat:1450},
+    {code:'Е16-04-01', name:'Прокладка трубопроводов водоснабжения из полипропилена',       unit:'м',   zp:420, em:35,  zpm:10,  mat:1850},
+    {code:'Е8-01-03',  name:'Прокладка кабеля в лотках',                                    unit:'м',   zp:260, em:20,  zpm:6,   mat:1600},
+    {code:'Е27-06-01', name:'Устройство асфальтобетонного покрытия',                        unit:'м²',  zp:210, em:390, zpm:140, mat:3200}
+  ];
+  renderPrices(); toast('Загружен демо-набор: '+PRICES.length+' расценок');
+}
+function loadDemo(){
+  if(!PRICES.length) loadDemoPrices();
+  VOR=[
+    {kind:'sect',name:'Раздел 1. Земляные работы'},
+    {kind:'row',code:'Е1-01-01',name:'Разработка грунта экскаватором',        unit:'м³',qty:1850,work:'earth'},
+    {kind:'row',code:'Е1-02-05',name:'Обратная засыпка пазух с уплотнением',   unit:'м³',qty:620, work:'earth'},
+    {kind:'sect',name:'Раздел 2. Фундаменты и конструкции'},
+    {kind:'row',code:'Е6-01-01',name:'Бетонная подготовка',                    unit:'м³',qty:42,  work:'concr'},
+    {kind:'row',code:'Е6-01-15',name:'Монолитные фундаменты, бетон В25',       unit:'м³',qty:310, work:'concr'},
+    {kind:'row',code:'Е6-08-02',name:'Армирование конструкций',                unit:'т',  qty:24.5,work:'concr'},
+    {kind:'sect',name:'Раздел 3. Отделка и кровля'},
+    {kind:'row',code:'Е12-01-02',name:'Кровля из наплавляемых материалов',     unit:'м²',qty:980, work:'roof'},
+    {kind:'row',code:'Е15-02-16',name:'Штукатурка стен',                       unit:'м²',qty:3400,work:'finish'}
+  ];
+  renderVor(); toast('Загружен демонстрационный пример');
+}
+function clearAll(){ if(!confirm('Очистить ведомость объёмов?'))return; VOR=[]; renderVor(); }
+
+/* ===== документ ===== */
+function docHTML(forPrint){
+  const e=window._est||{rows:[]};
+  const org=$('doc-org').value.trim(), obj=$('doc-obj').value.trim(), num=$('doc-num').value.trim();
+  const exec=$('doc-exec').value.trim(), date=$('doc-date').value.trim();
+  const logo=logoBase64?`<img src="${logoBase64}" style="max-height:56px;max-width:170px;object-fit:contain">`:'';
+  const td='border:1px solid #999;padding:4px 7px;font-size:9pt';
+  const th='border:1px solid #777;padding:5px 7px;font-size:9pt;background:#dcfce7;text-align:left';
+  let n=0, rows='';
+  VOR.forEach(r=>{
+    if(r.kind==='sect'){ rows+=`<tr><td colspan="7" style="${td};background:#eef7ff;font-weight:bold">${esc(r.name)}</td></tr>`; return; }
+    const p=PRICES.find(p=>p.code&&p.code===r.code); if(!p)return;
+    n++;
+    const q=r.qty||0, zp=q*p.zp, em=q*p.em, mat=q*p.mat, fot=zp+q*p.zpm;
+    const w=WORK[r.work]||{nr:0,sp:0};
+    const all=zp+em+mat+fot*w.nr/100+fot*w.sp/100;
+    rows+=`<tr><td style="${td}">${n}</td><td style="${td}">${esc(r.code)}</td><td style="${td}">${esc(r.name||p.name)}</td>
+      <td style="${td}">${esc(r.unit||p.unit)}</td><td style="${td};text-align:right">${fmt(q,2)}</td>
+      <td style="${td};text-align:right">${fmt(zp+em+mat,0)}</td><td style="${td};text-align:right">${fmt(all,0)}</td></tr>`;
+  });
+  const summary=(e.rows||[]).map(r=>`<tr><td style="${td}${r[2]==='total'?';font-weight:bold':''}">${esc(r[0])}</td>
+    <td style="${td};text-align:right${r[2]==='total'?';font-weight:bold':''}">${fmt(r[1]*e.k,e.d)}</td></tr>`).join('');
+  const inner=`<table style="width:100%;border:none;border-collapse:collapse;margin-bottom:8px"><tr>
+    <td style="border:none;width:180px">${logo}</td>
+    <td style="border:none;font-family:Arial,sans-serif;font-size:10pt">
+      ${org?`<div style="font-size:11.5pt;font-weight:bold">${esc(org)}</div>`:''}
+      <div>${[obj?'Объект: <b>'+esc(obj)+'</b>':'',num?'Шифр: '+esc(num):'',exec?'Исп.: '+esc(exec):'',date].filter(Boolean).join(' &nbsp;|&nbsp; ')}</div>
+    </td></tr></table><hr style="border:none;border-top:1px solid #888;margin-bottom:12px">
+    <h1>ЛОКАЛЬНАЯ СМЕТА</h1>
+    <p style="text-align:center;font-size:10.5pt;margin-bottom:12px">${esc(obj||'')}</p>
+    <h2>1. Ведомость объёмов работ и стоимость</h2>
+    <table style="width:100%;border-collapse:collapse"><thead><tr>
+      <th style="${th}">№</th><th style="${th}">Обоснование</th><th style="${th}">Наименование работ</th>
+      <th style="${th}">Ед.</th><th style="${th}">Объём</th><th style="${th}">Прямые затраты, тг</th><th style="${th}">Всего, тг</th>
+    </tr></thead><tbody>${rows||`<tr><td colspan="7" style="${td};text-align:center">нет оценённых позиций</td></tr>`}</tbody></table>
+    <h2>2. Сводка затрат, ${esc(e.unitName||'тг')}</h2>
+    <table style="width:100%;border-collapse:collapse"><tbody>${summary}</tbody></table>
+    <p style="font-size:8.5pt;color:#555;margin-top:10px">Смета составлена по структуре СН РК 8.02. Стоимостные показатели приняты
+    по базе расценок, загруженной в калькулятор; перед выпуском документа значения подлежат проверке по действующей
+    сметно-нормативной базе на дату составления.</p>`;
+  if(!forPrint) return inner;
+  return `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Локальная смета — ${esc(obj||'объект')}</title>
+    <style>body{font-family:'Times New Roman',serif;font-size:10pt;color:#111;padding:14mm 12mm;line-height:1.4}
+    h1{font-size:14pt;text-align:center;margin:0 0 10px}h2{font-size:11pt;margin:14px 0 6px}
+    @page{size:A4 landscape;margin:12mm}</style></head><body>${inner}</body></html>`;
+}
+function printDoc(){ const w=window.open('','_blank'); w.document.write(docHTML(true)); w.document.close(); setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500); }
+function downloadDoc(){
+  const html=docHTML(true).replace('<head>','<head><meta name="ProgId" content="Word.Document">');
+  const blob=new Blob(['﻿',html],{type:'application/msword'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=('Смета_'+($('doc-obj').value.trim()||'объект')).replace(/[\\/:*?"<>|]/g,'_')+'.doc';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  toast('Файл сохранён — откроется в Word');
+}
+
+/* ===== утилиты ===== */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['vor','price','est','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#047857;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
+
+const DOCF=['org','obj','num','exec','date'], NUMF=['e-idx','e-vzs','e-win','e-unf','e-nds','e-ndson','e-round'];
+function collect(){
+  const d={};DOCF.forEach(k=>d[k]=$('doc-'+k).value);
+  const f={};NUMF.forEach(k=>f[k]=$(k).value);
+  return {doc:d,f:f,vor:VOR,prices:PRICES,work:WORK,logo:logoBase64};
+}
+function saveQuiet(){ try{localStorage.setItem('estimateCalc',JSON.stringify(collect()));}catch(_){} }
+function save(){ saveQuiet(); toast('Сохранено'); }
+function restore(manual){
+  let s=null; try{s=JSON.parse(localStorage.getItem('estimateCalc')||'null');}catch(_){}
+  if(!s){ if(manual)alert('Нет сохранённых данных'); return false; }
+  DOCF.forEach(k=>{if(s.doc&&s.doc[k]!=null)$('doc-'+k).value=s.doc[k];});
+  NUMF.forEach(k=>{if(s.f&&s.f[k]!=null)$(k).value=s.f[k];});
+  if(Array.isArray(s.vor))VOR=s.vor;
+  if(Array.isArray(s.prices))PRICES=s.prices;
+  if(s.work)WORK=s.work;
+  if(s.logo){logoBase64=s.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  renderRef(); renderPrices(); renderVor();
+  if(manual)toast('Загружено');
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  DOCF.forEach(k=>$('doc-'+k).addEventListener('input',saveQuiet));
+  renderRef();
+  if(!restore(false)){ loadDemoPrices(); loadDemo(); }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {title: document.title, obj: val('doc-obj'), room: '', num: val('doc-num'), kpis: kpis.slice(0,14), ts: Date.now()};
+      var s = JSON.stringify({t:data.title,o:data.obj,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
