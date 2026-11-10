@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Водопонижение — приток воды в котлован и подбор насосов</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0284c7;--accent2:#0369a1;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#38bdf8;font-size:22px}
+.rec-box{background:#082f49;border:1px solid #0369a1;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#7dd3fc;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">💧 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ПОС-002"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('flow')">💧 Приток воды</button>
+  <button class="tab-btn" onclick="switchTab('pump')">⚙ Подбор насосов</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== FLOW ===== -->
+<div id="sec-flow" class="sec active">
+  <div class="card">
+    <div class="card-title">Приток воды к котловану (совершенная выработка, метод большого колодца)</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип водоносного пласта</label>
+        <select id="fl-type" onchange="calcFlow()">
+          <option value="unconf" selected>Безнапорный (грунтовые воды)</option>
+          <option value="conf">Напорный (артезианский)</option>
+        </select></div>
+      <div class="fld"><label>Коэф. фильтрации k, м/сут</label>
+        <select id="fl-ksoil" onchange="onKsoil()">
+          <option value="150">Галечник — 100–200</option>
+          <option value="75">Гравий — 50–100</option>
+          <option value="50">Песок крупный — 25–75</option>
+          <option value="15" selected>Песок средний — 10–25</option>
+          <option value="5">Песок мелкий — 2–10</option>
+          <option value="0.4">Супесь — 0,1–0,7</option>
+          <option value="custom">вручную…</option>
+        </select></div>
+      <div class="fld"><label>k вручную, м/сут</label><input id="fl-k" type="number" step="0.1" value="10" oninput="calcFlow()"></div>
+      <div class="fld"><label>Площадь котлована F, м²</label><input id="fl-F" type="number" step="1" value="200" oninput="calcFlow()"></div>
+      <div class="fld" id="fl-Hfld"><label>Мощность пласта H, м (безнапорный)</label><input id="fl-H" type="number" step="0.5" value="8" oninput="calcFlow()"></div>
+      <div class="fld" id="fl-mfld" style="display:none"><label>Мощность пласта m, м (напорный)</label><input id="fl-m" type="number" step="0.5" value="6" oninput="calcFlow()"></div>
+      <div class="fld"><label>Понижение уровня S, м</label><input id="fl-S" type="number" step="0.5" value="4" oninput="calcFlow()"></div>
+      <div class="fld"><label>Радиус влияния R, м (авто, можно задать)</label><input id="fl-R" type="number" step="1" value="0" oninput="calcFlow(true)"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="fl-kpi"></div>
+    <div class="formula" id="fl-formula"></div>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="flowToPump()">→ В подбор насосов</button>
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">
+      Приведённый радиус котлована r₀ = √(F/π). Радиус влияния (Кусакин): безнапорный R = 2S√(kH), напорный R = 10S√k.
+      Приток: безнапорный Q = π·k·(2H−S)·S / ln((R+r₀)/r₀); напорный Q = 2π·k·m·S / ln((R+r₀)/r₀). Оставьте R=0 для автоподбора.
+    </div>
+  </div>
+</div>
+
+<!-- ===== PUMP ===== -->
+<div id="sec-pump" class="sec">
+  <div class="card">
+    <div class="card-title">Подбор водоотливных насосов</div>
+    <div class="grid4">
+      <div class="fld"><label>Приток Q, м³/ч</label><input id="p-Q" type="number" step="0.5" value="27.3" oninput="calcPump()"></div>
+      <div class="fld"><label>Коэф. запаса</label><input id="p-kzap" type="number" step="0.05" value="1.2" oninput="calcPump()"></div>
+      <div class="fld"><label>Производит. одного насоса, м³/ч</label><input id="p-unit" type="number" step="1" value="15" oninput="calcPump()"></div>
+      <div class="fld"><label>Напор насоса H<sub>н</sub>, м</label><input id="p-H" type="number" step="1" value="20" oninput="calcPump()"></div>
+      <div class="fld"><label>КПД насоса η</label><input id="p-eta" type="number" step="0.05" value="0.6" oninput="calcPump()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="p-kpi"></div>
+    <div class="formula" id="p-formula"></div>
+    <div class="rec-box" id="p-rec"></div>
+    <div class="note">Расчётная подача = Q·k<sub>зап</sub>. Число рабочих насосов = расчётная подача / производительность одного (плюс резервный). Мощность на валу N = ρ·g·Q·H<sub>н</sub>/η.</div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Коэффициент фильтрации грунтов k, м/сут</div>
+    <table class="ref-table"><thead><tr><th>Грунт</th><th>k, м/сут</th></tr></thead>
+      <tbody>
+        <tr><td>Галечник, крупный гравий</td><td class="c">100–200</td></tr>
+        <tr><td>Гравий с песком</td><td class="c">50–100</td></tr>
+        <tr><td>Песок крупный</td><td class="c">25–75</td></tr>
+        <tr><td>Песок средний</td><td class="c">10–25</td></tr>
+        <tr><td>Песок мелкий</td><td class="c">2–10</td></tr>
+        <tr><td>Супесь</td><td class="c">0,1–0,7</td></tr>
+        <tr><td>Суглинок</td><td class="c">0,005–0,4</td></tr>
+        <tr><td>Глина</td><td class="c">&lt; 0,005</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Значения ориентировочные. Точные k — по данным ИГИ (отчёт об инженерно-геологических изысканиях).</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Способы водопонижения (ориентировочно)</div>
+    <table class="ref-table"><thead><tr><th>Способ</th><th>Область применения (k, м/сут)</th></tr></thead>
+      <tbody>
+        <tr><td>Открытый водоотлив (из приямков)</td><td class="c">&gt; 1, неглубокие</td></tr>
+        <tr><td>Иглофильтровые установки (ЛИУ)</td><td class="c">1–50, S до 4–5 м</td></tr>
+        <tr><td>Эжекторные иглофильтры (ЭИ)</td><td class="c">0,1–5, S до 20 м</td></tr>
+        <tr><td>Скважины с погружными насосами</td><td class="c">&gt; 2, глубокие котлованы</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+/* ===== FLOW ===== */
+function onKsoil(){const v=$('fl-ksoil').value;if(v!=='custom')$('fl-k').value=v;calcFlow();}
+function calcFlow(manualR){
+  const type=$('fl-type').value;
+  $('fl-Hfld').style.display=type==='unconf'?'flex':'none';
+  $('fl-mfld').style.display=type==='conf'?'flex':'none';
+  const k=parseFloat($('fl-k').value)||0,F=parseFloat($('fl-F').value)||1,S=parseFloat($('fl-S').value)||0;
+  const H=parseFloat($('fl-H').value)||0,m=parseFloat($('fl-m').value)||0;
+  const r0=Math.sqrt(F/Math.PI);
+  let R=parseFloat($('fl-R').value)||0;
+  const Rauto=type==='unconf'?2*S*Math.sqrt(k*H):10*S*Math.sqrt(k);
+  if(!manualR||R<=0){R=Rauto;$('fl-R').value=+Rauto.toFixed(1);}
+  let Q;
+  if(type==='unconf')Q=Math.PI*k*((2*H-S)*S)/Math.log((R+r0)/r0);
+  else Q=2*Math.PI*k*m*S/Math.log((R+r0)/r0);
+  const Qh=Q/24;
+  $('fl-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(r0,2)}</span><span class="u">м</span><span class="lbl">r₀ приведённый</span></div>
+    <div class="kpi"><span class="v">${fmt(R,1)}</span><span class="u">м</span><span class="lbl">R радиус влияния</span></div>
+    <div class="kpi big"><span class="v">${fmt(Q,0)}</span><span class="u">м³/сут</span><span class="lbl">Приток воды Q</span></div>
+    <div class="kpi"><span class="v">${fmt(Qh,1)}</span><span class="u">м³/ч</span><span class="lbl">Приток Q</span></div>`;
+  $('fl-formula').innerHTML=type==='unconf'
+    ? `r₀=√(${fmt(F,0)}/π)=${fmt(r0,2)}; R=2·${fmt(S,1)}·√(${fmt(k,1)}·${fmt(H,1)})=${fmt(R,1)}; Q = π·${fmt(k,1)}·(2·${fmt(H,1)}−${fmt(S,1)})·${fmt(S,1)} / ln((${fmt(R,1)}+${fmt(r0,2)})/${fmt(r0,2)}) = <b>${fmt(Q,0)} м³/сут</b>`
+    : `r₀=${fmt(r0,2)}; R=10·${fmt(S,1)}·√${fmt(k,1)}=${fmt(R,1)}; Q = 2π·${fmt(k,1)}·${fmt(m,1)}·${fmt(S,1)} / ln((${fmt(R,1)}+${fmt(r0,2)})/${fmt(r0,2)}) = <b>${fmt(Q,0)} м³/сут</b>`;
+  window._fl={Q,Qh,R,r0};
+}
+function flowToPump(){$('p-Q').value=+((window._fl||{}).Qh||0).toFixed(1);switchTab('pump');calcPump();}
+
+/* ===== PUMP ===== */
+function calcPump(){
+  const Q=parseFloat($('p-Q').value)||0,kzap=parseFloat($('p-kzap').value)||1.2,unit=parseFloat($('p-unit').value)||1;
+  const Hn=parseFloat($('p-H').value)||1,eta=parseFloat($('p-eta').value)||0.6;
+  const Qcalc=Q*kzap;
+  const nWork=Math.ceil(Qcalc/unit);
+  const nTotal=nWork+1; // +резерв
+  const Qs=Qcalc/3600; // m³/s (суммарно)
+  const N=1000*9.81*Qs*Hn/eta/1000; // kW суммарно
+  const Nunit=nWork>0?N/nWork:0;
+  $('p-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Qcalc,1)}</span><span class="u">м³/ч</span><span class="lbl">Расчётная подача</span></div>
+    <div class="kpi big"><span class="v">${nWork}+1</span><span class="u">шт</span><span class="lbl">Насосов (раб.+резерв)</span></div>
+    <div class="kpi"><span class="v">${fmt(Nunit,2)}</span><span class="u">кВт</span><span class="lbl">Мощность одного</span></div>
+    <div class="kpi"><span class="v">${fmt(N,2)}</span><span class="u">кВт</span><span class="lbl">Суммарная мощность</span></div>`;
+  $('p-formula').innerHTML=`Q<sub>расч</sub> = ${fmt(Q,1)}·${fmt(kzap,2)} = ${fmt(Qcalc,1)} м³/ч; число рабочих = ${fmt(Qcalc,1)}/${fmt(unit,0)} → ${nWork}; N = ρ·g·Q·H<sub>н</sub>/η = <b>${fmt(N,2)} кВт</b>`;
+  $('p-rec').className='rec-box';
+  $('p-rec').innerHTML=`Принять <b>${nWork} рабочих + 1 резервный</b> насос производительностью ${fmt(unit,0)} м³/ч, напором ${fmt(Hn,0)} м. `+
+    `Мощность одного насоса ≈ ${fmt(Nunit,2)} кВт (с учётом КПД ${fmt(eta,2)}).`;
+  window._p={Qcalc,nWork,N,Nunit};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['flow','pump','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,
+    fl:{type:$('fl-type').value,ksoil:$('fl-ksoil').value,k:$('fl-k').value,F:$('fl-F').value,H:$('fl-H').value,m:$('fl-m').value,S:$('fl-S').value,R:$('fl-R').value},
+    p:{Q:$('p-Q').value,kzap:$('p-kzap').value,unit:$('p-unit').value,H:$('p-H').value,eta:$('p-eta').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj)=>{if(!obj)return;Object.keys(obj).forEach(k=>{if($(pfx+k)&&obj[k]!=null)$(pfx+k).value=obj[k];});};
+  set('fl-',d.fl);set('p-',d.p);
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcFlow(true);calcPump();}
+function saveLS(){localStorage.setItem('dewaterCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('dewaterCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0369a1;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcFlow(true);calcPump();
+  const fl=window._fl||{},p=window._p||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт водопонижения</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#0284c7;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>РАСЧЁТ ВОДОПОНИЖЕНИЯ</h1>
+  <h2>1. Приток воды к котловану</h2>
+  <table><tbody>
+  <tr><td style="${td}">Тип пласта</td><td style="${td}">${$('fl-type').value==='unconf'?'Безнапорный':'Напорный'}</td></tr>
+  <tr><td style="${td}">Коэф. фильтрации k</td><td style="${td};text-align:right">${esc($('fl-k').value)} м/сут</td></tr>
+  <tr><td style="${td}">Понижение S / площадь F</td><td style="${td};text-align:right">${esc($('fl-S').value)} м / ${esc($('fl-F').value)} м²</td></tr>
+  <tr><td style="${td}">Радиус влияния R</td><td style="${td};text-align:right">${fmt(fl.R,1)} м</td></tr>
+  <tr class="tot"><td style="${td}">Приток воды Q</td><td style="${td};text-align:right">${fmt(fl.Q,0)} м³/сут (${fmt(fl.Qh,1)} м³/ч)</td></tr>
+  </tbody></table>
+  <h2>2. Подбор насосов</h2>
+  <p>Расчётная подача ${fmt(p.Qcalc,1)} м³/ч. Принято <b>${p.nWork} рабочих + 1 резервный</b> насос. Суммарная мощность ${fmt(p.N,2)} кВт (одного — ${fmt(p.Nunit,2)} кВт).</p>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: методика расчёта притока к совершенным выработкам (Дюпюи), радиус влияния — по Кусакину. Уточнять по данным ИГИ.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('dewaterCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{calcFlow();calcPump();}
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
