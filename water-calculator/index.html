@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Расчёт водоснабжения и водоотведения</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#1a56db;--accent2:#1e429f;
+  --text:#e8eaf0;--text-s:#8b92a8;
+  --green:#059669;--yellow:#d97706;--red:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+
+/* TABS */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+
+/* SECTION */
+.sec{display:none}.sec.active{display:block}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* FORM */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select,.fld textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);line-height:1.4}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 18px;background:#065f46;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-print{padding:8px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.preset-chip{padding:5px 11px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:20px;cursor:pointer;font-size:11.5px;font-weight:600;transition:.15s}
+.preset-chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* RESULTS */
+.results{display:none}.results.show{display:block}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:22px;font-weight:700;color:var(--accent);line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);margin-top:2px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.res-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 10px;text-align:left;border:1px solid var(--border);font-size:11.5px;font-weight:600}
+.res-table td{padding:6px 10px;border:1px solid var(--border);vertical-align:top}
+.res-table tr.sep td{background:#1e2235;font-weight:700;color:var(--text-s);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.res-table tr.subtotal td{background:#1a2a3a;font-weight:600;color:#7dd3fc}
+.res-table tr.total td{background:var(--accent2);color:#fff;font-weight:700}
+.rec-box{background:#0c1f2c;border:1px solid #1d4ed8;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#93c5fd;line-height:1.7;margin-top:12px}
+.note{background:#1a1500;border:1px solid #713f12;border-radius:6px;padding:9px 13px;font-size:11.5px;color:#fde68a;line-height:1.6;margin-top:8px}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+
+/* RADIO GROUP */
+.radio-group{display:flex;gap:12px;flex-wrap:wrap}
+.radio-group label{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12.5px;color:var(--text-s)}
+.radio-group input[type=radio]{accent-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo" onclick="document.getElementById('logo-inp').click()" title="Загрузить логотип">
+    <div id="logo-preview">💧 Лого</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:220px"><label>Организация</label><input id="doc-org" placeholder="ТОО «…»"></div>
+    <div class="hdr-fld" style="min-width:250px"><label>Объект / Адрес</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр документа</label><input id="doc-num" placeholder="ВК-001-РД"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Ф.И.О."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date" type="text"></div>
+    <div class="hdr-fld"><label>Стадия</label>
+      <select id="doc-stage">
+        <option value="">—</option>
+        <option>ТЭО</option><option>ПД</option><option>РД</option><option>ЭП</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" onclick="switchTab('res')">Жилой дом</button>
+  <button class="tab-btn"        onclick="switchTab('pub')">Общественное здание</button>
+  <button class="tab-btn"        onclick="switchTab('ind')">Промпредприятие</button>
+  <button class="tab-btn"        onclick="switchTab('ext')">Нар. сети ВС</button>
+  <button class="tab-btn"        onclick="switchTab('san')">Нар. сети ВО</button>
+  <button class="tab-btn"        onclick="switchTab('int')">Внутр. водопровод</button>
+  <button class="tab-btn"        onclick="switchTab('fire')">Пожаротушение</button>
+</div>
+
+<!-- ===================== TAB 1: RESIDENTIAL ===================== -->
+<div id="sec-res" class="sec active">
+
+  <div class="card">
+    <div class="card-title">Жилой дом — нормы водопотребления</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Степень благоустройства</label>
+        <select id="res-norm">
+          <option value="0">Без ванн — водопровод, раковины, унитазы</option>
+          <option value="1" selected>С ваннами — местные нагреватели воды</option>
+          <option value="2">С ваннами — централизованное ГВС</option>
+          <option value="3">Повышенный комфорт (коттедж, бизнес-класс)</option>
+        </select>
+        <span class="hint">По СП РК 4.01-101-2013, Приложение А, Таблица А.1</span>
+      </div>
+      <div class="fld">
+        <label>Число жителей N, чел</label>
+        <input type="number" id="res-n" value="100" min="1" step="1">
+      </div>
+      <div class="fld">
+        <label>К_сут.макс</label>
+        <select id="res-ksut">
+          <option value="1.4">1,40 — посёлок &lt; 1 000 чел</option>
+          <option value="1.3">1,30 — город до 10 000 чел</option>
+          <option value="1.2" selected>1,20 — город 10 000–100 000 чел</option>
+          <option value="1.15">1,15 — город 100 000–500 000 чел</option>
+          <option value="1.1">1,10 — крупный город &gt; 500 000 чел</option>
+        </select>
+        <span class="hint">СН РК 4.01-02-2011, п. 3.2</span>
+      </div>
+      <div class="fld">
+        <label>К_ч.макс</label>
+        <select id="res-kch">
+          <option value="2.5">2,50 — малоэтажная застройка (&lt; 50 чел)</option>
+          <option value="2.2">2,20 — застройка 50–200 чел</option>
+          <option value="2.0">2,00 — дом 200–500 чел</option>
+          <option value="1.8" selected>1,80 — дом 500–3 000 чел</option>
+          <option value="1.6">1,60 — квартал &gt; 3 000 чел</option>
+          <option value="1.4">1,40 — микрорайон &gt; 10 000 чел</option>
+        </select>
+        <span class="hint">СП РК 4.01-101-2013, п. 3.2; СН РК 4.01-02-2011, п. 3.3</span>
+      </div>
+      <div class="fld">
+        <label>Тип водопровода</label>
+        <select id="res-wtype">
+          <option value="both" selected>Холодный + горячий (ХВС + ГВС)</option>
+          <option value="cold">Только холодный (ХВС)</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Расчётный период (дней/год)</label>
+        <input type="number" id="res-days" value="365" min="100" max="365" step="1">
+        <span class="hint">365 — круглогодично; 180 — сезонный объект</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="calcResidential()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('res')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="res-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Жилой дом</div>
+      <div class="kpi-row" id="res-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:48%">Параметр</th>
+          <th>Обозначение</th>
+          <th>Ед.изм.</th>
+          <th style="text-align:right;width:16%">Значение</th>
+        </tr></thead>
+        <tbody id="res-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="res-rec"></div>
+      <div class="note" id="res-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('res')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-res -->
+
+<!-- ===================== TABS 2–7: PLACEHOLDERS ===================== -->
+<!-- ===================== TAB 2: PUBLIC BUILDING ===================== -->
+<div id="sec-pub" class="sec">
+
+  <div class="card">
+    <div class="card-title">Группы потребителей</div>
+    <div id="pub-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px;font-weight:600">#</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Тип здания / потребителя</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">N, ед.</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">q₀, л/ед·сут</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">q_гвс, л/ед·сут</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">T, ч/сут</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">К_ч</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="pub-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addPubRow()">+ Добавить группу</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Общие параметры</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>К_сут.макс</label>
+        <select id="pub-ksut">
+          <option value="1.3">1,30 — малый объект</option>
+          <option value="1.2" selected>1,20 — средний объект</option>
+          <option value="1.1">1,10 — крупный объект</option>
+          <option value="1.0">1,00 — непрерывная работа</option>
+        </select>
+        <span class="hint">По СН РК 4.01-02-2011, п. 3.2</span>
+      </div>
+      <div class="fld">
+        <label>Расчётный период (дней/год)</label>
+        <input type="number" id="pub-days" value="365" min="1" max="365" step="1">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="calcPublic()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('pub')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="pub-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Общественное здание</div>
+      <div class="kpi-row" id="pub-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:44%">Параметр / Группа</th>
+          <th>q₀ / К_ч</th>
+          <th>Ед.изм.</th>
+          <th style="text-align:right;width:16%">Значение</th>
+        </tr></thead>
+        <tbody id="pub-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="pub-rec"></div>
+      <div class="note" id="pub-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('pub')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-pub -->
+<!-- ===================== TAB 3: INDUSTRIAL ===================== -->
+<div id="sec-ind" class="sec">
+
+  <div class="card">
+    <div class="card-title">Хозяйственно-питьевые нужды работников</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Работников горячих цехов в смену, чел</label>
+        <input type="number" id="ind-n-hot" value="20" min="0" step="1">
+        <span class="hint">q₀ = 45 л/чел·смену; К_ч = 2,75; душ: 1 сетка на 3 чел</span>
+      </div>
+      <div class="fld">
+        <label>Работников прочих цехов в смену, чел</label>
+        <input type="number" id="ind-n-reg" value="80" min="0" step="1">
+        <span class="hint">q₀ = 25 л/чел·смену; К_ч = 1,97; душ: 1 сетка на 15 чел</span>
+      </div>
+      <div class="fld">
+        <label>Продолжительность смены, ч</label>
+        <input type="number" id="ind-tshift" value="8" min="4" max="12" step="0.5">
+      </div>
+      <div class="fld">
+        <label>Число рабочих смен в сутки</label>
+        <select id="ind-shifts">
+          <option value="1">1 смена</option>
+          <option value="2" selected>2 смены</option>
+          <option value="3">3 смены</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Расход воды на 1 душевую сетку, л/ч</label>
+        <input type="number" id="ind-q-dush" value="500" min="100" max="700" step="50">
+        <span class="hint">По СП РК 4.01-101-2013, п. 3.4 — 500 л/ч (0,14 л/с); душ 45 мин после смены</span>
+      </div>
+      <div class="fld">
+        <label>Расчётный период (рабочих дней/год)</label>
+        <input type="number" id="ind-days" value="250" min="100" max="365" step="1">
+        <span class="hint">250 — типовой производственный год</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Производственные нужды водоснабжения</div>
+    <div id="ind-prod-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px;font-weight:600">#</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Потребитель</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">q, м³/ч</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">T_раб, ч/сут</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Примечание</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="ind-prod-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addIndProdRow()">+ Добавить потребителя</button>
+    <div class="btn-row">
+      <button class="btn" onclick="calcIndustrial()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('ind')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="ind-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Промпредприятие</div>
+      <div class="kpi-row" id="ind-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:48%">Параметр</th>
+          <th>Обозначение</th>
+          <th>Ед.изм.</th>
+          <th style="text-align:right;width:16%">Значение</th>
+        </tr></thead>
+        <tbody id="ind-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="ind-rec"></div>
+      <div class="note" id="ind-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('ind')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-ind -->
+<!-- ===================== TAB 4: EXTERNAL WATER SUPPLY ===================== -->
+<div id="sec-ext" class="sec">
+
+  <div class="card">
+    <div class="card-title">Участки наружной водопроводной сети</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:820px">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Участок</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Q_расч, л/с</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">L, м</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Материал</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">DN, мм</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">d_вн, мм</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="ext-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addExtRow()">+ Добавить участок</button>
+    <div class="btn-row">
+      <button class="btn" onclick="calcExtNetwork()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('ext')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="ext-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Наружные сети водоснабжения</div>
+      <div class="kpi-row" id="ext-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:22%">Участок</th>
+          <th style="text-align:right">d_вн, мм</th>
+          <th style="text-align:right">v, м/с</th>
+          <th style="text-align:right">1000i, мм/м</th>
+          <th style="text-align:right">ΔH, м</th>
+          <th style="text-align:right">ΔH_нак, м</th>
+          <th style="text-align:center">Скорость</th>
+        </tr></thead>
+        <tbody id="ext-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="ext-rec"></div>
+      <div class="note" id="ext-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('ext')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-ext -->
+<div id="sec-san" class="sec">
+
+  <div class="card">
+    <div class="card-title">Участки наружной канализационной сети</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:900px">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Участок</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Q_расч, л/с</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">L, м</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Материал</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">DN, мм</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">d_вн, мм</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Уклон i</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="san-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addSanRow()">+ Добавить участок</button>
+    <div class="btn-row">
+      <button class="btn" onclick="calcSanNetwork()">&#9654; Рассчитать</button>
+      <button class="btn-clear" onclick="clearResults('san')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="san-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Наружные сети канализации</div>
+      <div class="kpi-row" id="san-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:16%">Участок</th>
+          <th style="text-align:right">d_вн, мм</th>
+          <th style="text-align:right">i</th>
+          <th style="text-align:right">v, м/с</th>
+          <th style="text-align:right">h/d</th>
+          <th style="text-align:right">h, мм</th>
+          <th style="text-align:center">Статус</th>
+        </tr></thead>
+        <tbody id="san-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="san-rec"></div>
+      <div class="note" id="san-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('san')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-san -->
+<div id="sec-int" class="sec">
+
+  <!-- Part 1: Probability method -->
+  <div class="card">
+    <div class="card-title">Расчётный расход — вероятностный метод (СНиП 2.04.01-85*, п. 3.4)</div>
+    <div id="int-app-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:720px">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px">#</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Тип прибора</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">N, шт</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">q₀, л/с</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">q₀_т, л/сут·ед</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">U, чел/ед</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">T, ч/сут</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="int-app-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addIntAppRow()">+ Добавить прибор</button>
+    <div class="grid2" style="margin-top:14px">
+      <div class="fld">
+        <label>q₀_мин — минимальный расход прибора, л/с</label>
+        <input type="number" id="int-q0min" value="0.2" min="0.05" max="1.0" step="0.01">
+        <span class="hint">При разных приборах: q₀_мин = 0,2 л/с (СНиП п. 3.4 прим. 2)</span>
+      </div>
+      <div class="fld">
+        <label>Давление на вводе в здание H_ввод, м вод. ст.</label>
+        <input type="number" id="int-p-vvod" value="25" min="5" max="100" step="0.5">
+        <span class="hint">По техническим условиям от водоснабжающей организации</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="calcIntFlow()">&#9654; Рассчитать расход</button>
+      <button class="btn-clear" onclick="clearIntFlow()">Очистить расход</button>
+    </div>
+  </div>
+
+  <div id="int-flow-results" class="results" style="margin-top:12px">
+    <div class="card">
+      <div class="card-title">Результаты — расчётный расход Q_с</div>
+      <div class="kpi-row" id="int-flow-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th>Тип прибора</th>
+          <th style="text-align:right">N, шт</th>
+          <th style="text-align:right">q₀, л/с</th>
+          <th style="text-align:right">q₀_т, л/сут</th>
+          <th style="text-align:right">P_i</th>
+          <th style="text-align:right">N×P_i</th>
+        </tr></thead>
+        <tbody id="int-flow-tbody"></tbody>
+      </table>
+      <div class="note" id="int-flow-note"></div>
+    </div>
+  </div>
+
+  <!-- Part 2: Pipe hydraulics -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">Гидравлический расчёт участков внутреннего трубопровода</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:820px">
+        <thead>
+          <tr style="background:var(--bg2);font-size:12px;color:var(--text-s)">
+            <th style="padding:6px 8px;font-weight:600;text-align:left">Участок</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Q, л/с</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">L, м</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">Материал</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">DN, мм</th>
+            <th style="padding:6px 8px;font-weight:600;text-align:center">d_вн, мм</th>
+            <th style="padding:6px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="int-pipe-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addIntPipeRow()">+ Добавить участок</button>
+    <div class="grid2" style="margin-top:14px">
+      <div class="fld">
+        <label>Коэффициент местных потерь ξ_мест</label>
+        <input type="number" id="int-klocal" value="0.3" min="0" max="1.0" step="0.05">
+        <span class="hint">Местные потери = ξ × линейные; обычно 0,3 (30%)</span>
+      </div>
+      <div class="fld">
+        <label>Свободный напор у диктующего прибора H_своб, м</label>
+        <input type="number" id="int-hfree" value="3.0" min="1.0" max="20" step="0.5">
+        <span class="hint">Смеситель — 2–3 м; пожарный кран — 6–10 м (СП РК 4.01-101)</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="calcIntPipes()">&#9654; Рассчитать трубопроводы</button>
+      <button class="btn-clear" onclick="clearResults('int')">Очистить</button>
+    </div>
+  </div>
+
+  <div id="int-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Внутренний водопровод</div>
+      <div class="kpi-row" id="int-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:14%">Участок</th>
+          <th style="text-align:right">d_вн, мм</th>
+          <th style="text-align:right">v, м/с</th>
+          <th style="text-align:right">1000i, мм/м</th>
+          <th style="text-align:right">ΔH_л, м</th>
+          <th style="text-align:right">ΔH_м, м</th>
+          <th style="text-align:right">ΔH_нак, м</th>
+          <th style="text-align:center">Скорость</th>
+        </tr></thead>
+        <tbody id="int-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="int-rec"></div>
+      <div class="note" id="int-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('int')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-int -->
+<div id="sec-fire" class="sec">
+
+  <div class="card">
+    <div class="card-title">Параметры объекта</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Назначение здания</label>
+        <select id="fire-bldtype">
+          <option value="res">Жилое / общественное / административное</option>
+          <option value="ind">Производственное / складское</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Степень огнестойкости</label>
+        <select id="fire-resist" onchange="updateFireNorm()">
+          <option value="I-II">I–II</option>
+          <option value="III">III</option>
+          <option value="IV-V">IV–V</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Объём здания V, м³</label>
+        <input type="number" id="fire-vol" value="5000" min="100" step="100" oninput="updateFireNorm()">
+      </div>
+      <div class="fld">
+        <label>Число этажей</label>
+        <input type="number" id="fire-floors" value="5" min="1" max="100" step="1" oninput="updateFireInt()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Наружное пожаротушение</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Расчётный расход q_нар, л/с</label>
+        <input type="number" id="fire-q-ext" value="15" min="5" max="200" step="2.5">
+        <span class="hint" id="fire-ext-hint">Заполняется авто по нормативу при изменении объёма/степени огнестойкости</span>
+      </div>
+      <div class="fld">
+        <label>Продолжительность тушения T_нар, ч</label>
+        <input type="number" id="fire-t-ext" value="3" min="1" max="6" step="0.5">
+        <span class="hint">СНиП 2.04.02-84*, п. 2.24: не менее 3 ч</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Внутреннее пожаротушение — пожарные краны</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Число одновременных струй n_ст, шт</label>
+        <input type="number" id="fire-n-int" value="2" min="0" max="8" step="1">
+        <span class="hint" id="fire-int-hint">Заполняется авто по числу этажей (СНиП 2.04.01-85*, Табл. 1)</span>
+      </div>
+      <div class="fld">
+        <label>Расход одной струи q_ст, л/с</label>
+        <input type="number" id="fire-q-int" value="2.5" min="1" max="10" step="0.5">
+        <span class="hint">Обычно 2,5 л/с; для зданий >25 эт. — 5,0 л/с</span>
+      </div>
+      <div class="fld">
+        <label>Продолжительность подачи T_внутр, мин</label>
+        <input type="number" id="fire-t-int" value="10" min="5" max="60" step="5">
+        <span class="hint">НПБ 88: 10 мин (жилые); до 30 мин (производство)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Автоматическое пожаротушение — спринклеры (при наличии)</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Расчётная площадь орошения F_авт, м²</label>
+        <input type="number" id="fire-f-spr" value="0" min="0" step="10">
+        <span class="hint">0 — АУПТ не предусмотрено; типовое 120–240 м²</span>
+      </div>
+      <div class="fld">
+        <label>Интенсивность орошения w, мм/мин</label>
+        <input type="number" id="fire-w-spr" value="0.08" min="0.05" max="0.5" step="0.01">
+        <span class="hint">СП 5.13130: жилые 0,08; производство 0,12–0,30 мм/мин</span>
+      </div>
+      <div class="fld">
+        <label>Продолжительность работы T_авт, мин</label>
+        <input type="number" id="fire-t-spr" value="60" min="30" max="180" step="10">
+        <span class="hint">СП 5.13130.2009, п. 5.1.2: жилые 60 мин</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="calcFire()">&#9654; Рассчитать</button>
+    <button class="btn-clear" onclick="clearResults('fire')">Очистить</button>
+  </div>
+
+  <div id="fire-results" class="results" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title">Результаты — Пожаротушение</div>
+      <div class="kpi-row" id="fire-kpi"></div>
+      <table class="res-table">
+        <thead><tr>
+          <th style="width:52%">Параметр</th>
+          <th>Обозначение</th>
+          <th>Ед.изм.</th>
+          <th style="text-align:right;width:18%">Значение</th>
+        </tr></thead>
+        <tbody id="fire-res-tbody"></tbody>
+      </table>
+      <div class="rec-box" id="fire-rec"></div>
+      <div class="note" id="fire-note"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px">
+        <button class="btn-pdf" onclick="exportPDF('fire')">⬇ Сохранить PDF</button>
+        <button class="btn-print" onclick="window.print()">Печать</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-fire -->
+
+</div><!-- /wrap -->
+
+<script>
+// ─── HELPERS ────────────────────────────────────────────────────
+function $(id){return document.getElementById(id);}
+function v(id){return parseFloat($(id).value)||0;}
+function fmt(n,d=2){if(n===null||n===undefined||isNaN(n))return'—';return n.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+let logoBase64='';
+function loadLogo(inp){
+  const file=inp.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{logoBase64=e.target.result; $('logo-preview').innerHTML=`<img src="${logoBase64}">`;}
+  r.readAsDataURL(file);
+}
+
+// ─── TAB NAVIGATION ─────────────────────────────────────────────
+const ALL_TABS=['res','pub','ind','ext','san','int','fire'];
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ALL_TABS[i]===t));
+  ALL_TABS.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));
+}
+function clearResults(tab){
+  const map={res:'res-results',pub:'pub-results',ind:'ind-results',ext:'ext-results',san:'san-results',int:'int-results',fire:'fire-results'};
+  if(map[tab]&&$(map[tab])) $(map[tab]).classList.remove('show');
+}
+
+// ─── WATER CONSUMPTION NORMS ─────────────────────────────────────
+// СП РК 4.01-101-2013, Приложение А, Таблица А.1 (Жилые здания)
+// {cold: л/чел·сут, hot: л/чел·сут, total: л/чел·сут, q_ch: л/чел·ч}
+const RES_NORMS=[
+  {name:'Без ванн (водопровод + раковины + унитазы)',
+   cold:95,  hot:0,   total:95,  q_ch:7.0},
+  {name:'С ваннами, местные нагреватели',
+   cold:195, hot:85,  total:195, q_ch:15.6},
+  {name:'С ваннами, централизованное ГВС',
+   cold:130, hot:105, total:235, q_ch:15.6},
+  {name:'Повышенный комфорт (коттедж, бизнес-класс)',
+   cold:160, hot:120, total:300, q_ch:18.0},
+];
+
+// ─── TAB 1: RESIDENTIAL ─────────────────────────────────────────
+function calcResidential(){
+  const normIdx=parseInt($('res-norm').value);
+  const norm=RES_NORMS[normIdx];
+  const N=v('res-n')||100;
+  const K_sut=v('res-ksut')||1.2;
+  const K_ch=v('res-kch')||1.8;
+  const wtype=$('res-wtype').value;
+  const days=v('res-days')||365;
+
+  // Daily flows
+  const Q_sut_sr  = N * norm.total / 1000;              // m³/day average
+  const Q_sut_max = K_sut * Q_sut_sr;                   // m³/day max
+  const Q_ch_max  = K_ch * Q_sut_max / 24;              // m³/h max
+  const Q_s_max   = Q_ch_max / 3.6;                     // l/s max
+  const Q_god     = Q_sut_sr * days;                    // m³/year
+
+  // Cold / hot split
+  const hasHot = wtype==='both' && norm.hot>0;
+  const Q_cold_sut = N * norm.cold / 1000;
+  const Q_hot_sut  = hasHot ? N * norm.hot / 1000 : 0;
+
+  $('res-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${fmt(Q_sut_sr,2)}</div><div class="u">м³/сут</div><div class="lbl">Q_сут.ср</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_sut_max,2)}</div><div class="u">м³/сут</div><div class="lbl">Q_сут.макс</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_ch_max,2)}</div><div class="u">м³/ч</div><div class="lbl">Q_ч.макс</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_s_max,2)}</div><div class="u">л/с</div><div class="lbl">Q_с.макс</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_god,0)}</div><div class="u">м³/год</div><div class="lbl">Q_год</div></div>
+  `;
+
+  const tbody=$('res-res-tbody'); tbody.innerHTML='';
+  const addRow=(cls,nm,s,u,val)=>{
+    const tr=tbody.insertRow(); if(cls) tr.className=cls;
+    if(cls==='sep'){tr.innerHTML=`<td colspan="4">${nm}</td>`;return;}
+    tr.innerHTML=`<td>${nm}</td><td>${s}</td><td>${u}</td><td style="text-align:right"><b>${val}</b></td>`;
+  };
+
+  addRow('sep','Исходные данные','','','');
+  addRow('','Норма водопотребления (полная)','q₀','л/чел·сут',fmt(norm.total,0));
+  addRow('','Норма холодной воды','q₀_х','л/чел·сут',fmt(norm.cold,0));
+  addRow('','Норма горячей воды','q₀_г','л/чел·сут',hasHot?fmt(norm.hot,0):'—');
+  addRow('','Число жителей','N','чел',fmt(N,0));
+  addRow('','К_сут.макс','K_сут','—',fmt(K_sut,2));
+  addRow('','К_ч.макс','K_ч','—',fmt(K_ch,2));
+
+  addRow('sep','Суточные расходы','','','');
+  addRow('','Среднесуточный: Q_сут.ср = N × q₀ / 1000','Q_сут.ср','м³/сут',fmt(Q_sut_sr,3));
+  addRow('','Максимальный суточный: Q_сут.макс = K_сут × Q_сут.ср','Q_сут.макс','м³/сут',fmt(Q_sut_max,3));
+  addRow('','Среднесуточный (ХВС)','Q_х.сут.ср','м³/сут',fmt(Q_cold_sut,3));
+  if(hasHot) addRow('','Среднесуточный (ГВС)','Q_г.сут.ср','м³/сут',fmt(Q_hot_sut,3));
+
+  addRow('sep','Часовые и секундные расходы','','','');
+  addRow('subtotal','Макс. часовой: Q_ч.макс = K_ч × Q_сут.макс / 24','Q_ч.макс','м³/ч',fmt(Q_ch_max,3));
+  addRow('','Q_ч.макс в л/ч','—','л/ч',fmt(Q_ch_max*1000,0));
+  addRow('total','Макс. секундный: Q_с.макс = Q_ч.макс / 3,6','Q_с.макс','л/с',fmt(Q_s_max,3));
+
+  addRow('sep','Годовое водопотребление','','','');
+  addRow('','Расчётный период','T','сут',fmt(days,0));
+  addRow('subtotal','Q_год = Q_сут.ср × T','Q_год','м³/год',fmt(Q_god,0));
+  if(hasHot){
+    addRow('','в т.ч. ХВС','Q_год.х','м³/год',fmt(Q_cold_sut*days,0));
+    addRow('','в т.ч. ГВС','Q_год.г','м³/год',fmt(Q_hot_sut*days,0));
+  }
+
+  $('res-rec').innerHTML=`
+    <b>Расчётные расходы для проектирования:</b><br>
+    Среднесуточный Q_сут.ср = <b>${fmt(Q_sut_sr,2)} м³/сут</b> (${fmt(Q_sut_sr*1000/24,0)} л/ч в среднем)<br>
+    Максимальный суточный Q_сут.макс = <b>${fmt(Q_sut_max,2)} м³/сут</b> — для резервуаров и насосных станций<br>
+    Максимальный секундный Q_с.макс = <b>${fmt(Q_s_max,3)} л/с</b> — для подбора диаметров труб
+    ${hasHot?`<br>ГВС: Q_сут.ср = <b>${fmt(Q_hot_sut,2)} м³/сут</b>, Q_год = <b>${fmt(Q_hot_sut*days,0)} м³/год</b>`:''}
+  `;
+
+  $('res-note').innerHTML=`
+    <b>Нормативная база:</b> СП РК 4.01-101-2013 «Внутренний водопровод и канализация»; СН РК 4.01-02-2011 «Водоснабжение. Наружные сети».<br>
+    <b>Формулы:</b> Q_сут.ср = N×q₀/1000; Q_сут.макс = K_сут×Q_сут.ср; Q_ч.макс = K_ч×Q_сут.макс/24; Q_с.макс = Q_ч.макс/3,6.<br>
+    <b>Примечание:</b> Q_с.макс используется для гидравлического расчёта трубопроводов. Для водонапорных баков и резервуаров принимается Q_сут.макс с учётом режима работы насосной станции.
+  `;
+
+  $('res-results').classList.add('show');
+}
+
+// ─── TAB 4: EXTERNAL WATER SUPPLY NETWORK ───────────────────────
+// Формула Альтшуля: λ = 0,11·(Δ/d + 68/Re)^0,25; Дарси-Вейсбах: i = λ/d·v²/(2g)
+// ν = 1,31·10⁻⁶ м²/с (вода 10 °C — расчётная температура по СН РК 4.01-02-2011)
+const EXT_PIPES={
+  steel_3262:{name:'Сталь ГОСТ 3262 (DN 15–150)', delta:0.5,
+    pipes:[{dn:15,di:15.75},{dn:20,di:21.25},{dn:25,di:27.10},{dn:32,di:35.90},
+           {dn:40,di:41.00},{dn:50,di:53.00},{dn:65,di:67.20},{dn:80,di:80.70},
+           {dn:100,di:106.0},{dn:125,di:132.0},{dn:150,di:158.5}]},
+  steel_10704:{name:'Сталь ГОСТ 10704 (DN 100–600)', delta:0.5,
+    pipes:[{dn:100,di:100},{dn:125,di:125},{dn:150,di:149},{dn:200,di:207},
+           {dn:250,di:259},{dn:300,di:309},{dn:350,di:359},{dn:400,di:408},
+           {dn:500,di:512},{dn:600,di:612}]},
+  pe_sdr17:{name:'ПЭ100 ГОСТ 18599 SDR17 (DN 50–630)', delta:0.05,
+    pipes:[{dn:50,di:44.0},{dn:63,di:55.4},{dn:75,di:66.0},{dn:90,di:79.2},
+           {dn:110,di:96.8},{dn:125,di:110.2},{dn:140,di:123.4},{dn:160,di:141.0},
+           {dn:180,di:158.6},{dn:200,di:176.2},{dn:225,di:198.2},{dn:250,di:220.4},
+           {dn:315,di:277.6},{dn:400,di:352.6},{dn:500,di:440.6},{dn:630,di:555.2}]},
+  ci_9583:{name:'ВЧШГ ГОСТ 9583 (DN 80–600)', delta:0.5,
+    pipes:[{dn:80,di:84},{dn:100,di:106},{dn:125,di:132},{dn:150,di:158},
+           {dn:200,di:210},{dn:250,di:262},{dn:300,di:312},{dn:350,di:364},
+           {dn:400,di:416},{dn:500,di:520},{dn:600,di:622}]},
+};
+
+let extRowIdx=0;
+const extActiveRows=[];
+
+function updateExtDn(idx){
+  const mat=$(`extr-mat-${idx}`).value;
+  const sel=$(`extr-dn-${idx}`);
+  const prev=sel.value;
+  sel.innerHTML='';
+  (EXT_PIPES[mat]?.pipes||[]).forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.dn; o.textContent=`DN ${p.dn}`;
+    if(String(p.dn)===prev) o.selected=true;
+    sel.appendChild(o);
+  });
+  updateExtDi(idx);
+}
+
+function updateExtDi(idx){
+  const mat=$(`extr-mat-${idx}`).value;
+  const dn=parseInt($(`extr-dn-${idx}`).value);
+  const pipe=EXT_PIPES[mat]?.pipes.find(p=>p.dn===dn);
+  if(pipe) $(`extr-di-${idx}`).value=pipe.di;
+}
+
+function addExtRow(presetMat){
+  const idx=extRowIdx++;
+  extActiveRows.push(idx);
+  const num=extActiveRows.length;
+  const defMat=presetMat||'pe_sdr17';
+  const tr=document.createElement('tr');
+  tr.id=`ext-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  // build material options
+  const matOpts=Object.entries(EXT_PIPES).map(([k,v])=>`<option value="${k}"${k===defMat?' selected':''}>${v.name}</option>`).join('');
+  tr.innerHTML=`
+    <td style="padding:4px 5px"><input type="text" id="extr-name-${idx}" value="Уч. ${num}" class="ap-inp" style="width:80px"></td>
+    <td style="padding:4px 5px"><input type="number" id="extr-q-${idx}" value="5" min="0.01" step="0.1" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><input type="number" id="extr-l-${idx}" value="100" min="1" step="1" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><select id="extr-mat-${idx}" class="ap-inp" style="min-width:120px" onchange="updateExtDn(${idx})">${matOpts}</select></td>
+    <td style="padding:4px 5px"><select id="extr-dn-${idx}" class="ap-inp" style="width:85px" onchange="updateExtDi(${idx})"></select></td>
+    <td style="padding:4px 5px"><input type="number" id="extr-di-${idx}" value="" min="1" step="0.1" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeExtRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('ext-tbody').appendChild(tr);
+  updateExtDn(idx);
+}
+
+function removeExtRow(idx){
+  const row=$(`ext-row-${idx}`); if(row) row.remove();
+  const pos=extActiveRows.indexOf(idx); if(pos>-1) extActiveRows.splice(pos,1);
+}
+
+function calcExtNetwork(){
+  const rows=extActiveRows.filter(i=>$(`ext-row-${i}`));
+  if(!rows.length){alert('Добавьте хотя бы один участок.');return;}
+
+  const nu=1.31e-6; // м²/с при 10 °С
+  const g=9.81;
+
+  let H_accum=0, warns=0, errors=0;
+  const items=[];
+
+  rows.forEach(i=>{
+    const nm  =$(`extr-name-${i}`).value||`Уч.${i}`;
+    const Q_ls=v(`extr-q-${i}`);
+    const L   =v(`extr-l-${i}`);
+    const mat =$(`extr-mat-${i}`).value;
+    const di_mm=v(`extr-di-${i}`);
+    if(!Q_ls||!L||!di_mm){items.push({nm,err:true});return;}
+
+    const d    =di_mm/1000;
+    const Q_m3s=Q_ls/1000;
+    const A    =Math.PI*d*d/4;
+    const vel  =Q_m3s/A;
+    const Re   =vel*d/nu;
+    const delta=(EXT_PIPES[mat]?.delta||0.5)/1000; // м
+    const lam  =0.11*Math.pow(delta/d+68/Re, 0.25);
+    const i_hyd=lam/d*vel*vel/(2*g);
+    const i1000=i_hyd*1000;
+    const dH   =i_hyd*L;
+    H_accum+=dH;
+
+    let st,sc;
+    if(vel<0.5){st='⚠ низкая';sc='#d97706';warns++;}
+    else if(vel<=1.5){st='✓ норма';sc='#059669';}
+    else if(vel<=3.0){st='⚠ повышенная';sc='#d97706';warns++;}
+    else{st='✗ >3 м/с';sc='#dc2626';errors++;}
+
+    items.push({nm,Q_ls,L,di_mm,vel,Re,lam,i1000,dH,H_accum:H_accum+0,st,sc});
+  });
+
+  const validItems=items.filter(it=>!it.err);
+  const totalL=validItems.reduce((s,it)=>s+it.L,0);
+  const maxI=Math.max(...validItems.map(it=>it.i1000));
+  const maxV=Math.max(...validItems.map(it=>it.vel));
+
+  $('ext-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${validItems.length}</div><div class="u">шт</div><div class="lbl">Участков</div></div>
+    <div class="kpi"><div class="v">${fmt(totalL,0)}</div><div class="u">м</div><div class="lbl">Длина сети</div></div>
+    <div class="kpi"><div class="v">${fmt(maxV,2)}</div><div class="u">м/с</div><div class="lbl">v_макс</div></div>
+    <div class="kpi"><div class="v">${fmt(maxI,2)}</div><div class="u">мм/м</div><div class="lbl">1000i макс</div></div>
+    <div class="kpi"><div class="v">${fmt(H_accum,2)}</div><div class="u">м</div><div class="lbl">ΔH_суммарный</div></div>
+    ${warns||errors?`<div class="kpi"><div class="v" style="color:#d97706">${warns+errors}</div><div class="u">уч.</div><div class="lbl">Предупреждений</div></div>`:''}
+  `;
+
+  const tbody=$('ext-res-tbody'); tbody.innerHTML='';
+  items.forEach((it,idx)=>{
+    const tr=tbody.insertRow();
+    if(it.err){
+      tr.innerHTML=`<td colspan="7" style="color:#dc2626;padding:6px 10px">⚠ ${it.nm}: неполные данные</td>`;
+      return;
+    }
+    tr.innerHTML=`
+      <td style="padding:6px 10px;border:1px solid var(--border)">${it.nm}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.di_mm,1)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)"><b>${fmt(it.vel,3)}</b></td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.i1000,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.dH,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border);font-weight:700">${fmt(it.H_accum,3)}</td>
+      <td style="text-align:center;padding:6px 8px;border:1px solid var(--border);color:${it.sc};font-weight:600">${it.st}</td>`;
+  });
+
+  $('ext-rec').innerHTML=`
+    <b>Итог гидравлического расчёта:</b><br>
+    Суммарные потери напора: <b>ΔH = ${fmt(H_accum,2)} м</b><br>
+    Максимальная скорость: <b>v_макс = ${fmt(maxV,3)} м/с</b>, максимальный удельный уклон: <b>1000i = ${fmt(maxI,3)} мм/м</b>
+    ${warns+errors>0?`<br><span style="color:#d97706">⚠ Выявлено ${warns+errors} участков с отклонением скорости от рекомендуемого диапазона 0,5–1,5 м/с. Рассмотреть корректировку диаметров.</span>`:''}
+  `;
+
+  $('ext-note').innerHTML=`
+    <b>Нормативная база:</b> СН РК 4.01-02-2011 «Водоснабжение. Наружные сети», п. 8; СП РК 4.01-101-2013.<br>
+    <b>Формулы:</b> v = 4Q/(π·d²); Re = v·d/ν; λ = 0,11·(Δ/d + 68/Re)^0,25 (Альтшуль); i = λ/d·v²/(2g); ΔH = i·L.<br>
+    <b>Рекомендуемые скорости:</b> магистральные сети 1,0–1,5 м/с; распределительные 0,7–1,2 м/с; максимум 3,0 м/с (металл), 2,0 м/с (пластик).<br>
+    <b>Шероховатость:</b> сталь новая Δ=0,5 мм; ПЭ100/ПВХ Δ=0,05 мм; ВЧШГ Δ=0,5 мм. ν=1,31·10⁻⁶ м²/с (10 °С).
+  `;
+
+  $('ext-results').classList.add('show');
+}
+
+function getExtInputsHTML(){
+  const rows=extActiveRows.filter(i=>$(`ext-row-${i}`));
+  return makeInputTable([
+    ['Участков в расчёте', String(rows.length)],
+    ['Кинематическая вязкость ν', '1,31·10⁻⁶ м²/с (вода 10 °С)'],
+    ['Метод расчёта', 'Дарси-Вейсбах / Альтшуль'],
+  ]);
+}
+
+// ─── TAB 3: INDUSTRIAL ──────────────────────────────────────────
+// СП РК 4.01-101-2013, п. 3.4; СНиП 2.04.01-85* Прил. 3
+const IND_PROD_PRESETS=[
+  {name:'Охлаждение оборудования (оборотная)',  q:5.0,  T:8},
+  {name:'Промывка / мойка деталей',              q:2.0,  T:4},
+  {name:'Компрессорная станция (охлаждение)',    q:3.0,  T:8},
+  {name:'Котельная (подпитка)',                  q:1.0,  T:24},
+  {name:'Поливка территории и зелёных насаждений',q:0.5, T:2},
+  {name:'Пожаротушение (расчётный расход)',      q:10.0, T:3},
+];
+
+let indProdIdx=0;
+const indProdRows=[];
+
+function buildIndProdPresets(){
+  const c=$('ind-prod-presets'); c.innerHTML='';
+  IND_PROD_PRESETS.forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='preset-chip';
+    btn.textContent='+ '+p.name.split('(')[0].trim();
+    btn.onclick=()=>addIndProdRow(i);
+    c.appendChild(btn);
+  });
+}
+
+function addIndProdRow(presetIdx){
+  const p=(presetIdx!==undefined&&presetIdx!==null)?IND_PROD_PRESETS[presetIdx]:null;
+  const idx=indProdIdx++;
+  indProdRows.push(idx);
+  const num=indProdRows.length;
+  const tr=document.createElement('tr');
+  tr.id=`indp-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  tr.innerHTML=`
+    <td style="padding:5px;text-align:center;color:var(--text-s);font-size:12px">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="indpr-name-${idx}" value="${p?p.name:'Потребитель '+num}" class="ap-inp" style="min-width:200px"></td>
+    <td style="padding:4px 5px"><input type="number" id="indpr-q-${idx}" value="${p?p.q:1.0}" min="0.01" step="0.1" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><input type="number" id="indpr-t-${idx}" value="${p?p.T:8}" min="0.5" max="24" step="0.5" class="ap-inp" style="width:65px"></td>
+    <td style="padding:4px 5px"><input type="text" id="indpr-note-${idx}" value="" class="ap-inp" placeholder="комментарий"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeIndProdRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('ind-prod-tbody').appendChild(tr);
+}
+
+function removeIndProdRow(idx){
+  const row=$(`indp-row-${idx}`); if(row) row.remove();
+  const pos=indProdRows.indexOf(idx); if(pos>-1) indProdRows.splice(pos,1);
+}
+
+function calcIndustrial(){
+  const N_hot  = v('ind-n-hot')||0;
+  const N_reg  = v('ind-n-reg')||0;
+  const T_shift= v('ind-tshift')||8;
+  const shifts = parseInt($('ind-shifts').value)||2;
+  const q_dush = v('ind-q-dush')||500;   // л/ч на 1 сетку
+  const days   = v('ind-days')||250;
+
+  // Domestic-drinking per shift
+  const Q_hot_smena = N_hot * 45 / 1000;       // м³/смену
+  const Q_reg_smena = N_reg * 25 / 1000;
+  const Q_hpn_smena = Q_hot_smena + Q_reg_smena;
+  const Q_hpn_sut   = Q_hpn_smena * shifts;
+
+  // Max second flow (хоз-пит)
+  const Q_s_hot = (2.75 * N_hot * 45) / (T_shift * 3600);   // л/с
+  const Q_s_reg = (1.97 * N_reg * 25) / (T_shift * 3600);
+  const Q_s_hpn = Q_s_hot + Q_s_reg;
+
+  // Showers per shift
+  const n_dush_hot = Math.ceil(N_hot / 3);
+  const n_dush_reg = Math.ceil(N_reg / 15);
+  const n_dush     = n_dush_hot + n_dush_reg;
+  const Q_dush_m3  = n_dush * q_dush * 0.75 / 1000;   // м³ за 45 мин
+  const Q_s_dush   = n_dush * q_dush / 3600;           // л/с (пиковый)
+  const Q_dush_sut = Q_dush_m3 * shifts;
+
+  // Production needs
+  const prodRows = indProdRows.filter(i=>$(`indp-row-${i}`));
+  let Q_prod_sut=0, Q_s_prod=0;
+  const prodItems=[];
+  prodRows.forEach(i=>{
+    const nm  = $(`indpr-name-${i}`).value||'Потребитель';
+    const q   = v(`indpr-q-${i}`)||0;     // м³/ч
+    const T   = v(`indpr-t-${i}`)||8;
+    const note= $(`indpr-note-${i}`).value||'';
+    const Q_sut_i = q * T;
+    const Q_s_i   = q / 3.6;              // л/с
+    Q_prod_sut += Q_sut_i;
+    Q_s_prod   += Q_s_i;
+    prodItems.push({nm, q, T, note, Q_sut_i, Q_s_i});
+  });
+
+  const Q_total_sut = Q_hpn_sut + Q_dush_sut + Q_prod_sut;
+  const Q_s_total   = Q_s_hpn + Q_s_dush + Q_s_prod;
+  const Q_god       = Q_total_sut * days;
+
+  $('ind-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${fmt(Q_hpn_sut,2)}</div><div class="u">м³/сут</div><div class="lbl">Хоз-пит. нужды</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_dush_sut,2)}</div><div class="u">м³/сут</div><div class="lbl">Душевые</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_prod_sut,2)}</div><div class="u">м³/сут</div><div class="lbl">Производство</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_total_sut,2)}</div><div class="u">м³/сут</div><div class="lbl">Q_сут ИТОГО</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_s_total,3)}</div><div class="u">л/с</div><div class="lbl">Q_с.макс</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_god,0)}</div><div class="u">м³/год</div><div class="lbl">Q_год</div></div>
+  `;
+
+  const tbody=$('ind-res-tbody'); tbody.innerHTML='';
+  const addRow=(cls,nm,s,u,val)=>{
+    const tr=tbody.insertRow(); if(cls) tr.className=cls;
+    if(cls==='sep'){tr.innerHTML=`<td colspan="4">${nm}</td>`;return;}
+    tr.innerHTML=`<td>${nm}</td><td>${s}</td><td>${u}</td><td style="text-align:right"><b>${val}</b></td>`;
+  };
+
+  addRow('sep','Хозяйственно-питьевые нужды работников','','','');
+  addRow('','Работники горячих цехов (q₀=45 л/смену)','N_г','чел',fmt(N_hot,0));
+  addRow('','Работники прочих цехов (q₀=25 л/смену)','N_п','чел',fmt(N_reg,0));
+  addRow('','Смен в сутки','—','смен',String(shifts));
+  addRow('','Расход горячих цехов (смена)','Q_г.см','м³/смену',fmt(Q_hot_smena,3));
+  addRow('','Расход прочих цехов (смена)','Q_п.см','м³/смену',fmt(Q_reg_smena,3));
+  addRow('subtotal','Хоз-пит. нужды в сутки','Q_хпн','м³/сут',fmt(Q_hpn_sut,3));
+  addRow('','Макс. секундный (К_ч=2,75/1,97): Q_с = K_ч×N×q/(T×3600)','Q_с.хпн','л/с',fmt(Q_s_hpn,3));
+
+  addRow('sep','Душевые установки (45 мин после смены)','','','');
+  addRow('','Сеток для горячих цехов (1 на 3 чел)','n_г.д','шт',String(n_dush_hot));
+  addRow('','Сеток для прочих цехов (1 на 15 чел)','n_п.д','шт',String(n_dush_reg));
+  addRow('','Итого душевых сеток','n_д','шт',String(n_dush));
+  addRow('','Расход на 1 сетку','q_д','л/ч',fmt(q_dush,0));
+  addRow('subtotal','Объём воды за 1 сеанс (45 мин): V = n×q×0,75/1000','V_д','м³/смену',fmt(Q_dush_m3,3));
+  addRow('subtotal','Суточный расход душевых','Q_д.сут','м³/сут',fmt(Q_dush_sut,3));
+  addRow('','Пиковый секундный: Q_с = n×q/3600','Q_с.д','л/с',fmt(Q_s_dush,3));
+
+  if(prodItems.length){
+    addRow('sep','Производственные нужды','','','');
+    prodItems.forEach(it=>{
+      addRow('',`${it.nm}${it.note?' ('+it.note+')':''}`,`${fmt(it.q,2)} м³/ч × ${it.T} ч`,'м³/сут',fmt(it.Q_sut_i,2));
+    });
+    addRow('subtotal','Итого производственные нужды','Q_произв','м³/сут',fmt(Q_prod_sut,2));
+    addRow('','Суммарный секундный расход производства','Q_с.пр','л/с',fmt(Q_s_prod,3));
+  }
+
+  addRow('sep','ИТОГО по предприятию','','','');
+  addRow('subtotal','Хоз-пит. + душевые','Q_быт','м³/сут',fmt(Q_hpn_sut+Q_dush_sut,3));
+  if(prodItems.length) addRow('subtotal','Производственные нужды','Q_произв','м³/сут',fmt(Q_prod_sut,2));
+  addRow('total','Суммарный суточный расход','Q_сут','м³/сут',fmt(Q_total_sut,2));
+  addRow('total','Расчётный секундный расход','Q_с.расч','л/с',fmt(Q_s_total,3));
+  addRow('subtotal','Годовое водопотребление ('+days+' р.д.)','Q_год','м³/год',fmt(Q_god,0));
+
+  $('ind-rec').innerHTML=`
+    <b>Расчётные расходы для проектирования:</b><br>
+    Q_сут = <b>${fmt(Q_total_sut,2)} м³/сут</b> — для водомерных узлов и резервуаров<br>
+    Q_с.расч = <b>${fmt(Q_s_total,3)} л/с</b> — для гидравлического расчёта трубопроводов<br>
+    Душевых сеток: <b>${n_dush} шт</b>
+    (горячие цеха: ${n_dush_hot} шт, прочие: ${n_dush_reg} шт)
+  `;
+
+  $('ind-note').innerHTML=`
+    <b>Нормативная база:</b> СП РК 4.01-101-2013, п. 3.4; Приложение 3 к СНиП 2.04.01-85*.<br>
+    <b>Нормы:</b> горячие цеха — 45 л/чел·смену, К_ч=2,75; прочие — 25 л/чел·смену, К_ч=1,97.<br>
+    <b>Душевые:</b> горячие цеха — 1 сетка на 3 чел, прочие — 1 сетка на 15 чел; расход 500 л/ч на сетку; продолжительность 45 мин.<br>
+    <b>Примечание:</b> производственные нужды определяются технологическим заданием. Расходы пожаротушения учитываются отдельно по противопожарным нормам.
+  `;
+
+  $('ind-results').classList.add('show');
+}
+
+function getIndInputsHTML(){
+  return makeInputTable([
+    ['Работники горячих цехов',  `${v('ind-n-hot')} чел/смену`],
+    ['Работники прочих цехов',   `${v('ind-n-reg')} чел/смену`],
+    ['Продолжительность смены',  `${v('ind-tshift')} ч`],
+    ['Число смен в сутки',       $('ind-shifts').value],
+    ['Расход на 1 душевую сетку',`${v('ind-q-dush')} л/ч`],
+    ['Расчётный период',         `${v('ind-days')} рабочих дней`],
+    ['Производственных потребителей', String(indProdRows.filter(i=>$(`indp-row-${i}`)).length)],
+  ]);
+}
+
+// ─── TAB 2: PUBLIC BUILDING ─────────────────────────────────────
+// СП РК 4.01-101-2013, Приложение А, Таблица А.2
+// {name, unit, q: л/ед·сут (total), q_hot: л/ед·сут (горячая), T: ч/сут, kch: К_ч.макс}
+const PUB_NORMS=[
+  {name:'Больница с ваннами (инфекционная)',  unit:'коек',         q:400, q_hot:200, T:24, kch:2.5},
+  {name:'Больница без ванн (общая палата)',    unit:'коек',         q:250, q_hot:120, T:24, kch:2.5},
+  {name:'Поликлиника',                         unit:'посещений',    q:13,  q_hot:5,   T:8,  kch:2.0},
+  {name:'Детские ясли-сад (дневное)',          unit:'мест',         q:75,  q_hot:25,  T:12, kch:2.5},
+  {name:'Школа с душевыми',                   unit:'учащихся',     q:20,  q_hot:7,   T:8,  kch:3.0},
+  {name:'Школа без душевых',                  unit:'учащихся',     q:10,  q_hot:0,   T:8,  kch:3.0},
+  {name:'ВУЗ, техникум',                      unit:'студентов',    q:15,  q_hot:6,   T:8,  kch:3.0},
+  {name:'Административное здание',            unit:'сотрудников',  q:12,  q_hot:4,   T:8,  kch:2.75},
+  {name:'Гостиница с ваннами в номерах',      unit:'мест',         q:250, q_hot:120, T:24, kch:3.5},
+  {name:'Гостиница без ванн',                unit:'мест',         q:120, q_hot:60,  T:24, kch:3.5},
+  {name:'Ресторан, кафе',                     unit:'блюд/сут',     q:12,  q_hot:7,   T:10, kch:1.5},
+  {name:'Столовая (предприятие питания)',     unit:'блюд/сут',     q:12,  q_hot:7,   T:8,  kch:2.0},
+  {name:'Прачечная (механизированная)',       unit:'кг белья/сут', q:75,  q_hot:35,  T:8,  kch:1.5},
+  {name:'Магазин продовольственный',          unit:'сотрудников',  q:250, q_hot:60,  T:8,  kch:2.5},
+  {name:'Магазин промтоварный',              unit:'сотрудников',  q:25,  q_hot:0,   T:8,  kch:2.5},
+  {name:'Спортзал с душевыми',               unit:'посетителей',  q:50,  q_hot:20,  T:8,  kch:2.0},
+  {name:'Кинотеатр, театр',                  unit:'мест',         q:4,   q_hot:0,   T:6,  kch:3.0},
+];
+
+let pubRowIdx=0;
+const pubActiveRows=[];
+
+function buildPubPresets(){
+  const c=$('pub-presets'); c.innerHTML='';
+  PUB_NORMS.forEach((n,i)=>{
+    const btn=document.createElement('button');
+    btn.className='preset-chip';
+    btn.textContent='+ '+n.name.split('(')[0].trim();
+    btn.onclick=()=>addPubRow(i);
+    c.appendChild(btn);
+  });
+}
+
+function addPubRow(normIdx){
+  const n=(normIdx!==undefined&&normIdx!==null)?PUB_NORMS[normIdx]:null;
+  const idx=pubRowIdx++;
+  pubActiveRows.push(idx);
+  const num=pubActiveRows.length;
+  const tr=document.createElement('tr');
+  tr.id=`pub-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  tr.innerHTML=`
+    <td style="padding:5px;text-align:center;color:var(--text-s);font-size:12px">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="pubr-name-${idx}" value="${n?n.name:'Потребитель '+num}" class="ap-inp" style="min-width:200px"></td>
+    <td style="padding:4px 5px"><input type="number" id="pubr-n-${idx}" value="100" min="1" step="1" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><input type="number" id="pubr-q-${idx}" value="${n?n.q:12}" min="0.1" step="0.5" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><input type="number" id="pubr-qh-${idx}" value="${n?n.q_hot:0}" min="0" step="0.5" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><input type="number" id="pubr-t-${idx}" value="${n?n.T:8}" min="1" max="24" step="0.5" class="ap-inp" style="width:60px"></td>
+    <td style="padding:4px 5px"><input type="number" id="pubr-kch-${idx}" value="${n?n.kch:2.5}" min="1" max="5" step="0.05" class="ap-inp" style="width:60px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removePubRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('pub-tbody').appendChild(tr);
+}
+
+function removePubRow(idx){
+  const row=$(`pub-row-${idx}`); if(row) row.remove();
+  const pos=pubActiveRows.indexOf(idx); if(pos>-1) pubActiveRows.splice(pos,1);
+}
+
+function calcPublic(){
+  const rows=pubActiveRows.filter(i=>$(`pub-row-${i}`));
+  if(!rows.length){alert('Добавьте хотя бы одну группу потребителей.');return;}
+
+  const K_sut=v('pub-ksut')||1.2;
+  const days=v('pub-days')||365;
+
+  let Q_sut_sr_total=0, Q_hot_sut_total=0, Q_s_max_total=0;
+  const items=[];
+
+  rows.forEach(i=>{
+    const nm=$(`pubr-name-${i}`).value||'Группа';
+    const N=parseInt($(`pubr-n-${i}`).value)||1;
+    const q=v(`pubr-q-${i}`)||12;
+    const qh=v(`pubr-qh-${i}`)||0;
+    const T=v(`pubr-t-${i}`)||8;
+    const kch=v(`pubr-kch-${i}`)||2.5;
+    const Q_sut_sr=N*q/1000;
+    const Q_hot_sr=N*qh/1000;
+    const Q_sut_max=K_sut*Q_sut_sr;
+    const Q_ch_max=kch*Q_sut_max/T;
+    const Q_s_max=Q_ch_max/3.6;
+    Q_sut_sr_total+=Q_sut_sr;
+    Q_hot_sut_total+=Q_hot_sr;
+    Q_s_max_total+=Q_s_max;
+    items.push({nm,N,q,qh,T,kch,Q_sut_sr,Q_hot_sr,Q_sut_max,Q_ch_max,Q_s_max});
+  });
+
+  const Q_sut_max_total=K_sut*Q_sut_sr_total;
+  const Q_god=Q_sut_sr_total*days;
+  const Q_god_hot=Q_hot_sut_total*days;
+
+  $('pub-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${fmt(Q_sut_sr_total,2)}</div><div class="u">м³/сут</div><div class="lbl">Q_сут.ср</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_sut_max_total,2)}</div><div class="u">м³/сут</div><div class="lbl">Q_сут.макс</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_s_max_total,3)}</div><div class="u">л/с</div><div class="lbl">Q_с.макс (сумма)</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_god,0)}</div><div class="u">м³/год</div><div class="lbl">Q_год</div></div>
+    ${Q_hot_sut_total>0?`<div class="kpi"><div class="v">${fmt(Q_god_hot,0)}</div><div class="u">м³/год</div><div class="lbl">Q_год (ГВС)</div></div>`:''}
+  `;
+
+  const tbody=$('pub-res-tbody'); tbody.innerHTML='';
+  const addRow=(cls,nm,s,u,val)=>{
+    const tr=tbody.insertRow(); if(cls) tr.className=cls;
+    if(cls==='sep'){tr.innerHTML=`<td colspan="4">${nm}</td>`;return;}
+    tr.innerHTML=`<td>${nm}</td><td>${s}</td><td>${u}</td><td style="text-align:right"><b>${val}</b></td>`;
+  };
+
+  items.forEach((it,idx)=>{
+    addRow('sep',`${idx+1}. ${it.nm}  (N = ${it.N})` ,'','','');
+    addRow('','Норма водопотребления полная','q₀','л/ед·сут',fmt(it.q,1));
+    if(it.qh>0) addRow('','в т.ч. горячая','q₀_г','л/ед·сут',fmt(it.qh,1));
+    addRow('','Время водопотребления','T','ч/сут',fmt(it.T,1));
+    addRow('','Среднесуточный расход','Q_сут.ср','м³/сут',fmt(it.Q_sut_sr,3));
+    addRow('','Максимальный суточный','Q_сут.макс','м³/сут',fmt(it.Q_sut_max,3));
+    addRow('','К_ч.макс','K_ч','—',fmt(it.kch,2));
+    addRow('subtotal','Макс. часовой: K_ч × Q_сут.макс / T','Q_ч.макс','м³/ч',fmt(it.Q_ch_max,3));
+    addRow('total','Макс. секундный: Q_ч.макс / 3,6','Q_с.макс','л/с',fmt(it.Q_s_max,3));
+  });
+
+  addRow('sep','ИТОГО по зданию','','','');
+  addRow('subtotal','Суммарный среднесуточный','Q_сут.ср','м³/сут',fmt(Q_sut_sr_total,3));
+  addRow('subtotal','Суммарный макс. суточный','Q_сут.макс','м³/сут',fmt(Q_sut_max_total,3));
+  addRow('total','Суммарный расчётный секундный','Q_с.расч','л/с',fmt(Q_s_max_total,3));
+  addRow('subtotal','Годовое водопотребление (ХВС+ГВС)','Q_год','м³/год',fmt(Q_god,0));
+  if(Q_hot_sut_total>0) addRow('','в т.ч. горячее водоснабжение','Q_год.г','м³/год',fmt(Q_god_hot,0));
+
+  $('pub-rec').innerHTML=`
+    <b>Расчётные расходы для проектирования:</b><br>
+    Q_сут.ср = <b>${fmt(Q_sut_sr_total,2)} м³/сут</b> — для водомерных узлов и резервуаров<br>
+    Q_сут.макс = <b>${fmt(Q_sut_max_total,2)} м³/сут</b> — для насосных станций и водонапорных баков<br>
+    Q_с.расч = <b>${fmt(Q_s_max_total,3)} л/с</b> — для гидравлического расчёта трубопроводов
+    ${Q_hot_sut_total>0?`<br>ГВС: Q_год = <b>${fmt(Q_god_hot,0)} м³/год</b>`:''}
+  `;
+
+  $('pub-note').innerHTML=`
+    <b>Нормативная база:</b> СП РК 4.01-101-2013, Приложение А, Таблица А.2; СН РК 4.01-02-2011.<br>
+    <b>Формулы:</b> Q_сут.ср = N×q₀/1000; Q_сут.макс = K_сут×Q_сут.ср; Q_ч.макс = K_ч×Q_сут.макс/T; Q_с.макс = Q_ч.макс/3,6.<br>
+    <b>Примечание:</b> Q_с.расч принят как сумма максимальных секундных расходов групп — значение консервативное. При обосновании допускается снижение на основе совместного анализа режимов водопотребления.
+  `;
+
+  $('pub-results').classList.add('show');
+}
+
+function getPubInputsHTML(){
+  const rows=pubActiveRows.filter(i=>$(`pub-row-${i}`));
+  const paramRows=[['Групп потребителей',String(rows.length)],['К_сут.макс',String(v('pub-ksut'))],['Расчётный период',`${v('pub-days')} сут`]];
+  rows.forEach(i=>{
+    const nm=$(`pubr-name-${i}`).value||'Группа';
+    paramRows.push([nm, `N=${$(`pubr-n-${i}`).value}, q₀=${v(`pubr-q-${i}`)} л/ед·сут`]);
+  });
+  return makeInputTable(paramRows);
+}
+
+// ─── TAB 7: FIRE PROTECTION ─────────────────────────────────────
+// СН РК 4.01-02-2011, разд. 9; СНиП 2.04.02-84*, Табл. 5–6; СНиП 2.04.01-85*, Табл. 1; СП 5.13130
+
+// Расходы наружного ПТ по степени огнестойкости и объёму здания (СНиП 2.04.02-84* Табл. 5)
+const FIRE_EXT_NORMS={
+  'I-II':[{v:1000,q:10},{v:5000,q:10},{v:20000,q:15},{v:50000,q:20},{v:100000,q:25},{v:Infinity,q:35}],
+  'III': [{v:1000,q:10},{v:5000,q:15},{v:20000,q:25},{v:Infinity,q:30}],
+  'IV-V':[{v:500, q:10},{v:3000,q:15},{v:5000, q:20},{v:Infinity,q:25}],
+};
+
+function getFireExtNorm(resist, vol){
+  const tbl=FIRE_EXT_NORMS[resist]||FIRE_EXT_NORMS['I-II'];
+  for(const row of tbl){ if(vol<=row.v) return row.q; }
+  return tbl[tbl.length-1].q;
+}
+
+// Число и расход струй внутреннего ПТ по этажности (жилые/общественные; СНиП 2.04.01-85* Табл. 1)
+function getFireIntNorm(floors){
+  if(floors<=12) return {n:1, q:2.5, label:'≤12 этажей'};
+  if(floors<=16) return {n:2, q:2.5, label:'13–16 этажей'};
+  if(floors<=25) return {n:3, q:2.5, label:'17–25 этажей'};
+  return              {n:4, q:5.0, label:'>25 этажей'};
+}
+
+function updateFireNorm(){
+  const resist=$('fire-resist').value;
+  const vol=v('fire-vol')||5000;
+  const q=getFireExtNorm(resist,vol);
+  $('fire-q-ext').value=q;
+  $('fire-ext-hint').textContent=`По нормативу (СН РК / СНиП 2.04.02-84*): ${q} л/с для объёма ${vol} м³, степень ${resist}`;
+}
+
+function updateFireInt(){
+  const floors=Math.round(v('fire-floors')||5);
+  const norm=getFireIntNorm(floors);
+  $('fire-n-int').value=norm.n;
+  $('fire-q-int').value=norm.q;
+  $('fire-int-hint').textContent=`По СНиП 2.04.01-85* (${norm.label}): ${norm.n} стр. × ${norm.q} л/с`;
+}
+
+function calcFire(){
+  const q_ext  =v('fire-q-ext')||15;
+  const t_ext  =v('fire-t-ext')||3;
+  const n_int  =v('fire-n-int')||0;
+  const q_int_1=v('fire-q-int')||2.5;
+  const t_int  =v('fire-t-int')||10;
+  const f_spr  =v('fire-f-spr')||0;
+  const w_spr  =v('fire-w-spr')||0.08;
+  const t_spr  =v('fire-t-spr')||60;
+
+  const Q_ext=q_ext;
+  const Q_int=n_int*q_int_1;
+  const Q_spr=f_spr>0?(f_spr*w_spr/60):0;
+
+  const V_ext=Q_ext*t_ext*3600/1000;
+  const V_int=Q_int*t_int*60/1000;
+  const V_spr=f_spr>0?(Q_spr*t_spr*60/1000):0;
+  const Q_int_eff=Math.max(Q_int,Q_spr);
+  const V_int_eff=Math.max(V_int,V_spr);
+  const Q_total=Q_ext+Q_int_eff;
+  const V_total=V_ext+V_int_eff;
+  const V_rounded=Math.ceil(V_total/10)*10;
+
+  $('fire-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${fmt(Q_total,1)}</div><div class="u">л/с</div><div class="lbl">Q_расч общий</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_ext,1)}</div><div class="u">л/с</div><div class="lbl">Q_нар</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_int,1)}</div><div class="u">л/с</div><div class="lbl">Q_внутр</div></div>
+    ${f_spr>0?`<div class="kpi"><div class="v">${fmt(Q_spr,2)}</div><div class="u">л/с</div><div class="lbl">Q_спринклер</div></div>`:''}
+    <div class="kpi"><div class="v">${fmt(V_total,1)}</div><div class="u">м³</div><div class="lbl">V_пож расч.</div></div>
+    <div class="kpi"><div class="v">${V_rounded}</div><div class="u">м³</div><div class="lbl">V_рез принятый</div></div>
+  `;
+
+  const tbody=$('fire-res-tbody'); tbody.innerHTML='';
+  const addRow=(cls,nm,s,u,val)=>{
+    const tr=tbody.insertRow(); if(cls) tr.className=cls;
+    if(cls==='sep'){tr.innerHTML=`<td colspan="4">${nm}</td>`;return;}
+    tr.innerHTML=`<td>${nm}</td><td>${s}</td><td>${u}</td><td style="text-align:right"><b>${val}</b></td>`;
+  };
+
+  addRow('sep','Наружное пожаротушение','','','');
+  addRow('','Расчётный расход','Q_нар','л/с',fmt(Q_ext,1));
+  addRow('','Продолжительность тушения','T_нар','ч',fmt(t_ext,1));
+  addRow('subtotal','Объём воды: V = Q_нар × T × 3600 / 1000','V_нар','м³',fmt(V_ext,1));
+
+  if(n_int>0){
+    addRow('sep','Внутреннее ПТ — пожарные краны','','','');
+    addRow('','Число одновременных струй','n_ст','шт',String(Math.round(n_int)));
+    addRow('','Расход одной струи','q_ст','л/с',fmt(q_int_1,1));
+    addRow('subtotal','Расход: Q_внутр = n_ст × q_ст','Q_внутр','л/с',fmt(Q_int,1));
+    addRow('','Продолжительность подачи','T_внутр','мин',fmt(t_int,0));
+    addRow('subtotal','Объём: V = Q_внутр × T × 60 / 1000','V_внутр','м³',fmt(V_int,2));
+  }
+
+  if(f_spr>0){
+    addRow('sep','АУПТ — спринклерная система','','','');
+    addRow('','Расчётная площадь орошения','F_авт','м²',fmt(f_spr,0));
+    addRow('','Интенсивность орошения','w','мм/мин',fmt(w_spr,3));
+    addRow('subtotal','Расход: Q_авт = F × w / 60','Q_авт','л/с',fmt(Q_spr,2));
+    addRow('','Продолжительность работы','T_авт','мин',fmt(t_spr,0));
+    addRow('subtotal','Объём: V = Q_авт × T × 60 / 1000','V_авт','м³',fmt(V_spr,1));
+    if(Q_spr>Q_int) addRow('','Принято к расчёту (Q_авт > Q_внутр)','—','—','АУПТ');
+  }
+
+  addRow('sep','ИТОГО — противопожарный запас воды','','','');
+  addRow('total','Суммарный расход: Q_нар + max(Q_внутр, Q_авт)','Q_расч','л/с',fmt(Q_total,1));
+  addRow('total','Объём резервуара: V_нар + max(V_внутр, V_авт)','V_пож','м³',fmt(V_total,1));
+  addRow('subtotal','Принятый объём (округл. до 10 м³)','V_принят','м³',String(V_rounded));
+
+  $('fire-rec').innerHTML=`
+    <b>Расчётные противопожарные расходы:</b><br>
+    Q_нар = <b>${fmt(Q_ext,1)} л/с</b>; Q_внутр = <b>${fmt(Q_int,1)} л/с</b>${f_spr>0?`; Q_авт = <b>${fmt(Q_spr,2)} л/с</b>`:''}<br>
+    Q_расч = <b>${fmt(Q_total,1)} л/с</b> = ${fmt(Q_ext,1)} + ${fmt(Q_int_eff,1)}<br>
+    Объём противопожарного резервуара: <b>${V_rounded} м³</b><br>
+    Пополнение резервуара — не более 24–48 ч (СН РК 4.01-02-2011, п. 9.30). При централизованном водоснабжении с обеспечением пожарного расхода резервуар не требуется.
+  `;
+
+  $('fire-note').innerHTML=`
+    <b>Нормативная база:</b> СН РК 4.01-02-2011, разд. 9; СН РК 4.01-01-2011; СНиП 2.04.02-84*, Табл. 5–6; СНиП 2.04.01-85*, Табл. 1; СП 5.13130.2009.<br>
+    <b>Наружное ПТ:</b> расход по степени огнестойкости и объёму здания; длительность ≥ 3 ч; резервуар при недостаточном напоре в сети.<br>
+    <b>Внутреннее ПТ:</b> жилые/общественные — 1–4 струи × 2,5–5,0 л/с; T = 10 мин (жилые), до 30 мин (производство).<br>
+    <b>Спринклеры:</b> Q = F_авт × w / 60; w по СП 5.13130 зависит от категории помещения. При наличии АУПТ внутренние ПК допускается не учитывать совместно.<br>
+    <b>Совместная работа:</b> Q_расч = Q_нар + max(Q_внутр, Q_авт); при наружной сети с обеспечением пожарного расхода резервуар хранит только V_внутр.
+  `;
+  $('fire-results').classList.add('show');
+}
+
+function getFireInputsHTML(){
+  const rows=[
+    ['Степень огнестойкости',   $('fire-resist').value],
+    ['Объём здания',            `${v('fire-vol')} м³`],
+    ['Число этажей',            String(v('fire-floors'))],
+    ['q_нар',                   `${v('fire-q-ext')} л/с`],
+    ['T_нар',                   `${v('fire-t-ext')} ч`],
+    ['Число струй ПК (n_ст)',   String(v('fire-n-int'))],
+    ['Расход струи (q_ст)',     `${v('fire-q-int')} л/с`],
+    ['T_внутр',                 `${v('fire-t-int')} мин`],
+  ];
+  if(v('fire-f-spr')>0){
+    rows.push(
+      ['F_авт (спринклеры)',   `${v('fire-f-spr')} м²`],
+      ['Интенсивность w',      `${v('fire-w-spr')} мм/мин`],
+      ['T_авт',                `${v('fire-t-spr')} мин`],
+    );
+  }
+  return makeInputTable(rows);
+}
+
+// ─── TAB 6: INTERNAL WATER SUPPLY ───────────────────────────────
+// Вероятностный метод: СНиП 2.04.01-85*, п. 3.4; СП РК 4.01-101-2013, п. 7.4
+// Гидравлика: Альтшуль / Дарси-Вейсбах
+
+// α = f(NP) — СНиП 2.04.01-85*, Приложение 4
+const ALPHA_TABLE=[
+  [0.01,0.200],[0.02,0.267],[0.03,0.313],[0.04,0.350],[0.05,0.380],
+  [0.06,0.408],[0.07,0.432],[0.08,0.454],[0.09,0.474],[0.10,0.493],
+  [0.12,0.528],[0.14,0.560],[0.16,0.590],[0.18,0.618],[0.20,0.645],
+  [0.25,0.701],[0.30,0.752],[0.35,0.800],[0.40,0.844],[0.50,0.927],
+  [0.60,1.005],[0.70,1.079],[0.80,1.149],[0.90,1.216],[1.00,1.281],
+  [1.20,1.403],[1.40,1.519],[1.60,1.630],[1.80,1.737],[2.00,1.841],
+  [2.50,2.090],[3.00,2.330],[3.50,2.562],[4.00,2.789],[5.00,3.230],
+  [6.00,3.660],[7.00,4.080],[8.00,4.490],[9.00,4.895],[10.0,5.293],
+  [12.0,6.073],[14.0,6.839],[16.0,7.592],[18.0,8.336],[20.0,9.072],
+  [25.0,10.90],[30.0,12.70],[35.0,14.46],[40.0,16.21],[50.0,19.64],
+  [60.0,23.01],[70.0,26.34],[80.0,29.64],[90.0,32.91],[100,36.16],
+  [200,69.74]
+];
+function getAlpha(NP){
+  if(NP<=0) return 0;
+  const t=ALPHA_TABLE;
+  if(NP>=t[t.length-1][0]) return NP*0.336+2.54; // linear extrapolation
+  if(NP<=t[0][0]) return t[0][1];
+  for(let i=0;i<t.length-1;i++){
+    if(NP>=t[i][0]&&NP<=t[i+1][0]){
+      const r=(NP-t[i][0])/(t[i+1][0]-t[i][0]);
+      return t[i][1]+r*(t[i+1][1]-t[i][1]);
+    }
+  }
+  return t[t.length-1][1];
+}
+
+// Appliance presets {name, q0 л/с, qt л/сут·ед, T ч}
+const INT_APPLIANCES=[
+  {name:'Умывальник',              q0:0.09, qt: 40, T: 8},
+  {name:'Ванна с душем',           q0:0.25, qt:200, T:24},
+  {name:'Душ (без ванны)',         q0:0.14, qt: 70, T:24},
+  {name:'Мойка кухонная',         q0:0.12, qt:130, T:16},
+  {name:'Унитаз (смывной бачок)', q0:0.10, qt: 85, T:24},
+  {name:'Унитаз (смывной кран)',  q0:0.30, qt: 85, T:24},
+  {name:'Биде',                   q0:0.08, qt: 20, T: 8},
+];
+
+// Pipe materials for internal networks (Δ in mm)
+const INT_PIPES={
+  pp:{name:'ПП ГОСТ 32415 (DN 15–110)', delta:0.006,
+    pipes:[{dn:15,di:12.0},{dn:20,di:16.6},{dn:25,di:21.0},{dn:32,di:27.4},
+           {dn:40,di:34.0},{dn:50,di:43.0},{dn:63,di:54.4},{dn:75,di:64.6},
+           {dn:90,di:77.8},{dn:110,di:95.2}]},
+  mp:{name:'Металлопласт ГОСТ Р 53630 (DN 16–63)', delta:0.007,
+    pipes:[{dn:16,di:11.6},{dn:20,di:14.6},{dn:25,di:21.0},{dn:32,di:26.2},
+           {dn:40,di:33.0},{dn:50,di:42.0},{dn:63,di:55.0}]},
+  pex:{name:'Труба PE-X (DN 16–63)', delta:0.007,
+    pipes:[{dn:16,di:12.0},{dn:20,di:15.4},{dn:25,di:20.4},{dn:32,di:26.0},
+           {dn:40,di:32.6},{dn:50,di:41.2},{dn:63,di:52.0}]},
+  steel:{name:'Сталь оцинк. ГОСТ 3262 (DN 15–150)', delta:0.2,
+    pipes:[{dn:15,di:15.75},{dn:20,di:21.25},{dn:25,di:27.10},{dn:32,di:35.90},
+           {dn:40,di:41.00},{dn:50,di:53.00},{dn:65,di:67.20},{dn:80,di:80.70},
+           {dn:100,di:106.0},{dn:125,di:132.0},{dn:150,di:158.5}]},
+  cu:{name:'Медь ГОСТ Р 52318 (DN 15–54)', delta:0.0015,
+    pipes:[{dn:15,di:13.0},{dn:18,di:16.0},{dn:22,di:20.0},{dn:28,di:26.0},
+           {dn:35,di:33.0},{dn:42,di:40.0},{dn:54,di:52.0}]},
+};
+
+let intAppIdx=0, intAppRows=[];
+let intPipeIdx=0, intPipeRows=[];
+
+function buildIntAppPresets(){
+  const c=$('int-app-presets'); c.innerHTML='';
+  INT_APPLIANCES.forEach((a,i)=>{
+    const btn=document.createElement('button');
+    btn.className='preset-chip';
+    btn.textContent='+ '+a.name;
+    btn.onclick=()=>addIntAppRow(i);
+    c.appendChild(btn);
+  });
+}
+
+function addIntAppRow(presetIdx){
+  const p=(presetIdx!==undefined&&presetIdx!==null)?INT_APPLIANCES[presetIdx]:null;
+  const idx=intAppIdx++;
+  intAppRows.push(idx);
+  const num=intAppRows.length;
+  const tr=document.createElement('tr');
+  tr.id=`inta-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  tr.innerHTML=`
+    <td style="padding:5px;text-align:center;color:var(--text-s);font-size:12px">${num}</td>
+    <td style="padding:4px 5px"><input type="text" id="inta-name-${idx}" value="${p?p.name:'Прибор '+num}" class="ap-inp" style="min-width:175px"></td>
+    <td style="padding:4px 5px"><input type="number" id="inta-n-${idx}" value="10" min="1" step="1" class="ap-inp" style="width:65px"></td>
+    <td style="padding:4px 5px"><input type="number" id="inta-q0-${idx}" value="${p?p.q0:0.10}" min="0.01" max="2" step="0.01" class="ap-inp" style="width:65px"></td>
+    <td style="padding:4px 5px"><input type="number" id="inta-qt-${idx}" value="${p?p.qt:50}" min="1" max="500" step="1" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><input type="number" id="inta-u-${idx}" value="1" min="0.1" max="20" step="0.1" class="ap-inp" style="width:60px"></td>
+    <td style="padding:4px 5px"><input type="number" id="inta-t-${idx}" value="${p?p.T:8}" min="1" max="24" step="0.5" class="ap-inp" style="width:60px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeIntAppRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('int-app-tbody').appendChild(tr);
+}
+
+function removeIntAppRow(idx){
+  const row=$(`inta-row-${idx}`); if(row) row.remove();
+  const pos=intAppRows.indexOf(idx); if(pos>-1) intAppRows.splice(pos,1);
+}
+
+function calcIntFlow(){
+  const rows=intAppRows.filter(i=>$(`inta-row-${i}`));
+  if(!rows.length){alert('Добавьте хотя бы один прибор.');return;}
+
+  let NP_total=0;
+  const items=[];
+  rows.forEach(i=>{
+    const nm =$(`inta-name-${i}`).value||'Прибор';
+    const N  =v(`inta-n-${i}`)||0;
+    const q0 =v(`inta-q0-${i}`)||0.1;
+    const qt =v(`inta-qt-${i}`)||50;
+    const U  =v(`inta-u-${i}`)||1;
+    const T  =v(`inta-t-${i}`)||8;
+    const Pi =(U*qt)/(q0*T*3600);
+    const NPi=N*Pi;
+    NP_total+=NPi;
+    items.push({nm,N,q0,qt,Pi,NPi});
+  });
+
+  const q0min=v('int-q0min')||0.2;
+  const alpha=getAlpha(NP_total);
+  const Q_s=5*q0min*alpha;
+  const Q_h=Q_s*3.6;
+
+  $('int-flow-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${fmt(NP_total,3)}</div><div class="u">—</div><div class="lbl">NP (сумма)</div></div>
+    <div class="kpi"><div class="v">${fmt(alpha,3)}</div><div class="u">—</div><div class="lbl">α (таблица)</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_s,3)}</div><div class="u">л/с</div><div class="lbl">Q_с.расч</div></div>
+    <div class="kpi"><div class="v">${fmt(Q_h,2)}</div><div class="u">м³/ч</div><div class="lbl">Q_ч.расч</div></div>
+  `;
+
+  const tbody=$('int-flow-tbody'); tbody.innerHTML='';
+  items.forEach(it=>{
+    const tr=tbody.insertRow();
+    tr.innerHTML=`
+      <td style="padding:6px 10px;border:1px solid var(--border)">${it.nm}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${it.N}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${it.q0}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${it.qt}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.Pi,5)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border);font-weight:700">${fmt(it.NPi,4)}</td>`;
+  });
+  const ttr=tbody.insertRow(); ttr.className='total';
+  ttr.innerHTML=`<td colspan="5" style="padding:6px 10px;border:1px solid var(--border)">ИТОГО: NP = ${fmt(NP_total,4)}, α = ${fmt(alpha,3)}, q₀_мин = ${q0min} л/с</td>
+    <td style="text-align:right;padding:6px 8px;border:1px solid var(--border);font-weight:bold">${fmt(NP_total,4)}</td>`;
+
+  $('int-flow-note').innerHTML=`
+    <b>Формула:</b> P_i = U_i · q₀_т_i / (q₀_i · T_i · 3600); NP = Σ N_i · P_i; Q_с = 5 · q₀_мин · α(NP).<br>
+    NP = <b>${fmt(NP_total,4)}</b> → α = <b>${fmt(alpha,3)}</b> → Q_с = 5 × ${q0min} × ${fmt(alpha,3)} = <b>${fmt(Q_s,3)} л/с</b>.
+  `;
+  $('int-flow-results').classList.add('show');
+}
+
+function clearIntFlow(){
+  $('int-flow-results').classList.remove('show');
+}
+
+function updateIntDn(idx){
+  const mat=$(`intp-mat-${idx}`).value;
+  const sel=$(`intp-dn-${idx}`);
+  const prev=sel.value;
+  sel.innerHTML='';
+  (INT_PIPES[mat]?.pipes||[]).forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.dn; o.textContent=`DN ${p.dn}`;
+    if(String(p.dn)===prev) o.selected=true;
+    sel.appendChild(o);
+  });
+  updateIntDi(idx);
+}
+
+function updateIntDi(idx){
+  const mat=$(`intp-mat-${idx}`).value;
+  const dn=parseInt($(`intp-dn-${idx}`).value);
+  const pipe=INT_PIPES[mat]?.pipes.find(p=>p.dn===dn);
+  if(pipe) $(`intp-di-${idx}`).value=pipe.di;
+}
+
+function addIntPipeRow(){
+  const idx=intPipeIdx++;
+  intPipeRows.push(idx);
+  const num=intPipeRows.length;
+  const defMat='pp';
+  const tr=document.createElement('tr');
+  tr.id=`intp-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  const matOpts=Object.entries(INT_PIPES).map(([k,vv])=>`<option value="${k}"${k===defMat?' selected':''}>${vv.name}</option>`).join('');
+  tr.innerHTML=`
+    <td style="padding:4px 5px"><input type="text" id="intp-name-${idx}" value="Уч. ${num}" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><input type="number" id="intp-q-${idx}" value="0.50" min="0.01" step="0.01" class="ap-inp" style="width:68px"></td>
+    <td style="padding:4px 5px"><input type="number" id="intp-l-${idx}" value="10" min="0.5" step="0.5" class="ap-inp" style="width:62px"></td>
+    <td style="padding:4px 5px"><select id="intp-mat-${idx}" class="ap-inp" style="min-width:120px" onchange="updateIntDn(${idx})">${matOpts}</select></td>
+    <td style="padding:4px 5px"><select id="intp-dn-${idx}" class="ap-inp" style="width:78px" onchange="updateIntDi(${idx})"></select></td>
+    <td style="padding:4px 5px"><input type="number" id="intp-di-${idx}" value="" min="1" step="0.1" class="ap-inp" style="width:68px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeIntPipeRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('int-pipe-tbody').appendChild(tr);
+  updateIntDn(idx);
+}
+
+function removeIntPipeRow(idx){
+  const row=$(`intp-row-${idx}`); if(row) row.remove();
+  const pos=intPipeRows.indexOf(idx); if(pos>-1) intPipeRows.splice(pos,1);
+}
+
+function calcIntPipes(){
+  const rows=intPipeRows.filter(i=>$(`intp-row-${i}`));
+  if(!rows.length){alert('Добавьте хотя бы один участок.');return;}
+
+  const nu=1.31e-6, g=9.81;
+  const klocal=v('int-klocal')||0.3;
+  const Hfree=v('int-hfree')||3.0;
+  const Hvvod=v('int-p-vvod')||25;
+
+  let H_accum=0, warns=0, errors=0;
+  const items=[];
+
+  rows.forEach(i=>{
+    const nm   =$(`intp-name-${i}`).value||`Уч.${i}`;
+    const Q_ls =v(`intp-q-${i}`);
+    const L    =v(`intp-l-${i}`);
+    const mat  =$(`intp-mat-${i}`).value;
+    const di_mm=v(`intp-di-${i}`);
+    if(!Q_ls||!L||!di_mm){items.push({nm,err:true});return;}
+
+    const d    =di_mm/1000;
+    const Q_m3s=Q_ls/1000;
+    const A    =Math.PI*d*d/4;
+    const vel  =Q_m3s/A;
+    const Re   =vel*d/nu;
+    const delta=(INT_PIPES[mat]?.delta||0.2)/1000;
+    const lam  =0.11*Math.pow(delta/d+68/Re,0.25);
+    const i_hyd=lam/d*vel*vel/(2*g);
+    const i1000=i_hyd*1000;
+    const dH_l =i_hyd*L;
+    const dH_m =dH_l*klocal;
+    const dH   =dH_l+dH_m;
+    H_accum+=dH;
+
+    let st,sc;
+    if(vel<0.3){st='⚠ низкая';sc='#d97706';warns++;}
+    else if(vel<=1.5){st='✓ норма';sc='#059669';}
+    else if(vel<=2.5){st='⚠ >1,5 м/с';sc='#d97706';warns++;}
+    else{st='✗ >2,5 м/с';sc='#dc2626';errors++;}
+
+    items.push({nm,Q_ls,L,di_mm,vel,i1000,dH_l,dH_m,dH,H_accum:H_accum+0,st,sc});
+  });
+
+  const valid=items.filter(it=>!it.err);
+  const totalL=valid.reduce((s,it)=>s+it.L,0);
+  const maxV=valid.length?Math.max(...valid.map(it=>it.vel)):0;
+  const H_req=H_accum+Hfree;
+  const H_ok=Hvvod>=H_req;
+
+  $('int-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${valid.length}</div><div class="u">шт</div><div class="lbl">Участков</div></div>
+    <div class="kpi"><div class="v">${fmt(totalL,0)}</div><div class="u">м</div><div class="lbl">Длина</div></div>
+    <div class="kpi"><div class="v">${fmt(maxV,2)}</div><div class="u">м/с</div><div class="lbl">v_макс</div></div>
+    <div class="kpi"><div class="v">${fmt(H_accum,2)}</div><div class="u">м</div><div class="lbl">ΔH потерь</div></div>
+    <div class="kpi"><div class="v">${fmt(H_req,2)}</div><div class="u">м</div><div class="lbl">H_требуемый</div></div>
+    <div class="kpi"><div class="v" style="color:${H_ok?'#059669':'#dc2626'}">${H_ok?'✓ норма':'✗ дефицит'}</div><div class="u">${fmt(Math.abs(Hvvod-H_req),2)} м</div><div class="lbl">H_ввод ${Hvvod} м</div></div>
+  `;
+
+  const tbody=$('int-res-tbody'); tbody.innerHTML='';
+  items.forEach(it=>{
+    const tr=tbody.insertRow();
+    if(it.err){
+      tr.innerHTML=`<td colspan="8" style="color:#dc2626;padding:6px 10px">⚠ ${it.nm}: неполные данные</td>`;
+      return;
+    }
+    tr.innerHTML=`
+      <td style="padding:6px 10px;border:1px solid var(--border)">${it.nm}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.di_mm,1)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)"><b>${fmt(it.vel,3)}</b></td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.i1000,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.dH_l,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.dH_m,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border);font-weight:700">${fmt(it.H_accum,3)}</td>
+      <td style="text-align:center;padding:6px 8px;border:1px solid var(--border);color:${it.sc};font-weight:600">${it.st}</td>`;
+  });
+
+  // Include flow summary in rec if flow was calculated
+  let flowSummary='';
+  if($('int-flow-results')?.classList.contains('show')){
+    flowSummary=$('int-flow-note').innerHTML+'<br>';
+  }
+  $('int-rec').innerHTML=flowSummary+
+    `<b>Проверка напора:</b><br>
+    ΔH_лин = <b>${fmt(H_accum,2)} м</b>; ΔH_мест = ξ × ΔH_лин = ${klocal} × ${fmt(H_accum,2)} = ${fmt(H_accum*klocal,2)} м<br>
+    H_треб = ΔH_лин + ΔH_мест + H_своб = ${fmt(H_accum*(1+klocal),2)} + ${Hfree} = <b>${fmt(H_req,2)} м</b><br>
+    H_ввод = ${Hvvod} м → ${H_ok?`<b style="color:#059669">✓ Запас ${fmt(Hvvod-H_req,2)} м</b>`:`<b style="color:#dc2626">✗ Дефицит ${fmt(H_req-Hvvod,2)} м — предусмотреть насосную установку</b>`}
+    ${warns+errors>0?`<br><span style="color:#d97706">⚠ ${warns+errors} участков с отклонением скорости от нормы.</span>`:''}`;
+
+  $('int-note').innerHTML=`
+    <b>Нормативная база:</b> СП РК 4.01-101-2013, п. 7.4; СНиП 2.04.01-85*, пп. 3.4, 7.2.<br>
+    <b>Гидравлика:</b> λ = 0,11·(Δ/d + 68/Re)^0,25 (Альтшуль); ΔH_л = λ/d·v²/(2g)·L; ΔH_м = ξ·ΔH_л.<br>
+    <b>Скорости:</b> рекомендуемые 0,5–1,5 м/с; max 2,5 м/с (пластик), 3,0 м/с (сталь/медь).<br>
+    <b>Δ шероховатости:</b> ПП/МП/PE-X 0,006–0,007 мм; сталь оцинк. 0,2 мм; медь 0,0015 мм. ν = 1,31·10⁻⁶ м²/с.
+  `;
+  $('int-results').classList.add('show');
+}
+
+function getIntInputsHTML(){
+  const pRows=intAppRows.filter(i=>$(`inta-row-${i}`));
+  const hRows=intPipeRows.filter(i=>$(`intp-row-${i}`));
+  return makeInputTable([
+    ['Приборов в расчёте',        String(pRows.length)],
+    ['q₀_мин',                    `${v('int-q0min')} л/с`],
+    ['Давление ввода H_ввод',     `${v('int-p-vvod')} м`],
+    ['Участков трубопровода',     String(hRows.length)],
+    ['Коэф. местных потерь ξ',   String(v('int-klocal'))],
+    ['H_своб диктующего прибора', `${v('int-hfree')} м`],
+  ]);
+}
+
+// ─── TAB 5: EXTERNAL SEWAGE NETWORK ─────────────────────────────
+// СН РК 4.01-03-2011; СНиП 2.04.03-85* — Формула Мэннинга, частичное наполнение
+const SAN_PIPES={
+  pvc:{name:'ПВХ ГОСТ Р 54475 (DN 110–800)', n:0.010,
+    pipes:[{dn:110,di:104},{dn:160,di:152},{dn:200,di:190},{dn:250,di:238},
+           {dn:315,di:300},{dn:400,di:380},{dn:500,di:475},{dn:630,di:600},{dn:800,di:760}]},
+  pp:{name:'ПП ГОСТ Р 54475 (DN 110–500)', n:0.010,
+    pipes:[{dn:110,di:104},{dn:160,di:152},{dn:200,di:190},{dn:250,di:238},
+           {dn:315,di:300},{dn:400,di:380},{dn:500,di:475}]},
+  rcp:{name:'Ж/Б ГОСТ 6482 (DN 300–1500)', n:0.013,
+    pipes:[{dn:300,di:300},{dn:400,di:400},{dn:500,di:500},{dn:600,di:600},
+           {dn:800,di:800},{dn:1000,di:1000},{dn:1200,di:1200},{dn:1500,di:1500}]},
+  ac:{name:'Асбестоцемент ГОСТ 1839 (DN 100–400)', n:0.012,
+    pipes:[{dn:100,di:100},{dn:150,di:150},{dn:200,di:200},{dn:250,di:250},
+           {dn:300,di:300},{dn:400,di:400}]},
+  ceram:{name:'Керамика ГОСТ 286 (DN 100–300)', n:0.013,
+    pipes:[{dn:100,di:100},{dn:150,di:150},{dn:200,di:200},{dn:250,di:250},{dn:300,di:300}]},
+};
+
+// Minimum slope per DN
+const SAN_IMIN={
+  100:0.020,110:0.018,150:0.010,160:0.009,200:0.007,250:0.006,
+  300:0.005,315:0.005,400:0.004,500:0.003,600:0.003,630:0.003,
+  800:0.002,1000:0.002,1200:0.002,1500:0.001,
+};
+
+// Max filling h/d per DN by norm
+function sanMaxHd(dn){ return dn<500?0.70:dn<1000?0.75:0.80; }
+
+// Manning partial filling — binary search for central angle θ
+function sanFilling(Q_ls, d_mm, n_mann, i_slope){
+  if(!Q_ls||!d_mm||!n_mann||!i_slope) return null;
+  const Q=Q_ls/1000, d=d_mm/1000;
+  const A_full=Math.PI*d*d/4;
+  const Q_full=(1/n_mann)*A_full*Math.pow(d/4,2/3)*Math.pow(i_slope,0.5);
+  const overflow=Q>Q_full*1.01;
+  const Q_calc=overflow?Q_full*0.999:Q;
+  let lo=1e-6, hi=2*Math.PI-1e-6;
+  for(let iter=0;iter<60;iter++){
+    const mid=(lo+hi)/2;
+    const A=d*d/8*(mid-Math.sin(mid));
+    const P=d/2*mid;
+    const Qm=(1/n_mann)*(A/P>0?(A*Math.pow(A/P,2/3)):0)*Math.pow(i_slope,0.5);
+    if(Qm<Q_calc) lo=mid; else hi=mid;
+  }
+  const theta=(lo+hi)/2;
+  const A=d*d/8*(theta-Math.sin(theta));
+  const P=d/2*theta;
+  const R=A/P;
+  const vel=(1/n_mann)*Math.pow(R,2/3)*Math.pow(i_slope,0.5);
+  const hd=(1-Math.cos(theta/2))/2;
+  return {hd, h_mm:hd*d_mm, vel, Q_full_ls:Q_full*1000, overflow};
+}
+
+let sanRowIdx=0;
+const sanActiveRows=[];
+
+function updateSanDn(idx){
+  const mat=$(`sanr-mat-${idx}`).value;
+  const sel=$(`sanr-dn-${idx}`);
+  const prev=sel.value;
+  sel.innerHTML='';
+  (SAN_PIPES[mat]?.pipes||[]).forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.dn; o.textContent=`DN ${p.dn}`;
+    if(String(p.dn)===prev) o.selected=true;
+    sel.appendChild(o);
+  });
+  updateSanDi(idx);
+}
+
+function updateSanDi(idx){
+  const mat=$(`sanr-mat-${idx}`).value;
+  const dn=parseInt($(`sanr-dn-${idx}`).value);
+  const pipe=SAN_PIPES[mat]?.pipes.find(p=>p.dn===dn);
+  if(pipe) $(`sanr-di-${idx}`).value=pipe.di;
+}
+
+function addSanRow(){
+  const idx=sanRowIdx++;
+  sanActiveRows.push(idx);
+  const num=sanActiveRows.length;
+  const defMat='pvc';
+  const tr=document.createElement('tr');
+  tr.id=`san-row-${idx}`;
+  tr.style.borderBottom='1px solid #2e3348';
+  const matOpts=Object.entries(SAN_PIPES).map(([k,vv])=>`<option value="${k}"${k===defMat?' selected':''}>${vv.name}</option>`).join('');
+  tr.innerHTML=`
+    <td style="padding:4px 5px"><input type="text" id="sanr-name-${idx}" value="Уч. ${num}" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px"><input type="number" id="sanr-q-${idx}" value="5" min="0.01" step="0.1" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><input type="number" id="sanr-l-${idx}" value="100" min="1" step="1" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><select id="sanr-mat-${idx}" class="ap-inp" style="min-width:130px" onchange="updateSanDn(${idx})">${matOpts}</select></td>
+    <td style="padding:4px 5px"><select id="sanr-dn-${idx}" class="ap-inp" style="width:80px" onchange="updateSanDi(${idx})"></select></td>
+    <td style="padding:4px 5px"><input type="number" id="sanr-di-${idx}" value="" min="1" step="0.1" class="ap-inp" style="width:70px"></td>
+    <td style="padding:4px 5px"><input type="number" id="sanr-i-${idx}" value="0.005" min="0.0001" max="0.5" step="0.001" class="ap-inp" style="width:75px"></td>
+    <td style="padding:4px 5px;text-align:center">
+      <button onclick="removeSanRow(${idx})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:17px;padding:0 4px">✕</button>
+    </td>`;
+  $('san-tbody').appendChild(tr);
+  updateSanDn(idx);
+}
+
+function removeSanRow(idx){
+  const row=$(`san-row-${idx}`); if(row) row.remove();
+  const pos=sanActiveRows.indexOf(idx); if(pos>-1) sanActiveRows.splice(pos,1);
+}
+
+function calcSanNetwork(){
+  const rows=sanActiveRows.filter(i=>$(`san-row-${i}`));
+  if(!rows.length){alert('Добавьте хотя бы один участок.');return;}
+
+  let warns=0, errors=0;
+  const items=[];
+
+  rows.forEach(i=>{
+    const nm   =$(`sanr-name-${i}`).value||`Уч.${i}`;
+    const Q_ls =v(`sanr-q-${i}`);
+    const L    =v(`sanr-l-${i}`);
+    const di_mm=v(`sanr-di-${i}`);
+    const i_sl =v(`sanr-i-${i}`);
+    const mat  =$(`sanr-mat-${i}`).value;
+    const dn   =parseInt($(`sanr-dn-${i}`).value);
+    if(!Q_ls||!L||!di_mm||!i_sl){items.push({nm,err:true});return;}
+
+    const n_mann=SAN_PIPES[mat]?.n||0.012;
+    const res=sanFilling(Q_ls,di_mm,n_mann,i_sl);
+    if(!res){items.push({nm,err:true});return;}
+
+    const hd_max=sanMaxHd(dn);
+    const i_min=SAN_IMIN[dn]||0.003;
+
+    const statusList=[];
+    if(res.overflow)                    statusList.push({t:'✗ перегружена',c:'#dc2626'});
+    if(!res.overflow&&res.hd>hd_max)    statusList.push({t:`✗ h/d>${hd_max}`,c:'#dc2626'});
+    if(res.vel<0.7)                     statusList.push({t:'⚠ v < 0,7 м/с',c:'#d97706'});
+    if(res.vel>3.0)                     statusList.push({t:'✗ v > 3 м/с',c:'#dc2626'});
+    if(i_sl<i_min)                      statusList.push({t:`⚠ i < i_min(${i_min})`,c:'#d97706'});
+    if(!statusList.length)              statusList.push({t:'✓ норма',c:'#059669'});
+
+    const isErr=statusList.some(s=>s.t.startsWith('✗'));
+    const isWarn=!isErr&&statusList.some(s=>s.t.startsWith('⚠'));
+    if(isErr) errors++; else if(isWarn) warns++;
+
+    items.push({nm,Q_ls,L,di_mm,dn,i_sl,n_mann,
+      vel:res.vel,hd:res.hd,h_mm:res.h_mm,Q_full_ls:res.Q_full_ls,
+      overflow:res.overflow,hd_max,i_min,statusList});
+  });
+
+  const validItems=items.filter(it=>!it.err);
+  const totalL=validItems.reduce((s,it)=>s+it.L,0);
+  const maxV  =validItems.length?Math.max(...validItems.map(it=>it.vel)):0;
+  const maxHd =validItems.length?Math.max(...validItems.map(it=>it.hd)):0;
+
+  $('san-kpi').innerHTML=`
+    <div class="kpi"><div class="v">${validItems.length}</div><div class="u">шт</div><div class="lbl">Участков</div></div>
+    <div class="kpi"><div class="v">${fmt(totalL,0)}</div><div class="u">м</div><div class="lbl">Длина сети</div></div>
+    <div class="kpi"><div class="v">${fmt(maxV,2)}</div><div class="u">м/с</div><div class="lbl">v_макс</div></div>
+    <div class="kpi"><div class="v">${fmt(maxHd,2)}</div><div class="u">h/d</div><div class="lbl">Наполнение макс</div></div>
+    ${warns||errors?`<div class="kpi"><div class="v" style="color:${errors?'#dc2626':'#d97706'}">${warns+errors}</div><div class="u">уч.</div><div class="lbl">Предупреждений</div></div>`:''}
+  `;
+
+  const tbody=$('san-res-tbody'); tbody.innerHTML='';
+  items.forEach(it=>{
+    const tr=tbody.insertRow();
+    if(it.err){
+      tr.innerHTML=`<td colspan="7" style="color:#dc2626;padding:6px 10px">⚠ ${it.nm}: неполные данные</td>`;
+      return;
+    }
+    const stHtml=it.statusList.map(s=>`<span style="color:${s.c}">${s.t}</span>`).join('<br>');
+    tr.innerHTML=`
+      <td style="padding:6px 10px;border:1px solid var(--border)">${it.nm}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.di_mm,0)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${it.i_sl}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)"><b>${fmt(it.vel,3)}</b></td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.hd,3)}</td>
+      <td style="text-align:right;padding:6px 8px;border:1px solid var(--border)">${fmt(it.h_mm,1)}</td>
+      <td style="text-align:center;padding:6px 8px;border:1px solid var(--border);font-size:11px;font-weight:600">${stHtml}</td>`;
+  });
+
+  $('san-rec').innerHTML=`
+    <b>Итог гидравлического расчёта:</b><br>
+    Участков: <b>${validItems.length} шт</b>, суммарная длина: <b>${fmt(totalL,0)} м</b><br>
+    v_макс = <b>${fmt(maxV,3)} м/с</b>, h/d_макс = <b>${fmt(maxHd,3)}</b>
+    ${warns+errors>0?`<br><span style="color:#d97706">⚠ ${warns+errors} участков с отклонением. Скорректируйте уклоны или диаметры.</span>`:''}
+  `;
+
+  $('san-note').innerHTML=`
+    <b>Нормативная база:</b> СН РК 4.01-03-2011 «Канализация. Наружные сети»; СНиП 2.04.03-85*.<br>
+    <b>Формула Мэннинга:</b> v = (1/n)·R^(2/3)·i^(1/2); R = A/П; A = d²/8·(θ−sinθ); П = d/2·θ; θ — центральный угол наполнения.<br>
+    <b>Допустимое наполнение:</b> DN ≤ 500 → h/d ≤ 0,70; DN 600–900 → h/d ≤ 0,75; DN ≥ 1000 → h/d ≤ 0,80.<br>
+    <b>Скорости:</b> v_min = 0,7 м/с (самоочищающая); v_max = 3,0 м/с (пластик), 4,0 м/с (Ж/Б, керамика).<br>
+    <b>Коэффициент n:</b> ПВХ/ПП 0,010; асбестоцемент 0,012; Ж/Б и керамика 0,013.
+  `;
+
+  $('san-results').classList.add('show');
+}
+
+function getSanInputsHTML(){
+  const rows=sanActiveRows.filter(i=>$(`san-row-${i}`));
+  return makeInputTable([
+    ['Участков в расчёте', String(rows.length)],
+    ['Метод расчёта', 'Мэннинг, частичное наполнение кругового сечения'],
+  ]);
+}
+
+// ─── PDF EXPORT ──────────────────────────────────────────────────
+function makeInputTable(rows){
+  const th=`<tr style="background:#e8f0fe"><th style="padding:6px 9px;text-align:left;border:1px solid #bfcfff;color:#1a44a0;font-size:9pt">Параметр</th><th style="padding:6px 9px;text-align:left;border:1px solid #bfcfff;color:#1a44a0;font-size:9pt">Значение</th></tr>`;
+  const trs=rows.map(([k,vl],i)=>`<tr style="background:${i%2===0?'#f9fbff':'#fff'}"><td style="padding:5px 9px;border:1px solid #ddd;font-weight:600;color:#444;width:55%">${k}</td><td style="padding:5px 9px;border:1px solid #ddd">${vl}</td></tr>`).join('');
+  return `<table style="width:100%;border-collapse:collapse;font-size:9.5pt">${th}${trs}</table>`;
+}
+
+function buildPrintHTML(subtitle,org,obj,docNum,execName,date,stage,logoImg,inputsHTML,kpiHTML,thead,tbodyHTML,noteHTML,extraHTML='',mainTitle='Расчёт водоснабжения и водоотведения',normative='СП РК 4.01-101-2013; СН РК 4.01-02-2011; СН РК 4.01-03-2011'){
+  const kpiPrint=kpiHTML.replace(/class="kpi"/g,'class="kpi-p"').replace(/class="v"/g,'class="kpi-v"').replace(/class="u"/g,'class="kpi-u"').replace(/class="lbl"/g,'class="kpi-lbl"');
+  const metaRows=[
+    obj?`<tr><td>Объект:</td><td>${obj}</td></tr>`:'',
+    docNum?`<tr><td>Шифр:</td><td>${docNum}</td></tr>`:'',
+    execName?`<tr><td>Исполнитель:</td><td>${execName}</td></tr>`:'',
+    `<tr><td>Дата:</td><td>${date}</td></tr>`,
+    `<tr><td>Норматив:</td><td>${normative}</td></tr>`,
+    `<tr><td>Стадия:</td><td>${stage||'—'}</td></tr>`,
+  ].filter(Boolean).join('');
+  return `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+<title>${mainTitle}${obj?' — '+obj:''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;background:#fff}
+.page{max-width:210mm;margin:0 auto;padding:16mm 18mm 20mm}
+.doc-hdr{display:flex;align-items:center;gap:20px;border-bottom:3px solid #1a56db;padding-bottom:12px;margin-bottom:16px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.doc-org{font-size:13pt;font-weight:bold;color:#1a56db}
+.doc-title{text-align:center;margin:14px 0}
+.doc-title h1{font-size:15pt;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+.doc-title h2{font-size:10.5pt;color:#555;font-weight:normal;margin-top:4px}
+.meta-tbl{width:100%;border-collapse:collapse;font-size:9.5pt;margin-bottom:16px}
+.meta-tbl td{padding:5px 8px;border:1px solid #ccc}
+.meta-tbl td:first-child{font-weight:bold;width:25%;background:#eef2ff;color:#1a44a0;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.sec-h{font-size:10pt;font-weight:bold;color:#fff;background:#1a56db;padding:5px 10px;margin:16px 0 10px;border-radius:3px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.kpi-row-p{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.kpi-p{flex:1;min-width:110px;text-align:center;border:2px solid #bfcfff;border-radius:5px;padding:10px 6px;background:#f0f5ff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.kpi-v{font-size:16pt;font-weight:bold;color:#1a56db;display:block;line-height:1.1}
+.kpi-u{font-size:8pt;color:#555;display:block;margin-top:1px}
+.kpi-lbl{font-size:7.5pt;color:#666;display:block;margin-top:4px;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+.res-tbl{width:100%;border-collapse:collapse;font-size:9pt}
+.res-tbl th{background:#e8f0fe;color:#1a44a0;font-weight:bold;padding:6px 8px;text-align:left;border:1px solid #bfcfff;font-size:8.5pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl td{padding:5px 8px;border:1px solid #e0e0e0;vertical-align:top}
+.res-tbl .sep td{background:#efefef;font-weight:bold;font-size:8.5pt;color:#555;text-transform:uppercase;letter-spacing:.04em;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl .subtotal td{background:#dde8ff;font-weight:bold;color:#1a44a0;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.res-tbl .total td{background:#1a56db;color:#fff;font-weight:bold;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.pdf-note{background:#fffbeb;border:1px solid #fbbf24;border-radius:3px;padding:8px 11px;font-size:8.5pt;color:#7a4200;margin-top:12px;line-height:1.6}
+.pdf-rec{background:#ecfdf5;border:1px solid #6ee7b7;border-radius:3px;padding:8px 11px;font-size:9pt;color:#065f46;margin-top:10px;line-height:1.8}
+.signatures{margin-top:32px;display:flex;gap:24px;border-top:1px solid #ccc;padding-top:14px}
+.sig{flex:1}.sig-label{font-size:8.5pt;color:#666;margin-bottom:18px}
+.sig-line{border-bottom:1px solid #333;width:80%;margin-top:2px}
+.sig-name{font-size:8pt;color:#888;margin-top:3px}
+.pdf-footer{margin-top:16px;border-top:1px solid #ddd;padding-top:7px;text-align:center;font-size:8pt;color:#aaa}
+@page{margin:14mm 18mm;size:A4 portrait}
+@media print{.page{max-width:100%;padding:0}}
+</style></head><body><div class="page">
+<div class="doc-hdr">
+  ${logoImg?`<div style="flex-shrink:0">${logoImg}</div>`:''}
+  ${org?`<div class="doc-org">${org}</div>`:''}
+</div>
+<div class="doc-title">
+  <h1>${mainTitle}</h1>
+  <h2>${subtitle}</h2>
+</div>
+${metaRows?`<table class="meta-tbl">${metaRows}</table>`:''}
+<div class="sec-h">Исходные данные</div>
+${inputsHTML}
+<div class="sec-h">Результаты расчёта</div>
+<div class="kpi-row-p">${kpiPrint}</div>
+<table class="res-tbl"><thead>${thead}</thead><tbody>${tbodyHTML}</tbody></table>
+${extraHTML?`<div class="pdf-rec">${extraHTML}</div>`:''}
+<div class="pdf-note">${noteHTML}</div>
+<div class="signatures">
+  <div class="sig"><div class="sig-label">Исполнитель</div><div class="sig-line"></div><div class="sig-name">${execName||'&nbsp;'}</div></div>
+  <div class="sig"><div class="sig-label">Проверил</div><div class="sig-line"></div><div class="sig-name">&nbsp;</div></div>
+  <div class="sig"><div class="sig-label">Дата</div><div class="sig-line"></div><div class="sig-name">${date}</div></div>
+</div>
+<div class="pdf-footer">Расчёт водоснабжения и водоотведения | ${normative} | Стадия: ${stage||'—'} | Дата: ${date}</div>
+</div></body></html>`;
+}
+
+function getResInputsHTML(){
+  const normIdx=parseInt($('res-norm').value);
+  const norm=RES_NORMS[normIdx];
+  return makeInputTable([
+    ['Степень благоустройства', norm.name],
+    ['Норма водопотребления q₀', `${norm.total} л/чел·сут`],
+    ['Число жителей N', `${v('res-n')} чел`],
+    ['К_сут.макс', String(v('res-ksut'))],
+    ['К_ч.макс',   String(v('res-kch'))],
+    ['Тип водопровода', $('res-wtype').value==='both'?'ХВС + ГВС':'ХВС'],
+    ['Расчётный период', `${v('res-days')} сут`],
+  ]);
+}
+
+function exportPDF(tab){
+  const ridMap={res:'res-results',pub:'pub-results',ind:'ind-results',ext:'ext-results',san:'san-results',int:'int-results',fire:'fire-results'};
+  if(!$(ridMap[tab])||!$(ridMap[tab]).classList.contains('show')){
+    alert('Сначала выполните расчёт, затем нажмите «Сохранить PDF».');
+    return;
+  }
+  const org=$('doc-org').value.trim(), obj=$('doc-obj').value.trim();
+  const docNum=$('doc-num').value.trim(), execName=$('doc-exec').value.trim();
+  const date=$('doc-date').value.trim()||new Date().toLocaleDateString('ru-RU');
+  const stage=$('doc-stage').value.trim();
+  const logoImg=logoBase64?`<img src="${logoBase64}" style="max-height:72px;max-width:230px;object-fit:contain;">`:'';
+
+  const subtitleMap={
+    res:'Жилой дом — расчёт водопотребления',
+    pub:'Общественное здание — расчёт водопотребления',
+    ind:'Промышленное предприятие — расчёт водопотребления',
+    ext:'Наружные сети ВС — гидравлический расчёт',
+    san:'Наружные сети ВО — гидравлический расчёт',
+    int:'Внутренний водопровод — гидравлический расчёт',
+    fire:'Пожаротушение — расчёт расходов и резервуара',
+  };
+  const inputsFnMap={res:getResInputsHTML,pub:getPubInputsHTML,ind:getIndInputsHTML,ext:getExtInputsHTML,san:getSanInputsHTML,int:getIntInputsHTML,fire:getFireInputsHTML};
+  const kpiMap={res:'res-kpi',pub:'pub-kpi',ind:'ind-kpi',ext:'ext-kpi',san:'san-kpi',int:'int-kpi',fire:'fire-kpi'};
+  const tbodyMap={res:'res-res-tbody',pub:'pub-res-tbody',ind:'ind-res-tbody',ext:'ext-res-tbody',san:'san-res-tbody',int:'int-res-tbody',fire:'fire-res-tbody'};
+  const noteMap={res:'res-note',pub:'pub-note',ind:'ind-note',ext:'ext-note',san:'san-note',int:'int-note',fire:'fire-note'};
+  const recMap={res:'res-rec',pub:'pub-rec',ind:'ind-rec',ext:'ext-rec',san:'san-rec',int:'int-rec',fire:'fire-rec'};
+  const theadMap={
+    res:'<tr><th style="width:48%">Параметр</th><th>Обозначение</th><th>Ед.изм.</th><th style="text-align:right;width:16%">Значение</th></tr>',
+    pub:'<tr><th style="width:44%">Параметр / Группа</th><th>q₀ / К_ч</th><th>Ед.изм.</th><th style="text-align:right;width:16%">Значение</th></tr>',
+    ind:'<tr><th style="width:48%">Параметр</th><th>Обозначение</th><th>Ед.изм.</th><th style="text-align:right;width:16%">Значение</th></tr>',
+    ext:'<tr><th>Участок</th><th style="text-align:right">d_вн, мм</th><th style="text-align:right">v, м/с</th><th style="text-align:right">1000i, мм/м</th><th style="text-align:right">ΔH, м</th><th style="text-align:right">ΔH_нак, м</th><th style="text-align:center">Скорость</th></tr>',
+    san:'<tr><th>Участок</th><th style="text-align:right">d_вн, мм</th><th style="text-align:right">i</th><th style="text-align:right">v, м/с</th><th style="text-align:right">h/d</th><th style="text-align:right">h, мм</th><th style="text-align:center">Статус</th></tr>',
+    int:'<tr><th>Участок</th><th style="text-align:right">d_вн, мм</th><th style="text-align:right">v, м/с</th><th style="text-align:right">1000i</th><th style="text-align:right">ΔH_л, м</th><th style="text-align:right">ΔH_м, м</th><th style="text-align:right">ΔH_нак, м</th><th style="text-align:center">Скорость</th></tr>',
+    fire:'<tr><th style="width:52%">Параметр</th><th>Обозначение</th><th>Ед.изм.</th><th style="text-align:right;width:18%">Значение</th></tr>',
+  };
+  const mainTitleMap={
+    ext:'Гидравлический расчёт наружных сетей водоснабжения',
+    san:'Гидравлический расчёт наружных сетей канализации',
+    int:'Расчёт внутреннего водопровода',
+    fire:'Расчёт системы пожаротушения',
+  };
+  const normativeMap={
+    res:'СП РК 4.01-101-2013; СН РК 4.01-02-2011',
+    pub:'СП РК 4.01-101-2013, Приложение А; СН РК 4.01-02-2011',
+    ind:'СП РК 4.01-101-2013, п. 3.4; СНиП 2.04.01-85*, Прил. 3',
+    ext:'СН РК 4.01-02-2011, п. 8; ГОСТ 18599; ГОСТ 3262; ГОСТ 9583',
+    san:'СН РК 4.01-03-2011; СНиП 2.04.03-85*; ГОСТ Р 54475; ГОСТ 6482; ГОСТ 286',
+    int:'СП РК 4.01-101-2013, п. 7.4; СНиП 2.04.01-85*, пп. 3.4, 7.2; ГОСТ 32415; ГОСТ 3262',
+    fire:'СН РК 4.01-02-2011, разд. 9; СНиП 2.04.02-84*, Табл. 5–6; СНиП 2.04.01-85*, Табл. 1; СП 5.13130',
+  };
+
+  // CSS-переменные тёмной темы не определены в print-окне — заменяем на print-safe цвета
+  const forPrint=html=>html
+    .replace(/var\(--border\)/g,'#d0d5e8')
+    .replace(/var\(--text-s\)/g,'#666')
+    .replace(/var\(--text\)/g,'#111')
+    .replace(/var\(--accent\)/g,'#1a56db')
+    .replace(/var\(--bg3\)/g,'#f5f7ff')
+    .replace(/var\(--bg2\)/g,'#eef1ff')
+    .replace(/var\(--bg\)/g,'#fff');
+
+  const html=buildPrintHTML(
+    subtitleMap[tab], org, obj, docNum, execName, date, stage, logoImg,
+    (inputsFnMap[tab]||getResInputsHTML)(),
+    forPrint($(kpiMap[tab]).innerHTML),
+    theadMap[tab],
+    forPrint($(tbodyMap[tab]).innerHTML),
+    forPrint($(noteMap[tab]).innerHTML),
+    forPrint($(recMap[tab]).innerHTML),
+    mainTitleMap[tab]||'Расчёт водоснабжения и водоотведения',
+    normativeMap[tab]||'СП РК 4.01-101-2013; СН РК 4.01-02-2011',
+  );
+  const w=window.open('','_blank');
+  if(!w){alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна и повторите.');return;}
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{try{w.focus();w.print();}catch(e){}},700);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  buildPubPresets();
+  addPubRow(7);  // Административное здание
+  addPubRow(4);  // Школа с душевыми
+  buildIndProdPresets();
+  addExtRow(); addExtRow(); addExtRow();
+  addSanRow(); addSanRow(); addSanRow();
+  buildIntAppPresets();
+  addIntAppRow(4); // Унитаз
+  addIntAppRow(1); // Ванна с душем
+  addIntAppRow(3); // Мойка кухонная
+  addIntPipeRow(); addIntPipeRow(); addIntPipeRow();
+  updateFireNorm();
+  updateFireInt();
+});
+</script>
+<script>(function(){function apply(){try{var prev=document.getElementById("logo-preview");var shared=localStorage.getItem("wsLogo");if(shared&&prev&&prev.querySelector&&!prev.querySelector("img")){prev.innerHTML="<img src=\""+shared+"\">";try{logoBase64=shared;}catch(_){}try{window.logoBase64=shared;}catch(_){}}}catch(_){}}window.addEventListener("load",function(){setTimeout(apply,60);});try{var inp=document.getElementById("logo-inp");if(inp)inp.addEventListener("change",function(){try{var f=inp.files&&inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{localStorage.setItem("wsLogo",e.target.result);}catch(_){}};r.readAsDataURL(f);}catch(_){}});}catch(_){}})();</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
