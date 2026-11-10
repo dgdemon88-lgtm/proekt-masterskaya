@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KMZ/KML → DXF — конвертер с выбором системы координат</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#0891b2;--accent2:#0e7490;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+.span2{grid-column:span 2}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.span2{grid-column:auto}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.fld input.mono{font-family:Consolas,Menlo,monospace;font-size:12px}
+.chk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text);cursor:pointer;padding:3px 0}
+.chk input{accent-color:var(--accent);width:15px;height:15px}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-clear:hover{color:var(--text)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#67e8f9}
+.kpi.txt .v{font-size:14px;line-height:1.3}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 8px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:Consolas,Menlo,monospace;font-size:12px}
+.rec-box{background:#062a30;border:1px solid #0e7490;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#a5f3fc;margin-top:12px;line-height:1.7;word-break:break-word}
+.rec-box.warn{background:#2a1500;border-color:#b45309;color:#fcd34d}
+.rec-box.err{background:#2a0a0a;border-color:#b91c1c;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+code{font-family:Consolas,Menlo,monospace;font-size:11.5px;background:var(--bg3);padding:1px 5px;border-radius:4px;color:#93c5fd}
+/* загрузка */
+.drop{border:2px dashed var(--border);border-radius:10px;padding:26px 16px;text-align:center;color:var(--text-s);cursor:pointer;transition:.15s;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--accent);color:var(--text);background:#0b1d24}
+.drop b{color:var(--text);font-size:15px;display:block;margin-bottom:4px}
+.files{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.file{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12.5px}
+.file .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .st{color:var(--text-s);font-size:11.5px;white-space:nowrap}
+.file button{background:none;border:none;color:var(--text-s);cursor:pointer;font-size:16px;padding:0 4px}
+.file button:hover{color:#f87171}
+.log{margin-top:10px;font-size:11.5px;line-height:1.6;max-height:150px;overflow:auto;font-family:Consolas,Menlo,monospace;color:var(--text-s)}
+.log .w{color:#fcd34d}.log .e{color:#fca5a5}
+/* просмотр */
+.pv-wrap{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#0b0d13}
+#pv{display:block;width:100%;height:460px;cursor:grab}
+#pv.drag{cursor:grabbing}
+.pv-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text-s);margin-top:6px;font-family:Consolas,Menlo,monospace}
+.pv-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-s);font-size:13px;pointer-events:none}
+.pv-btns{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+.pv-btns button{background:rgba(26,29,39,.9);border:1px solid var(--border);color:var(--text);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:15px}
+.blk[hidden]{display:none!important}
+.tbl-wrap{overflow:auto;max-height:520px;border:1px solid var(--border);border-radius:6px}
+.tbl-wrap .res-table th{position:sticky;top:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🛰 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ГП-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="conv" onclick="switchTab('conv')">🛰 Конвертация</button>
+  <button class="tab-btn" data-tab="list" onclick="switchTab('list')">📋 Ведомость координат</button>
+  <button class="tab-btn" data-tab="ref" onclick="switchTab('ref')">📖 Справка</button>
+</div>
+
+<!-- ===== КОНВЕРТАЦИЯ ===== -->
+<div id="sec-conv" class="sec active">
+  <div class="card">
+    <div class="card-title">1. Исходные файлы</div>
+    <div class="drop" id="drop">
+      <b>Перетащите сюда KMZ / KML</b>
+      или нажмите, чтобы выбрать (можно несколько файлов)
+      <input type="file" id="files" accept=".kml,.kmz,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz" multiple style="display:none">
+    </div>
+    <div class="files" id="file-list"></div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. Система координат</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Исходная система (в чём записан файл)</label>
+        <select id="src-mode" data-s>
+          <option value="wgs84">WGS 84, градусы — Google Earth / Google Maps / GPS</option>
+          <option value="proj">Другая — строка PROJ или код EPSG</option>
+        </select>
+        <div class="hint">Формат KML всегда в WGS 84. Менять, только если файл сделан сторонней программой и в нём уже метры.</div>
+      </div>
+      <div class="fld blk" id="src-proj-blk" hidden>
+        <label>Исходная СК: EPSG или строка PROJ</label>
+        <input id="src-proj" class="mono" data-s placeholder="EPSG:32642  или  +proj=tmerc +lon_0=75 ...">
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:14px">
+      <div class="fld">
+        <label>Система координат чертежа</label>
+        <select id="crs" data-s>
+          <optgroup label="Автоподбор зоны по данным">
+            <option value="auto-utm">UTM / WGS 84 — зона по центру данных</option>
+            <option value="auto-gk6">СК-42 (Пулково 1942) / Гаусс-Крюгер 6°</option>
+            <option value="auto-gk3">СК-42 (Пулково 1942) / Гаусс-Крюгер 3°</option>
+            <option value="auto-sk95">СК-95 (Пулково 1995) / Гаусс-Крюгер 6°</option>
+            <option value="auto-gsk">ГСК-2011 / Гаусс-Крюгер 6°</option>
+          </optgroup>
+          <optgroup label="Задать вручную">
+            <option value="msk">Местная система (МСК) — по параметрам</option>
+            <option value="proj">Код EPSG или строка PROJ</option>
+          </optgroup>
+          <optgroup label="Прочие">
+            <option value="webmerc">Web Mercator (EPSG:3857)</option>
+            <option value="wgs84">WGS 84 без проекции (градусы)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="grid2 blk" id="zone-blk">
+        <div class="fld">
+          <label>Номер зоны</label>
+          <input id="zone" type="number" min="1" max="60" step="1" data-s placeholder="авто">
+          <div class="hint">Пусто — по центру данных</div>
+        </div>
+        <div class="fld" id="prefix-blk" style="justify-content:center">
+          <label class="chk"><input type="checkbox" id="prefix" data-s checked> Номер зоны в ординате Y</label>
+          <div class="hint">Как в EPSG: 13 500 000 вместо 500 000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk" id="msk-blk" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="grid4">
+        <div class="fld span2">
+          <label>Сохранённые МСК</label>
+          <select id="msk-preset"><option value="">— новая —</option></select>
+        </div>
+        <div class="fld span2">
+          <label>Название</label>
+          <input id="msk-name" data-s placeholder="МСК Алматы, зона 1">
+        </div>
+        <div class="fld">
+          <label>Датум (эллипсоид и привязка к WGS 84)</label>
+          <select id="msk-datum" data-s>
+            <option value="sk42">СК-42 (Красовский)</option>
+            <option value="sk95">СК-95 (Красовский)</option>
+            <option value="gsk2011">ГСК-2011</option>
+            <option value="wgs84">WGS 84</option>
+            <option value="custom">Свои параметры</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Осевой меридиан lon<sub>0</sub></label>
+          <input id="msk-lon0" data-s placeholder="76°55'  или  76.9167">
+        </div>
+        <div class="fld">
+          <label>Широта начала lat<sub>0</sub></label>
+          <input id="msk-lat0" data-s value="0">
+        </div>
+        <div class="fld">
+          <label>Масштаб на осевом k</label>
+          <input id="msk-k" data-s value="1">
+        </div>
+        <div class="fld">
+          <label>Смещение на восток (Y<sub>0</sub>), м</label>
+          <input id="msk-x0" data-s value="500000">
+        </div>
+        <div class="fld">
+          <label>Смещение на север (X<sub>0</sub>), м</label>
+          <input id="msk-y0" data-s value="0">
+        </div>
+        <div class="fld blk" id="msk-ell-blk" hidden>
+          <label>Эллипсоид</label>
+          <select id="msk-ell" data-s>
+            <option value="krass">Красовского</option>
+            <option value="wgs84">WGS 84</option>
+            <option value="grs80">GRS 80</option>
+            <option value="gsk2011">ГСК-2011</option>
+            <option value="pz90">ПЗ-90</option>
+            <option value="intl">Хейфорда (International 1924)</option>
+            <option value="bessel">Бесселя</option>
+          </select>
+        </div>
+        <div class="fld blk" id="msk-tw-blk" hidden>
+          <label>towgs84: dX,dY,dZ,rX,rY,rZ,m</label>
+          <input id="msk-tw" class="mono" data-s value="23.57,-140.95,-79.8,0,0.35,0.79,-0.22">
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn-clear btn-sm" onclick="mskSave()">💾 Сохранить МСК</button>
+        <button class="btn-clear btn-sm" onclick="mskDelete()">🗑 Удалить</button>
+        <span class="hint">Параметры МСК обычно берутся из каталога координат или ключей перехода, выданных уполномоченным органом.</span>
+      </div>
+    </div>
+
+    <div class="blk" id="proj-blk" hidden style="margin-top:14px">
+      <div class="fld">
+        <label>Код EPSG или строка PROJ</label>
+        <input id="crs-proj" class="mono" data-s placeholder="EPSG:28413   или   +proj=tmerc +lat_0=0 +lon_0=76.9 +k=1 +x_0=300000 +y_0=-4500000 +ellps=krass +towgs84=23.57,-140.95,-79.8,0,0.35,0.79,-0.22">
+        <div class="hint">Поддерживаются проекции tmerc, utm, merc, longlat; эллипсоид — ellps / a, rf / b; привязка — towgs84 (3 или 7 параметров). Встроенные коды EPSG — см. «Справку».</div>
+      </div>
+    </div>
+
+    <div class="rec-box" id="crs-info">Загрузите файл — здесь появится итоговая система координат.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. Параметры чертежа</div>
+    <div class="grid4">
+      <div class="fld">
+        <label>Слои</label>
+        <select id="layers" data-s>
+          <option value="folder">По папкам KML</option>
+          <option value="folder-geom">Папка + тип объекта</option>
+          <option value="geom">По типу (точки / линии / полигоны)</option>
+          <option value="single">Один слой</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Подписи имён</label>
+        <select id="labels" data-s>
+          <option value="points">Только у точек</option>
+          <option value="all">У всех объектов</option>
+          <option value="none">Без подписей</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Высота текста, ед. чертежа</label>
+        <input id="text-h" type="number" step="0.1" min="0.01" value="2" data-s>
+      </div>
+      <div class="fld">
+        <label>Округление координат, знаков</label>
+        <input id="round" type="number" step="1" min="0" max="12" data-s placeholder="авто (4 / 9)">
+      </div>
+      <div class="fld">
+        <label>Вычесть смещение dX; dY</label>
+        <input id="offset" data-s placeholder="0; 0">
+      </div>
+      <div class="fld">
+        <label>Версия DXF</label>
+        <select id="dxf-ver" data-s>
+          <option value="R2013">AutoCAD 2013–2025 (R2013, UTF-8)</option>
+          <option value="R12">R12 — для старых программ</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Имя файла DXF</label>
+        <input id="out-name" data-s placeholder="по имени исходного файла">
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      <label class="chk"><input type="checkbox" id="colors" data-s checked> Переносить цвета стилей KML</label>
+      <label class="chk"><input type="checkbox" id="flat" data-s> Обнулить высоты (Z = 0)</label>
+      <label class="chk"><input type="checkbox" id="swap" data-s> X — на север, Y — на восток</label>
+      <label class="chk"><input type="checkbox" id="origin" data-s> Начало координат в левый нижний угол</label>
+      <label class="chk"><input type="checkbox" id="xdata" data-s checked> Имя и описание в XDATA объектов</label>
+      <label class="chk"><input type="checkbox" id="separate" data-s> Каждый файл — в отдельный DXF</label>
+      <label class="chk"><input type="checkbox" id="hatch" data-s> Заливка полигонов (HATCH, кроме R12)</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">4. Результат</div>
+    <div class="kpi-row" id="kpi"></div>
+    <div class="pv-wrap">
+      <canvas id="pv"></canvas>
+      <div class="pv-empty" id="pv-empty">Предпросмотр появится после загрузки файла</div>
+      <div class="pv-btns"><button title="Показать всё" onclick="pvFit();pvDraw()">⤢</button></div>
+    </div>
+    <div class="pv-bar"><span id="pv-cur">—</span><span id="pv-sel">колесо — масштаб · перетаскивание — сдвиг · клик — выбрать объект</span></div>
+    <div class="btn-row">
+      <button class="btn" id="btn-dxf" onclick="downloadDXF()" disabled>⬇ Скачать DXF</button>
+      <button class="btn-clear" onclick="clearAll()">Очистить</button>
+      <span class="hint" id="dxf-hint"></span>
+    </div>
+    <div class="note">
+      По умолчанию пишется <b>DXF R2013</b> (структура как у AutoCAD, UTF-8, точные цвета RGB, единицы — метры): открывается в AutoCAD 2013–2025, nanoCAD, BricsCAD, ZWCAD, QGIS.
+      Точки → POINT, линии и контуры → LWPOLYLINE (3D POLYLINE, если есть высоты), подписи → TEXT в слое «… [подписи]», заливка → HATCH с прозрачностью из KML.
+      <b>Нужен DWG</b> — откройте DXF в AutoCAD и сохраните как DWG («Файл → Сохранить как»): сам формат DWG закрыт, и надёжно записать его в браузере нельзя.
+      Всё считается в браузере, файлы никуда не отправляются.
+    </div>
+  </div>
+</div>
+
+<!-- ===== ВЕДОМОСТЬ ===== -->
+<div id="sec-list" class="sec">
+  <div class="card">
+    <div class="card-title">Ведомость координат</div>
+    <div class="grid2">
+      <div class="fld">
+        <label>Объект</label>
+        <select id="v-obj" onchange="renderList()"></select>
+      </div>
+      <div class="fld">
+        <label>Система координат</label>
+        <input id="v-crs" readonly>
+      </div>
+    </div>
+    <div class="kpi-row" id="v-kpi" style="margin-top:14px"></div>
+    <div class="tbl-wrap" id="v-table"></div>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="downloadCSV()">⬇ CSV (Excel)</button>
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+    </div>
+    <div class="note">
+      Координаты — в выбранной системе, без смещений чертежа. X — на север, Y — на восток (геодезическая запись).
+      Длины и площади — на плоскости проекции; в зоне Гаусса-Крюгера искажение у края 6° зоны достигает ~1/1000.
+    </div>
+  </div>
+</div>
+
+<!-- ===== СПРАВКА ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Зоны для Казахстана и соседних регионов</div>
+    <div style="overflow-x:auto">
+    <table class="ref-table">
+      <thead><tr><th>Долгота участка</th><th>ГК 6°: зона / осевой</th><th>EPSG СК-42</th><th>UTM: зона</th><th>EPSG UTM</th></tr></thead>
+      <tbody id="zones-ref"></tbody>
+    </table>
+    </div>
+    <div class="hint" style="margin-top:6px">Зона ГК 3°: номер = долгота осевого / 3 (осевые 45°, 48°, 51° … 87°).</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Встроенные коды EPSG</div>
+    <table class="ref-table">
+      <thead><tr><th>Коды</th><th>Система</th></tr></thead>
+      <tbody>
+        <tr><td class="c">4326</td><td>WGS 84, градусы</td></tr>
+        <tr><td class="c">3857</td><td>Web Mercator</td></tr>
+        <tr><td class="c">3395</td><td>WGS 84 / World Mercator</td></tr>
+        <tr><td class="c">32601–32660, 32701–32760</td><td>WGS 84 / UTM, северное / южное полушарие</td></tr>
+        <tr><td class="c">4284, 28402–28432</td><td>СК-42 (Pulkovo 1942), градусы / Гаусс-Крюгер 6°, зоны 2–32</td></tr>
+        <tr><td class="c">2492–2522</td><td>СК-42 / Гаусс-Крюгер 6°, осевые 9°–189° без номера зоны</td></tr>
+        <tr><td class="c">2523–2549</td><td>СК-42 / Гаусс-Крюгер 3°, зоны 7–33</td></tr>
+        <tr><td class="c">4200, 20004–20032</td><td>СК-95 (Pulkovo 1995), градусы / Гаусс-Крюгер 6°</td></tr>
+        <tr><td class="c">7683, 20904–20932</td><td>ГСК-2011, градусы / Гаусс-Крюгер 6°</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Любую другую систему можно задать строкой PROJ — её показывает epsg.io, QGIS (свойства СК) или выдаёт геодезист.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Параметры перехода к WGS 84</div>
+    <table class="ref-table">
+      <thead><tr><th>Датум</th><th>Эллипсоид</th><th>towgs84 (dX, dY, dZ, rX, rY, rZ, m)</th><th>Источник</th></tr></thead>
+      <tbody>
+        <tr><td>СК-42</td><td>Красовского</td><td><code>23.57, −140.95, −79.8, 0, 0.35, 0.79, −0.22</code></td><td>ГОСТ 32453-2017</td></tr>
+        <tr><td>СК-95</td><td>Красовского</td><td><code>24.47, −130.89, −81.56, 0, 0, 0.13, −0.22</code></td><td>ГОСТ 32453-2017</td></tr>
+        <tr><td>ГСК-2011</td><td>ГСК-2011</td><td><code>0, 0, 0, 0, 0, 0, 0</code></td><td>EPSG:7683 → 4326</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      Параметры перехода общие для территории СНГ; точность пересчёта WGS 84 → СК-42 — порядка 1–3 м. Для привязки к пунктам ГГС
+      с сантиметровой точностью используйте местные ключи перехода (вкладка МСК → «Свои параметры») или пересчёт у геодезиста.
+      Координаты Google Earth сами по себе имеют погрешность в несколько метров.
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Что переносится из KML</div>
+    <table class="ref-table">
+      <thead><tr><th>KML</th><th>DXF</th></tr></thead>
+      <tbody>
+        <tr><td>Point, Model</td><td>POINT (+ TEXT с именем)</td></tr>
+        <tr><td>LineString, gx:Track</td><td>POLYLINE (2D с отметкой или 3D)</td></tr>
+        <tr><td>Polygon (с внутренними контурами), LinearRing</td><td>замкнутые POLYLINE</td></tr>
+        <tr><td>MultiGeometry, gx:MultiTrack</td><td>разбираются на составляющие</td></tr>
+        <tr><td>Folder / Document</td><td>имена слоёв</td></tr>
+        <tr><td>LineStyle / PolyStyle / IconStyle color</td><td>цвет слоя или объекта (ACI)</td></tr>
+        <tr><td>name, description, путь папки</td><td>XDATA приложения KML2DXF</td></tr>
+        <tr><td>NetworkLink, GroundOverlay</td><td>пропускаются (пишется в журнал)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ==================== ОБЩЕЕ ==================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(n,d=0)=>n==null||isNaN(n)||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+const D2R=Math.PI/180, R2D=180/Math.PI;
+
+/* ==================== ZIP (KMZ) ==================== */
+async function inflateRaw(data){
+  if(typeof DecompressionStream==='undefined')
+    throw new Error('браузер не умеет распаковывать KMZ — обновите браузер или распакуйте KMZ (это zip-архив) и загрузите doc.kml');
+  const stream=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function unzipKml(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf);
+  let eocd=-1;
+  for(let i=u8.length-22;i>=Math.max(0,u8.length-65557);i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;}}
+  if(eocd<0)throw new Error('файл не является zip-архивом KMZ');
+  const n=dv.getUint16(eocd+10,true);let p=dv.getUint32(eocd+16,true);
+  const entries=[];
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const flags=dv.getUint16(p+8,true),method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true);
+    const nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lho=dv.getUint32(p+42,true);
+    const name=new TextDecoder(flags&0x800?'utf-8':'utf-8').decode(u8.subarray(p+46,p+46+nl));
+    entries.push({name,method,csize,lho});
+    p+=46+nl+el+cl;
+  }
+  const kmls=entries.filter(e=>/\.kml$/i.test(e.name));
+  kmls.sort((a,b)=>((a.name.split('/').pop().toLowerCase()!=='doc.kml')-(b.name.split('/').pop().toLowerCase()!=='doc.kml'))||a.name.localeCompare(b.name));
+  const out=[];
+  for(const e of kmls){
+    const lnl=dv.getUint16(e.lho+26,true),lel=dv.getUint16(e.lho+28,true);
+    const s=e.lho+30+lnl+lel, raw=u8.subarray(s,s+e.csize);
+    let data;
+    if(e.method===0)data=raw;
+    else if(e.method===8)data=await inflateRaw(raw);
+    else throw new Error('неподдерживаемый метод сжатия ('+e.method+') в '+e.name);
+    out.push({name:e.name,data});
+  }
+  return out;
+}
+function decodeXml(bytes){
+  const head=new TextDecoder('latin1').decode(bytes.subarray(0,200));
+  const m=head.match(/encoding=["']([\w-]+)["']/i);
+  let enc=m?m[1].toLowerCase():'utf-8';
+  if(enc==='cp1251')enc='windows-1251';
+  try{return new TextDecoder(enc).decode(bytes);}catch(_){return new TextDecoder('utf-8').decode(bytes);}
+}
+
+/* ==================== РАЗБОР KML ==================== */
+function kmlColor(s){ // aabbggrr → [r,g,b,a]
+  s=(s||'').trim().replace(/^#/,'');
+  if(!/^[0-9a-f]{8}$/i.test(s))return null;
+  return [parseInt(s.slice(6,8),16),parseInt(s.slice(4,6),16),parseInt(s.slice(2,4),16),parseInt(s.slice(0,2),16)];
+}
+function parseCoords(t){
+  const out=[];
+  (t||'').replace(/\s*,\s*/g,',').trim().split(/\s+/).forEach(tok=>{
+    if(!tok)return;
+    const a=tok.split(',').map(Number);
+    if(a.length>=2&&isFinite(a[0])&&isFinite(a[1]))out.push([a[0],a[1],isFinite(a[2])?a[2]:0]);
+  });
+  return out;
+}
+function stripHtml(s){
+  if(!s)return '';
+  if(/<[a-z!\/]/i.test(s)){try{s=new DOMParser().parseFromString(s,'text/html').body.textContent||'';}catch(_){s=s.replace(/<[^>]*>/g,' ');}}
+  return s.replace(/\s+/g,' ').trim();
+}
+function parseKml(text,label,log){
+  const xml=new DOMParser().parseFromString(text,'application/xml');
+  const perr=xml.getElementsByTagName('parsererror')[0];
+  if(perr)throw new Error('ошибка XML: '+perr.textContent.replace(/\s+/g,' ').slice(0,160));
+  const kids=(el,n)=>Array.from(el.children).filter(c=>c.localName===n);
+  const kid=(el,n)=>Array.from(el.children).find(c=>c.localName===n);
+  const txt=(el,n)=>{const c=kid(el,n);return c?c.textContent.trim():'';};
+  const readStyle=s=>{
+    const ls=kid(s,'LineStyle'),ps=kid(s,'PolyStyle'),is=kid(s,'IconStyle');
+    return {line:ls?kmlColor(txt(ls,'color')):null,poly:ps?kmlColor(txt(ps,'color')):null,icon:is?kmlColor(txt(is,'color')):null};
+  };
+  const styles={},maps={};
+  Array.from(xml.getElementsByTagNameNS('*','Style')).forEach(s=>{const id=s.getAttribute('id');if(id)styles[id]=readStyle(s);});
+  Array.from(xml.getElementsByTagNameNS('*','StyleMap')).forEach(m=>{
+    const id=m.getAttribute('id');if(!id)return;
+    kids(m,'Pair').forEach(p=>{if(txt(p,'key')==='normal'){const inl=kid(p,'Style');maps[id]=inl?readStyle(inl):txt(p,'styleUrl');}});
+  });
+  const resolve=(url,depth=0)=>{
+    if(!url||depth>5)return null;
+    const id=url.split('#').pop();
+    if(styles[id])return styles[id];
+    if(maps[id]!==undefined)return typeof maps[id]==='string'?resolve(maps[id],depth+1):maps[id];
+    return null;
+  };
+  const feats=[];let skipped={};
+  const geoms=(el,acc)=>{
+    for(const g of el.children){
+      switch(g.localName){
+        case 'Point':{const c=parseCoords(txt(g,'coordinates'));if(c.length)acc.push({t:'point',p:c[0]});break;}
+        case 'LineString':{const c=parseCoords(txt(g,'coordinates'));if(c.length>1)acc.push({t:'line',p:c});else if(c.length===1)acc.push({t:'point',p:c[0]});break;}
+        case 'LinearRing':{const c=parseCoords(txt(g,'coordinates'));if(c.length>2)acc.push({t:'poly',rings:[c]});break;}
+        case 'Polygon':{
+          const rings=[];
+          const ob=kid(g,'outerBoundaryIs');
+          if(ob)kids(ob,'LinearRing').forEach(r=>{const c=parseCoords(txt(r,'coordinates'));if(c.length>2)rings.push(c);});
+          if(!rings.length)break;
+          kids(g,'innerBoundaryIs').forEach(ib=>kids(ib,'LinearRing').forEach(r=>{const c=parseCoords(txt(r,'coordinates'));if(c.length>2)rings.push(c);}));
+          acc.push({t:'poly',rings});break;
+        }
+        case 'MultiGeometry':case 'MultiTrack':geoms(g,acc);break;
+        case 'Track':{
+          const c=[];kids(g,'coord').forEach(k=>{const a=k.textContent.trim().split(/\s+/).map(Number);if(a.length>=2&&isFinite(a[0])&&isFinite(a[1]))c.push([a[0],a[1],isFinite(a[2])?a[2]:0]);});
+          if(c.length>1)acc.push({t:'line',p:c});else if(c.length)acc.push({t:'point',p:c[0]});break;
+        }
+        case 'Model':{const l=kid(g,'Location');if(l){const lo=+txt(l,'longitude'),la=+txt(l,'latitude');if(isFinite(lo)&&isFinite(la))acc.push({t:'point',p:[lo,la,+txt(l,'altitude')||0]});}break;}
+      }
+    }
+  };
+  const walk=(el,folder)=>{
+    for(const c of el.children){
+      const t=c.localName;
+      if(t==='Document'||t==='Folder'){const nm=txt(c,'name');walk(c,nm?folder.concat(nm):folder);}
+      else if(t==='Placemark'){
+        const acc=[];geoms(c,acc);
+        if(!acc.length){skipped['Placemark без геометрии']=(skipped['Placemark без геометрии']||0)+1;continue;}
+        acc.forEach(g=>{if(g.t==='poly')g.rings=g.rings.map(r=>{const a=r[0],b=r[r.length-1];return(r.length>3&&a[0]===b[0]&&a[1]===b[1])?r.slice(0,-1):r;});});
+        const inl=kid(c,'Style');
+        feats.push({name:txt(c,'name'),desc:stripHtml(txt(c,'description')),folder:folder.slice(),
+          style:inl?readStyle(inl):resolve(txt(c,'styleUrl')),geoms:acc,file:label});
+      }
+      else if(t==='NetworkLink'||t==='GroundOverlay'||t==='ScreenOverlay'||t==='PhotoOverlay'){skipped[t]=(skipped[t]||0)+1;}
+    }
+  };
+  const root=xml.documentElement;
+  if(root.localName==='kml')walk(root,label?[label]:[]);
+  else walk({children:[root]},label?[label]:[]);
+  Object.entries(skipped).forEach(([k,v])=>log('w',label?`${label}: пропущено ${k} — ${v} шт.`:`Пропущено ${k} — ${v} шт.`));
+  return feats;
+}
+
+/* ==================== СИСТЕМЫ КООРДИНАТ ==================== */
+const ELL={wgs84:[6378137,298.257223563,'WGS84'],krass:[6378245,298.3,'krass'],grs80:[6378137,298.257222101,'GRS80'],
+  gsk2011:[6378136.5,298.2564151,'GSK2011'],pz90:[6378136,298.25784,'PZ90'],intl:[6378388,297,'intl'],bessel:[6377397.155,299.1528128,'bessel']};
+const DATUMS={
+  wgs84:{name:'WGS 84',ell:'wgs84',tw:null},
+  sk42:{name:'СК-42',ell:'krass',tw:[23.57,-140.95,-79.8,0,0.35,0.79,-0.22]},
+  sk95:{name:'СК-95',ell:'krass',tw:[24.47,-130.89,-81.56,0,0,0.13,-0.22]},
+  gsk2011:{name:'ГСК-2011',ell:'gsk2011',tw:[0,0,0,0,0,0,0]},
+};
+const tmCache={};
+function tmConst(a,rf){
+  const key=a+'/'+rf;if(tmCache[key])return tmCache[key];
+  const f=1/rf,e=Math.sqrt(f*(2-f)),n=f/(2-f),n2=n*n,n3=n2*n,n4=n3*n,n5=n4*n,n6=n5*n;
+  const C={e,A:a/(1+n)*(1+n2/4+n4/64+n6/256),
+    al:[0,n/2-2*n2/3+5*n3/16+41*n4/180-127*n5/288+7891*n6/37800,
+      13*n2/48-3*n3/5+557*n4/1440+281*n5/630-1983433*n6/1935360,
+      61*n3/240-103*n4/140+15061*n5/26880+167603*n6/181440,
+      49561*n4/161280-179*n5/168+6601661*n6/7257600,
+      34729*n5/80640-3418889*n6/1995840,
+      212378941*n6/319334400],
+    be:[0,n/2-2*n2/3+37*n3/96-n4/360-81*n5/512+96199*n6/604800,
+      n2/48+n3/15-437*n4/1440+46*n5/105-1118711*n6/3870720,
+      17*n3/480-37*n4/840-209*n5/4480+5569*n6/90720,
+      4397*n4/161280-11*n5/504-830251*n6/7257600,
+      4583*n5/161280-108847*n6/3991680,
+      20648693*n6/638668800]};
+  return tmCache[key]=C;
+}
+function tmFwd(C,phi,lam){
+  const e=C.e,tau=Math.tan(phi);
+  const sig=Math.sinh(e*Math.atanh(e*tau/Math.sqrt(1+tau*tau)));
+  const taup=tau*Math.sqrt(1+sig*sig)-sig*Math.sqrt(1+tau*tau);
+  const cl=Math.cos(lam),sl=Math.sin(lam);
+  const xip=Math.atan2(taup,cl),etap=Math.asinh(sl/Math.sqrt(taup*taup+cl*cl));
+  let xi=xip,eta=etap;
+  for(let j=1;j<=6;j++){xi+=C.al[j]*Math.sin(2*j*xip)*Math.cosh(2*j*etap);eta+=C.al[j]*Math.cos(2*j*xip)*Math.sinh(2*j*etap);}
+  return [C.A*eta,C.A*xi];
+}
+function tmInv(C,x,y){
+  const eta=x/C.A,xi=y/C.A;let xip=xi,etap=eta;
+  for(let j=1;j<=6;j++){xip-=C.be[j]*Math.sin(2*j*xi)*Math.cosh(2*j*eta);etap-=C.be[j]*Math.cos(2*j*xi)*Math.sinh(2*j*eta);}
+  const sh=Math.sinh(etap),sx=Math.sin(xip),cx=Math.cos(xip);
+  const taup=sx/Math.sqrt(sh*sh+cx*cx),e=C.e,e2=e*e;let tau=taup;
+  for(let i=0;i<15;i++){
+    const s=Math.sinh(e*Math.atanh(e*tau/Math.sqrt(1+tau*tau)));
+    const ti=tau*Math.sqrt(1+s*s)-s*Math.sqrt(1+tau*tau);
+    const d=(taup-ti)/Math.sqrt(1+ti*ti)*(1+(1-e2)*tau*tau)/((1-e2)*Math.sqrt(1+tau*tau));
+    tau+=d;if(Math.abs(d)<1e-14)break;
+  }
+  return [Math.atan(tau),Math.atan2(sh,cx)];
+}
+const normLam=l=>{while(l>Math.PI)l-=2*Math.PI;while(l<-Math.PI)l+=2*Math.PI;return l;};
+// Проекция: (lon,lat в градусах на своём датуме) ⇄ (E,N)
+function projFns(crs){
+  const [a,rf]=crs.ell;
+  if(crs.type==='longlat')return {fwd:(lo,la)=>[lo,la],inv:(x,y)=>[x,y]};
+  if(crs.type==='tmerc'){
+    const C=tmConst(a,rf),k=crs.k,l0=crs.lon0*D2R,M0=crs.lat0?tmFwd(C,crs.lat0*D2R,0)[1]:0;
+    return {
+      fwd:(lo,la)=>{const r=tmFwd(C,la*D2R,normLam(lo*D2R-l0));return [k*r[0]+crs.x0,k*(r[1]-M0)+crs.y0];},
+      inv:(E,N)=>{const r=tmInv(C,(E-crs.x0)/k,(N-crs.y0)/k+M0);return [normLam(r[1]+l0)*R2D,r[0]*R2D];}
+    };
+  }
+  if(crs.type==='merc'){
+    const R=crs.sphere?crs.sphere:a,e=crs.sphere?0:Math.sqrt((2-1/rf)/rf),k=crs.k||1,l0=(crs.lon0||0)*D2R;
+    return {
+      fwd:(lo,la)=>{const p=Math.max(-89.9999,Math.min(89.9999,la))*D2R,s=Math.sin(p);
+        return [crs.x0+R*k*normLam(lo*D2R-l0),crs.y0+R*k*Math.log(Math.tan(Math.PI/4+p/2)*Math.pow((1-e*s)/(1+e*s),e/2))];},
+      inv:(E,N)=>{const t=Math.exp(-(N-crs.y0)/(R*k));let p=Math.PI/2-2*Math.atan(t);
+        for(let i=0;i<15&&e;i++){const s=Math.sin(p),np=Math.PI/2-2*Math.atan(t*Math.pow((1-e*s)/(1+e*s),e/2));if(Math.abs(np-p)<1e-14){p=np;break;}p=np;}
+        return [normLam((E-crs.x0)/(R*k)+l0)*R2D,p*R2D];}
+    };
+  }
+  throw new Error('неизвестный тип проекции');
+}
+function toCart(ell,lo,la){const [a,rf]=ell,f=1/rf,e2=f*(2-f),p=la*D2R,l=lo*D2R,s=Math.sin(p),N=a/Math.sqrt(1-e2*s*s);
+  return [N*Math.cos(p)*Math.cos(l),N*Math.cos(p)*Math.sin(l),N*(1-e2)*s];}
+function fromCart(ell,X,Y,Z){const [a,rf]=ell,f=1/rf,e2=f*(2-f),p=Math.hypot(X,Y);let phi=Math.atan2(Z,p*(1-e2));
+  for(let i=0;i<15;i++){const s=Math.sin(phi),N=a/Math.sqrt(1-e2*s*s),h=p/Math.cos(phi)-N,np=Math.atan2(Z,p*(1-e2*N/(N+h)));if(Math.abs(np-phi)<1e-15){phi=np;break;}phi=np;}
+  return [Math.atan2(Y,X)*R2D,phi*R2D];}
+const AS=Math.PI/180/3600;
+function helmFwd(tw,v){const [dx,dy,dz,rx=0,ry=0,rz=0,s=0]=tw,X=v[0],Y=v[1],Z=v[2],RX=rx*AS,RY=ry*AS,RZ=rz*AS,M=1+s*1e-6;
+  return [dx+M*(X-RZ*Y+RY*Z),dy+M*(RZ*X+Y-RX*Z),dz+M*(-RY*X+RX*Y+Z)];}
+function helmInv(tw,v){const [dx,dy,dz,rx=0,ry=0,rz=0,s=0]=tw,RX=rx*AS,RY=ry*AS,RZ=rz*AS,M=1+s*1e-6,x=(v[0]-dx)/M,y=(v[1]-dy)/M,z=(v[2]-dz)/M;
+  return [x+RZ*y-RY*z,-RZ*x+y+RX*z,RY*x-RX*y+z];}
+const datumKey=c=>c.ell[0]+'/'+c.ell[1]+'/'+(c.tw||[0,0,0,0,0,0,0]).map(Number).join(',');
+function makeTransformer(src,dst){
+  const ps=projFns(src),pd=projFns(dst);
+  if(datumKey(src)===datumKey(dst))return (x,y)=>{const g=ps.inv(x,y);return pd.fwd(g[0],g[1]);};
+  const tws=src.tw||[0,0,0],twd=dst.tw||[0,0,0];
+  return (x,y)=>{const g=ps.inv(x,y);const w=helmFwd(tws,toCart(src.ell,g[0],g[1]));const l=fromCart(dst.ell,...helmInv(twd,w));return pd.fwd(l[0],l[1]);};
+}
+const ellOf=k=>ELL[k].slice(0,2);
+const WGS84={type:'longlat',ell:ellOf('wgs84'),tw:null,name:'WGS 84 (EPSG:4326), градусы',deg:true};
+function mkTmerc(datum,lon0,x0,y0,k,lat0,name){
+  const d=typeof datum==='string'?DATUMS[datum]:datum;
+  return {type:'tmerc',ell:d.ell?(typeof d.ell==='string'?ellOf(d.ell):d.ell):ellOf('wgs84'),tw:d.tw,lon0,lat0:lat0||0,k:k==null?1:k,x0:x0||0,y0:y0||0,name};
+}
+function utmCrs(zone,south){return Object.assign(mkTmerc('wgs84',zone*6-183,500000,south?10000000:0,0.9996,0,`WGS 84 / UTM зона ${zone}${south?'S':'N'}`),{epsg:(south?32700:32600)+zone});}
+function gkCrs(dkey,zone,width,prefix){
+  const lon0=width===3?zone*3:zone*6-3;
+  const c=mkTmerc(dkey,lon0>180?lon0-360:lon0,(prefix?zone*1e6:0)+500000,0,1,0,
+    `${DATUMS[dkey].name} / Гаусс-Крюгер ${width}°, зона ${zone} (осевой ${lon0}°)${prefix?'':', без номера зоны'}`);
+  if(prefix){
+    if(dkey==='sk42'&&width===6&&zone>=2&&zone<=32)c.epsg=28400+zone;
+    if(dkey==='sk42'&&width===3&&zone>=7&&zone<=33)c.epsg=2516+zone;
+    if(dkey==='sk95'&&width===6&&zone>=4&&zone<=32)c.epsg=20000+zone;
+    if(dkey==='gsk2011'&&width===6&&zone>=4&&zone<=32)c.epsg=20900+zone;
+  }
+  return c;
+}
+const WEBMERC={type:'merc',ell:ellOf('wgs84'),tw:null,sphere:6378137,lon0:0,k:1,x0:0,y0:0,name:'Web Mercator (EPSG:3857)'};
+function epsgCrs(code){
+  if(code===4326)return WGS84;
+  if(code===3857||code===900913)return WEBMERC;
+  if(code===3395)return {type:'merc',ell:ellOf('wgs84'),tw:null,lon0:0,k:1,x0:0,y0:0,name:'WGS 84 / World Mercator (EPSG:3395)'};
+  if(code===4284)return {type:'longlat',ell:ellOf('krass'),tw:DATUMS.sk42.tw,name:'СК-42, градусы (EPSG:4284)',deg:true};
+  if(code===4200)return {type:'longlat',ell:ellOf('krass'),tw:DATUMS.sk95.tw,name:'СК-95, градусы (EPSG:4200)',deg:true};
+  if(code===7683)return {type:'longlat',ell:ellOf('gsk2011'),tw:DATUMS.gsk2011.tw,name:'ГСК-2011, градусы (EPSG:7683)',deg:true};
+  if(code>=32601&&code<=32660)return utmCrs(code-32600,false);
+  if(code>=32701&&code<=32760)return utmCrs(code-32700,true);
+  if(code>=28402&&code<=28432)return gkCrs('sk42',code-28400,6,true);
+  if(code>=2492&&code<=2522){const lon0=9+(code-2492)*6;return mkTmerc('sk42',lon0>180?lon0-360:lon0,500000,0,1,0,`СК-42 / Гаусс-Крюгер, осевой ${lon0}° (EPSG:${code})`);}
+  if(code>=2523&&code<=2549)return gkCrs('sk42',code-2516,3,true);
+  if(code>=20004&&code<=20032)return gkCrs('sk95',code-20000,6,true);
+  if(code>=20904&&code<=20932)return gkCrs('gsk2011',code-20900,6,true);
+  throw new Error(`код EPSG:${code} не встроен — задайте систему строкой PROJ`);
+}
+function parseProj(s){
+  s=(s||'').trim();
+  if(!s)throw new Error('не задана система координат');
+  const m=s.match(/^(?:EPSG\s*:\s*)?(\d{4,6})$/i);
+  if(m){const c=epsgCrs(+m[1]);if(!c.epsg&&!/EPSG/.test(c.name))c.epsg=+m[1];return c;}
+  if(!/\+?proj=/.test(s))throw new Error('ожидается код EPSG или строка вида +proj=…');
+  const kv={};
+  s.split(/\s+/).forEach(t=>{const mm=t.match(/^\+?([A-Za-z_0-9]+)(?:=(.*))?$/);if(mm)kv[mm[1].toLowerCase()]=mm[2]===undefined?true:mm[2];});
+  const num=(k,d)=>kv[k]===undefined||kv[k]===true?d:+kv[k];
+  let ell=null,tw=null;
+  if(kv.datum){const d=String(kv.datum).toLowerCase();if(d==='wgs84'){ell=ellOf('wgs84');tw=null;}else throw new Error('datum='+kv.datum+' не поддерживается — укажите ellps и towgs84');}
+  if(kv.ellps){const key=Object.keys(ELL).find(k=>ELL[k][2].toLowerCase()===String(kv.ellps).toLowerCase()||k===String(kv.ellps).toLowerCase());
+    if(!key)throw new Error('неизвестный эллипсоид '+kv.ellps);ell=ellOf(key);}
+  if(kv.a){const a=+kv.a;if(kv.rf)ell=[a,+kv.rf];else if(kv.b){const b=+kv.b;ell=[a,a===b?1e12:a/(a-b)];}else if(kv.f)ell=[a,1/+kv.f];else ell=[a,1e12];}
+  if(!ell)ell=ellOf('wgs84');
+  if(kv.towgs84){tw=String(kv.towgs84).split(',').map(Number);if(tw.some(v=>!isFinite(v))||(tw.length!==3&&tw.length!==7))throw new Error('towgs84 должен содержать 3 или 7 чисел');}
+  if(kv.units&&kv.units!=='m'&&kv.proj!=='longlat'&&kv.proj!=='latlong')throw new Error('поддерживаются только метры (units=m)');
+  const proj=String(kv.proj).toLowerCase();
+  if(proj==='longlat'||proj==='latlong'||proj==='lonlat'||proj==='latlon')return {type:'longlat',ell,tw,name:'Географические координаты (градусы)',deg:true};
+  if(proj==='tmerc'||proj==='etmerc')return mkTmerc({ell,tw},num('lon_0',0),num('x_0',0),num('y_0',0),num('k',num('k_0',1)),num('lat_0',0),'Поперечная Меркатора (tmerc)');
+  if(proj==='utm'){const z=num('zone',NaN);if(!(z>=1&&z<=60))throw new Error('utm: укажите +zone=1…60');
+    return mkTmerc({ell,tw},z*6-183,500000,kv.south?10000000:0,0.9996,0,`UTM зона ${z}${kv.south?'S':'N'}`);}
+  if(proj==='merc'){
+    if(ell[0]===6378137&&ell[1]>=1e11)return Object.assign({},WEBMERC,{x0:num('x_0',0),y0:num('y_0',0)});
+    return {type:'merc',ell,tw,lon0:num('lon_0',0),k:num('k',num('k_0',1)),x0:num('x_0',0),y0:num('y_0',0),name:'Меркатор'};
+  }
+  throw new Error('проекция proj='+kv.proj+' не поддерживается (доступны tmerc, utm, merc, longlat)');
+}
+function projString(c){
+  const ek=Object.keys(ELL).find(k=>ELL[k][0]===c.ell[0]&&ELL[k][1]===c.ell[1]);
+  let e=ek?'+ellps='+ELL[ek][2]:`+a=${c.ell[0]} +rf=${c.ell[1]}`;
+  if(ek==='wgs84'&&!c.tw)e='+datum=WGS84';
+  const tw=c.tw?' +towgs84='+c.tw.join(','):'';
+  if(c.type==='longlat')return `+proj=longlat ${e}${tw} +no_defs`;
+  if(c.type==='merc'&&c.sphere)return `+proj=merc +a=${c.sphere} +b=${c.sphere} +lat_ts=0 +lon_0=0 +x_0=${c.x0} +y_0=${c.y0} +k=1 +units=m +nadgrids=@null +no_defs`;
+  if(c.type==='merc')return `+proj=merc +lon_0=${c.lon0} +k=${c.k} +x_0=${c.x0} +y_0=${c.y0} ${e}${tw} +units=m +no_defs`;
+  return `+proj=tmerc +lat_0=${c.lat0} +lon_0=${+c.lon0.toFixed(10)} +k=${c.k} +x_0=${c.x0} +y_0=${c.y0} ${e}${tw} +units=m +no_defs`;
+}
+function parseAngle(s){
+  s=String(s||'').trim().replace(/,/g,'.');
+  if(!s)return NaN;
+  if(/^[-+]?\d+(\.\d+)?$/.test(s))return +s;
+  const neg=/^-|[SsWwЮюЗз]\s*$/.test(s);
+  const p=(s.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
+  if(!p.length)return NaN;
+  const v=p[0]+(p[1]||0)/60+(p[2]||0)/3600;
+  return neg?-v:v;
+}
+const numIn=(id,d)=>{const v=String($(id).value||'').trim().replace(/\s/g,'').replace(',','.');return v===''?d:+v;};
+
+/* ==================== DXF R12 ==================== */
+const ACI=('ff0000,ffff00,00ff00,00ffff,0000ff,ff00ff,ffffff,808080,c0c0c0,ff0000,ff7f7f,a50000,a55252,7f0000,7f3f3f,4c0000,4c2626,260000,261313,ff3f00,ff9f7f,a52900,a56752,7f1f00,7f4f3f,4c1300,4c2f26,260900,261713,ff7f00,ffbf7f,a55200,a57c52,7f3f00,7f5f3f,4c2600,4c3926,261300,261c13,ffbf00,ffdf7f,a57c00,a59152,7f5f00,7f6f3f,4c3900,4c4226,261c00,262113,ffff00,ffff7f,a5a500,a5a552,7f7f00,7f7f3f,4c4c00,4c4c26,262600,262613,bfff00,dfff7f,7ca500,91a552,5f7f00,6f7f3f,394c00,424c26,1c2600,212613,7fff00,bfff7f,52a500,7ca552,3f7f00,5f7f3f,264c00,394c26,132600,1c2613,3fff00,9fff7f,29a500,67a552,1f7f00,4f7f3f,134c00,2f4c26,092600,172613,00ff00,7fff7f,00a500,52a552,007f00,3f7f3f,004c00,264c26,002600,132613,00ff3f,7fff9f,00a529,52a567,007f1f,3f7f4f,004c13,264c2f,002609,135817,00ff7f,7fffbf,00a552,52a57c,007f3f,3f7f5f,004c26,264c39,002613,13581c,00ffbf,7fffdf,00a57c,52a591,007f5f,3f7f6f,004c39,264c42,00261c,135858,00ffff,7fffff,00a5a5,52a5a5,007f7f,3f7f7f,004c4c,264c4c,002626,135858,00bfff,7fdfff,007ca5,5291a5,005f7f,3f6f7f,00394c,26427e,001c26,135858,007fff,7fbfff,0052a5,527ca5,003f7f,3f5f7f,00264c,26397e,001326,131c58,003fff,7f9fff,0029a5,5267a5,001f7f,3f4f7f,00134c,262f7e,000926,131758,0000ff,7f7fff,0000a5,5252a5,00007f,3f3f7f,00004c,26267e,000026,131358,3f00ff,9f7fff,2900a5,6752a5,1f007f,4f3f7f,13004c,2f267e,090026,171358,7f00ff,bf7fff,5200a5,7c52a5,3f007f,5f3f7f,26004c,39267e,130026,1c1358,bf00ff,df7fff,7c00a5,9152a5,5f007f,6f3f7f,39004c,42264c,1c0026,581358,ff00ff,ff7fff,a500a5,a552a5,7f007f,7f3f7f,4c004c,4c264c,260026,581358,ff00bf,ff7fdf,a5007c,a55291,7f005f,7f3f6f,4c0039,4c2642,26001c,581358,ff007f,ff7fbf,a50052,a5527c,7f003f,7f3f5f,4c0026,4c2639,260013,58131c,ff003f,ff7f9f,a50029,a55267,7f001f,7f3f4f,4c0013,4c262f,260009,581317,000000,656565,666666,999999,cccccc,ffffff')
+  .split(',').map(h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]);
+function nearestAci(rgb){
+  let best=7,bd=Infinity;
+  for(let i=0;i<ACI.length;i++){const c=ACI[i],d=(c[0]-rgb[0])**2+(c[1]-rgb[1])**2+(c[2]-rgb[2])**2;if(d<bd){bd=d;best=i+1;}}
+  return best;
+}
+const CP1251={0x402:0x80,0x403:0x81,0x201A:0x82,0x453:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x20AC:0x88,0x2030:0x89,0x409:0x8A,0x2039:0x8B,0x40A:0x8C,0x40C:0x8D,0x40B:0x8E,0x40F:0x8F,
+  0x452:0x90,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x2122:0x99,0x459:0x9A,0x203A:0x9B,0x45A:0x9C,0x45C:0x9D,0x45B:0x9E,0x45F:0x9F,
+  0xA0:0xA0,0x40E:0xA1,0x45E:0xA2,0x408:0xA3,0xA4:0xA4,0x490:0xA5,0xA6:0xA6,0xA7:0xA7,0x401:0xA8,0xA9:0xA9,0x404:0xAA,0xAB:0xAB,0xAC:0xAC,0xAD:0xAD,0xAE:0xAE,0x407:0xAF,
+  0xB0:0xB0,0xB1:0xB1,0x406:0xB2,0x456:0xB3,0x491:0xB4,0xB5:0xB5,0xB6:0xB6,0xB7:0xB7,0x451:0xB8,0x2116:0xB9,0x454:0xBA,0xBB:0xBB,0x458:0xBC,0x405:0xBD,0x455:0xBE,0x457:0xBF};
+function enc1251(str){
+  const out=[];
+  for(const ch of str){
+    const c=ch.codePointAt(0);
+    if(c<128)out.push(c);
+    else if(c>=0x410&&c<=0x44F)out.push(c-0x350);
+    else if(CP1251[c]!==undefined)out.push(CP1251[c]);
+    else if(c<=0xFFFF){for(const b of '\\U+'+c.toString(16).toUpperCase().padStart(4,'0'))out.push(b.charCodeAt(0));}
+    else out.push(63);
+  }
+  return new Uint8Array(out);
+}
+const BAD_LAYER='<>/\\":;?*|=`,';
+function safeLayer(n,fb){n=String(n||'').trim();for(const ch of BAD_LAYER)n=n.split(ch).join('_');n=n.replace(/\s+/g,' ').trim();return (n||fb||'KML').slice(0,255);}
+const dxfStr=s=>String(s==null?'':s).replace(/[\r\n\t]+/g,' ').replace(/[\x00-\x1f]/g,'').trim();
+const KIND_RU={point:'Точки',line:'Линии',poly:'Полигоны'};
+function featColor(f,kind){
+  const s=f.style;if(!s)return null;
+  if(kind==='point')return s.icon||s.line;
+  if(kind==='line')return s.line;
+  return s.line||s.poly;
+}
+/* pf — объекты с проекционными координатами g.P; opt — параметры чертежа */
+function buildDXF(pf,crs,opt){
+  const deg=!!crs.deg,dig=opt.round!=null?opt.round:(deg?9:4);
+  const nf=v=>{let s=(+v).toFixed(dig);if(s.indexOf('.')>=0)s=s.replace(/0+$/,'').replace(/\.$/,'');return s==='-0'?'0':s;};
+  const P=c=>{let x=c[0],y=c[1];if(opt.swap){const t=x;x=y;y=t;}return [x-opt.dx,y-opt.dy,opt.flat?0:(c[2]||0)];};
+  const items=[];let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity,z0=Infinity,z1=-Infinity;
+  const upd=p=>{if(p[0]<x0)x0=p[0];if(p[0]>x1)x1=p[0];if(p[1]<y0)y0=p[1];if(p[1]>y1)y1=p[1];if(p[2]<z0)z0=p[2];if(p[2]>z1)z1=p[2];};
+  pf.forEach(f=>f.pg.forEach(g=>{
+    if(g.t==='point'){const p=P(g.p);upd(p);items.push({f,t:'point',p});}
+    else if(g.t==='line'){const p=g.p.map(P);p.forEach(upd);items.push({f,t:'line',p});}
+    else{const rings=g.rings.map(r=>r.map(P));rings.forEach(r=>r.forEach(upd));items.push({f,t:'poly',rings});}
+  }));
+  if(!items.length)throw new Error('нет объектов для записи');
+  let ox=0,oy=0;
+  if(opt.origin){ox=deg?x0:Math.floor(x0);oy=deg?y0:Math.floor(y0);
+    const sh=p=>{p[0]-=ox;p[1]-=oy;};
+    items.forEach(it=>{if(it.t==='point')sh(it.p);else if(it.t==='line')it.p.forEach(sh);else it.rings.forEach(r=>r.forEach(sh));});
+    x0-=ox;x1-=ox;y0-=oy;y1-=oy;}
+  if(!isFinite(z0)){z0=0;z1=0;}
+  /* слои */
+  const layers=new Map();
+  const layerFor=(f,kind,rgb)=>{
+    let name;
+    if(opt.layers==='single')name='KML';
+    else if(opt.layers==='geom')name=KIND_RU[kind];
+    else{name=f.folder.filter(Boolean).join(' - ')||'KML';if(opt.layers==='folder-geom')name+=' - '+KIND_RU[kind];}
+    name=safeLayer(name);
+    if(name==='0'||name.toLowerCase()==='defpoints')name+='_KML';
+    if(!layers.has(name))layers.set(name,{rgb:rgb||null});
+    else if(rgb&&!layers.get(name).rgb)layers.get(name).rgb=rgb;
+    return name;
+  };
+  const labelLayer=base=>{const n=safeLayer(base+' [подписи]');if(!layers.has(n))layers.set(n,{rgb:null});return n;};
+  /* абстрактный список примитивов */
+  const E=[];
+  const same=(a,b)=>a&&b&&a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2];
+  const label=(s,p,layer,center)=>{s=dxfStr(s);if(s)E.push({k:'text',layer:labelLayer(layer),s,p,center});};
+  items.forEach(it=>{
+    const f=it.f,rgb=opt.colors?featColor(f,it.t):null;
+    const layer=layerFor(f,it.t,rgb);
+    const own=rgb&&!same(rgb,layers.get(layer).rgb)?rgb:null;
+    if(it.t==='point'){
+      E.push({k:'point',layer,rgb:own,p:it.p,f});
+      if(opt.labels!=='none'&&f.name)label(f.name,it.p,layer,false);
+    }else if(it.t==='line'){
+      E.push({k:'poly',layer,rgb:own,pts:it.p,closed:false,f});
+      if(opt.labels==='all'&&f.name)label(f.name,it.p[Math.floor(it.p.length/2)],layer,true);
+    }else{
+      if(opt.hatch&&opt.ver!=='R12'){
+        const pr=opt.colors&&f.style&&f.style.poly;
+        E.push({k:'hatch',layer,rgb:pr?[pr[0],pr[1],pr[2]]:(own||null),alpha:pr&&pr[3]!=null?pr[3]:null,rings:it.rings,f});
+      }
+      it.rings.forEach(r=>E.push({k:'poly',layer,rgb:own,pts:r,closed:true,f}));
+      if(opt.labels==='all'&&f.name){const r=it.rings[0];let cx=0,cy=0;r.forEach(p=>{cx+=p[0];cy+=p[1];});label(f.name,[cx/r.length,cy/r.length,r[0][2]],layer,true);}
+    }
+  });
+  const xrows=f=>{
+    if(!opt.xdata)return [];
+    const rows=[],lim=opt.ver==='R12'?240:110;
+    if(f.name)rows.push('name: '+dxfStr(f.name));
+    if(f.folder.length)rows.push('folder: '+dxfStr(f.folder.join('/')));
+    if(f.desc){const d=dxfStr(f.desc);for(let i=0;i<d.length&&i<3*lim;i+=lim)rows.push((i?'':'desc: ')+d.slice(i,i+lim));}
+    return rows.map(r=>r.slice(0,lim+8));
+  };
+  const ext={x0,y0,z0,x1,y1,z1,cx:(x0+x1)/2,cy:(y0+y1)/2,vh:Math.max(y1-y0,(x1-x0)/1.6)*1.1||10};
+  const st={layers:layers.size,points:E.filter(e=>e.k==='point').length,polylines:E.filter(e=>e.k==='poly').length,texts:E.filter(e=>e.k==='text').length,hatches:E.filter(e=>e.k==='hatch').length};
+  const bytes=opt.ver==='R12'?writeR12(E,layers,ext,opt,nf,xrows):write2013(E,layers,ext,opt,nf,xrows);
+  return {bytes,stats:st,origin:[ox,oy]};
+}
+function writeR12(E,layers,ext,opt,nf,xrows){
+  const out=[];const o=(c,v)=>{out.push(String(c),String(v));};
+  const aci=rgb=>rgb?nearestAci(rgb):7;
+  o(0,'SECTION');o(2,'HEADER');
+  o(9,'$ACADVER');o(1,'AC1009');
+  o(9,'$DWGCODEPAGE');o(3,'ANSI_1251');
+  o(9,'$INSBASE');o(10,0);o(20,0);o(30,0);
+  o(9,'$EXTMIN');o(10,nf(ext.x0));o(20,nf(ext.y0));o(30,nf(ext.z0));
+  o(9,'$EXTMAX');o(10,nf(ext.x1));o(20,nf(ext.y1));o(30,nf(ext.z1));
+  o(9,'$TEXTSIZE');o(40,opt.textH);
+  o(0,'ENDSEC');
+  o(0,'SECTION');o(2,'TABLES');
+  o(0,'TABLE');o(2,'LTYPE');o(70,1);
+  o(0,'LTYPE');o(2,'CONTINUOUS');o(70,0);o(3,'Solid line');o(72,65);o(73,0);o(40,0);
+  o(0,'ENDTAB');
+  o(0,'TABLE');o(2,'LAYER');o(70,layers.size+1);
+  o(0,'LAYER');o(2,'0');o(70,0);o(62,7);o(6,'CONTINUOUS');
+  layers.forEach((v,k)=>{o(0,'LAYER');o(2,k);o(70,0);o(62,aci(v.rgb));o(6,'CONTINUOUS');});
+  o(0,'ENDTAB');
+  o(0,'TABLE');o(2,'STYLE');o(70,1);
+  o(0,'STYLE');o(2,'STANDARD');o(70,0);o(40,0);o(41,1);o(50,0);o(71,0);o(42,opt.textH);o(3,'arial.ttf');o(4,'');
+  o(0,'ENDTAB');
+  o(0,'TABLE');o(2,'APPID');o(70,2);
+  o(0,'APPID');o(2,'ACAD');o(70,0);
+  o(0,'APPID');o(2,'KML2DXF');o(70,0);
+  o(0,'ENDTAB');
+  o(0,'ENDSEC');
+  o(0,'SECTION');o(2,'BLOCKS');o(0,'ENDSEC');
+  o(0,'SECTION');o(2,'ENTITIES');
+  const xd=f=>{const r=xrows(f);if(r.length){o(1001,'KML2DXF');r.forEach(s=>o(1000,s));}};
+  E.forEach(e=>{
+    if(e.k==='point'){o(0,'POINT');o(8,e.layer);if(e.rgb)o(62,aci(e.rgb));o(10,nf(e.p[0]));o(20,nf(e.p[1]));o(30,nf(e.p[2]));xd(e.f);}
+    else if(e.k==='poly'){
+      const pts=e.pts,is3d=!opt.flat&&pts.some(p=>p[2]!==pts[0][2]),el=is3d?0:pts[0][2];
+      o(0,'POLYLINE');o(8,e.layer);if(e.rgb)o(62,aci(e.rgb));o(66,1);o(10,0);o(20,0);o(30,nf(el));o(70,(e.closed?1:0)|(is3d?8:0));xd(e.f);
+      pts.forEach(p=>{o(0,'VERTEX');o(8,e.layer);o(10,nf(p[0]));o(20,nf(p[1]));o(30,nf(is3d?p[2]:el));if(is3d)o(70,32);});
+      o(0,'SEQEND');o(8,e.layer);
+    }else if(e.k==='text'){
+      const h=opt.textH,p=e.p;
+      o(0,'TEXT');o(8,e.layer);
+      if(e.center){o(10,nf(p[0]));o(20,nf(p[1]));o(30,nf(p[2]));o(40,h);o(1,e.s);o(72,1);o(11,nf(p[0]));o(21,nf(p[1]));o(31,nf(p[2]));o(73,2);}
+      else{o(10,nf(p[0]+h*0.5));o(20,nf(p[1]+h*0.5));o(30,nf(p[2]));o(40,h);o(1,e.s);}
+    }
+  });
+  o(0,'ENDSEC');o(0,'EOF');
+  return enc1251(out.join('\r\n')+'\r\n');
+}
+function write2013(E,layers,ext,opt,nf,xrows){
+  const T=DXF2013.tpl;let hnd=parseInt(DXF2013.seed,16);
+  const H=()=>(hnd++).toString(16).toUpperCase();
+  const out=[];const o=(c,v)=>{out.push(String(c),String(v));};
+  const tc=rgb=>(rgb[0]<<16)|(rgb[1]<<8)|rgb[2];
+  const col=rgb=>{if(rgb){o(62,nearestAci(rgb));o(420,tc(rgb));}};
+  const head=(type,layer,owner)=>{const h=H();o(0,type);o(5,h);o(330,owner||DXF2013.ms);o(100,'AcDbEntity');o(8,layer);return h;};
+  const xd=f=>{const r=xrows(f);if(r.length){o(1001,'KML2DXF');r.forEach(s=>o(1000,s));}};
+  /* слои */
+  const lay=[];
+  layers.forEach((v,k)=>{lay.push('0','LAYER','5',H(),'330',DXF2013.lt,'100','AcDbSymbolTableRecord','100','AcDbLayerTableRecord','2',k,'70','0',
+    '62',String(v.rgb?nearestAci(v.rgb):7));if(v.rgb)lay.push('420',String(tc(v.rgb)));lay.push('6','Continuous','370','-3','390',DXF2013.ps,'347',DXF2013.mat);});
+  /* примитивы */
+  E.forEach(e=>{
+    if(e.k==='point'){head('POINT',e.layer);col(e.rgb);o(100,'AcDbPoint');o(10,nf(e.p[0]));o(20,nf(e.p[1]));o(30,nf(e.p[2]));xd(e.f);}
+    else if(e.k==='poly'){
+      const pts=e.pts,is3d=!opt.flat&&pts.some(p=>p[2]!==pts[0][2]);
+      if(!is3d){
+        head('LWPOLYLINE',e.layer);col(e.rgb);o(100,'AcDbPolyline');o(90,pts.length);o(70,e.closed?1:0);o(38,nf(pts[0][2]));
+        pts.forEach(p=>{o(10,nf(p[0]));o(20,nf(p[1]));});xd(e.f);
+      }else{
+        const ph=head('POLYLINE',e.layer);col(e.rgb);o(100,'AcDb3dPolyline');o(66,1);o(10,0);o(20,0);o(30,0);o(70,8|(e.closed?1:0));xd(e.f);
+        pts.forEach(p=>{head('VERTEX',e.layer,ph);o(100,'AcDbVertex');o(100,'AcDb3dPolylineVertex');o(10,nf(p[0]));o(20,nf(p[1]));o(30,nf(p[2]));o(70,32);});
+        head('SEQEND',e.layer,ph);
+      }
+    }else if(e.k==='text'){
+      const h=opt.textH,p=e.p;head('TEXT',e.layer);o(100,'AcDbText');
+      if(e.center){o(10,nf(p[0]));o(20,nf(p[1]));o(30,nf(p[2]));o(40,h);o(1,e.s);o(72,1);o(11,nf(p[0]));o(21,nf(p[1]));o(31,nf(p[2]));o(100,'AcDbText');o(73,2);}
+      else{o(10,nf(p[0]+h*0.5));o(20,nf(p[1]+h*0.5));o(30,nf(p[2]));o(40,h);o(1,e.s);o(100,'AcDbText');}
+    }else if(e.k==='hatch'){
+      head('HATCH',e.layer);col(e.rgb);
+      const a=e.alpha!=null?Math.max(25,Math.min(255,e.alpha)):102;o(440,0x02000000+a);
+      o(100,'AcDbHatch');o(10,0);o(20,0);o(30,nf(e.rings[0][0][2]));o(210,0);o(220,0);o(230,1);o(2,'SOLID');o(70,1);o(71,0);o(91,e.rings.length);
+      e.rings.forEach((r,i)=>{o(92,i?2:3);o(72,0);o(73,1);o(93,r.length);r.forEach(p=>{o(10,nf(p[0]));o(20,nf(p[1]));});o(97,0);});
+      o(75,0);o(76,1);o(98,0);
+    }
+  });
+  const txt=T.replace('@@LAYERS@@\n',lay.join('\n')+(lay.length?'\n':''))
+    .replace('@@ENTITIES@@\n',out.join('\n')+(out.length?'\n':''))
+    .replace('@@X0@@',nf(ext.x0)).replace('@@Y0@@',nf(ext.y0)).replace('@@Z0@@',nf(ext.z0))
+    .replace('@@X1@@',nf(ext.x1)).replace('@@Y1@@',nf(ext.y1)).replace('@@Z1@@',nf(ext.z1))
+    .replace('@@TH@@',String(opt.textH)).replace('@@VX@@',nf(ext.cx)).replace('@@VY@@',nf(ext.cy)).replace('@@VH@@',nf(ext.vh))
+    .replace('@@SEED@@',hnd.toString(16).toUpperCase());
+  return new TextEncoder().encode(txt);
+}
+/* Каркас DXF R2013 (AC1027), сформирован ezdxf 1.4 — таблицы, блоки, словари, как их ждёт AutoCAD */
+const DXF2013={"tpl": "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1027\n9\n$ACADMAINTVER\n70\n105\n9\n$DWGCODEPAGE\n3\nANSI_1252\n9\n$LASTSAVEDBY\n1\nezdxf\n9\n$REQUIREDVERSIONS\n160\n0\n9\n$INSBASE\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$EXTMIN\n10\n@@X0@@\n20\n@@Y0@@\n30\n@@Z0@@\n9\n$EXTMAX\n10\n@@X1@@\n20\n@@Y1@@\n30\n@@Z1@@\n9\n$LIMMIN\n10\n0.0\n20\n0.0\n9\n$LIMMAX\n10\n420.0\n20\n297.0\n9\n$ORTHOMODE\n70\n0\n9\n$REGENMODE\n70\n1\n9\n$FILLMODE\n70\n1\n9\n$QTEXTMODE\n70\n0\n9\n$MIRRTEXT\n70\n1\n9\n$LTSCALE\n40\n1.0\n9\n$ATTMODE\n70\n1\n9\n$TEXTSIZE\n40\n@@TH@@\n9\n$TRACEWID\n40\n1.0\n9\n$TEXTSTYLE\n7\nStandard\n9\n$CLAYER\n8\n0\n9\n$CELTYPE\n6\nByLayer\n9\n$CECOLOR\n62\n256\n9\n$CELTSCALE\n40\n1.0\n9\n$DISPSILH\n70\n0\n9\n$DIMSCALE\n40\n1.0\n9\n$DIMASZ\n40\n2.5\n9\n$DIMEXO\n40\n0.625\n9\n$DIMDLI\n40\n3.75\n9\n$DIMRND\n40\n0.0\n9\n$DIMDLE\n40\n0.0\n9\n$DIMEXE\n40\n1.25\n9\n$DIMTP\n40\n0.0\n9\n$DIMTM\n40\n0.0\n9\n$DIMTXT\n40\n2.5\n9\n$DIMCEN\n40\n2.5\n9\n$DIMTSZ\n40\n0.0\n9\n$DIMTOL\n70\n0\n9\n$DIMLIM\n70\n0\n9\n$DIMTIH\n70\n0\n9\n$DIMTOH\n70\n0\n9\n$DIMSE1\n70\n0\n9\n$DIMSE2\n70\n0\n9\n$DIMTAD\n70\n1\n9\n$DIMZIN\n70\n8\n9\n$DIMBLK\n1\n\n9\n$DIMASO\n70\n1\n9\n$DIMSHO\n70\n1\n9\n$DIMPOST\n1\n\n9\n$DIMAPOST\n1\n\n9\n$DIMALT\n70\n0\n9\n$DIMALTD\n70\n3\n9\n$DIMALTF\n40\n0.03937007874\n9\n$DIMLFAC\n40\n1.0\n9\n$DIMTOFL\n70\n1\n9\n$DIMTVP\n40\n0.0\n9\n$DIMTIX\n70\n0\n9\n$DIMSOXD\n70\n0\n9\n$DIMSAH\n70\n0\n9\n$DIMBLK1\n1\n\n9\n$DIMBLK2\n1\n\n9\n$DIMSTYLE\n2\nISO-25\n9\n$DIMCLRD\n70\n0\n9\n$DIMCLRE\n70\n0\n9\n$DIMCLRT\n70\n0\n9\n$DIMTFAC\n40\n1.0\n9\n$DIMGAP\n40\n0.625\n9\n$DIMJUST\n70\n0\n9\n$DIMSD1\n70\n0\n9\n$DIMSD2\n70\n0\n9\n$DIMTOLJ\n70\n0\n9\n$DIMTZIN\n70\n8\n9\n$DIMALTZ\n70\n0\n9\n$DIMALTTZ\n70\n0\n9\n$DIMUPT\n70\n0\n9\n$DIMDEC\n70\n2\n9\n$DIMTDEC\n70\n2\n9\n$DIMALTU\n70\n2\n9\n$DIMALTTD\n70\n3\n9\n$DIMTXSTY\n7\nStandard\n9\n$DIMAUNIT\n70\n0\n9\n$DIMADEC\n70\n0\n9\n$DIMALTRND\n40\n0.0\n9\n$DIMAZIN\n70\n0\n9\n$DIMDSEP\n70\n44\n9\n$DIMATFIT\n70\n3\n9\n$DIMFRAC\n70\n0\n9\n$DIMLDRBLK\n1\n\n9\n$DIMLUNIT\n70\n2\n9\n$DIMLWD\n70\n-2\n9\n$DIMLWE\n70\n-2\n9\n$DIMTMOVE\n70\n0\n9\n$DIMFXL\n40\n1.0\n9\n$DIMFXLON\n70\n0\n9\n$DIMJOGANG\n40\n0.785398163397\n9\n$DIMTFILL\n70\n0\n9\n$DIMTFILLCLR\n70\n0\n9\n$DIMARCSYM\n70\n0\n9\n$DIMLTYPE\n6\n\n9\n$DIMLTEX1\n6\n\n9\n$DIMLTEX2\n6\n\n9\n$DIMTXTDIRECTION\n70\n0\n9\n$LUNITS\n70\n2\n9\n$LUPREC\n70\n4\n9\n$SKETCHINC\n40\n1.0\n9\n$FILLETRAD\n40\n10.0\n9\n$AUNITS\n70\n0\n9\n$AUPREC\n70\n2\n9\n$MENU\n1\n.\n9\n$ELEVATION\n40\n0.0\n9\n$PELEVATION\n40\n0.0\n9\n$THICKNESS\n40\n0.0\n9\n$LIMCHECK\n70\n0\n9\n$CHAMFERA\n40\n0.0\n9\n$CHAMFERB\n40\n0.0\n9\n$CHAMFERC\n40\n0.0\n9\n$CHAMFERD\n40\n0.0\n9\n$SKPOLY\n70\n0\n9\n$TDCREATE\n40\n2461330.5861689816\n9\n$TDUCREATE\n40\n2458532.153996898\n9\n$TDUPDATE\n40\n2461330.5861689816\n9\n$TDUUPDATE\n40\n2458532.1544311\n9\n$TDINDWG\n40\n0.0\n9\n$TDUSRTIMER\n40\n0.0\n9\n$USRTIMER\n70\n1\n9\n$ANGBASE\n50\n0.0\n9\n$ANGDIR\n70\n0\n9\n$PDMODE\n70\n0\n9\n$PDSIZE\n40\n0.0\n9\n$PLINEWID\n40\n0.0\n9\n$SPLFRAME\n70\n0\n9\n$SPLINETYPE\n70\n6\n9\n$SPLINESEGS\n70\n8\n9\n$HANDSEED\n5\n@@SEED@@\n9\n$SURFTAB1\n70\n6\n9\n$SURFTAB2\n70\n6\n9\n$SURFTYPE\n70\n6\n9\n$SURFU\n70\n6\n9\n$SURFV\n70\n6\n9\n$UCSBASE\n2\n\n9\n$UCSNAME\n2\n\n9\n$UCSORG\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSXDIR\n10\n1.0\n20\n0.0\n30\n0.0\n9\n$UCSYDIR\n10\n0.0\n20\n1.0\n30\n0.0\n9\n$UCSORTHOREF\n2\n\n9\n$UCSORTHOVIEW\n70\n0\n9\n$UCSORGTOP\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSORGBOTTOM\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSORGLEFT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSORGRIGHT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSORGFRONT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$UCSORGBACK\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSBASE\n2\n\n9\n$PUCSNAME\n2\n\n9\n$PUCSORG\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSXDIR\n10\n1.0\n20\n0.0\n30\n0.0\n9\n$PUCSYDIR\n10\n0.0\n20\n1.0\n30\n0.0\n9\n$PUCSORTHOREF\n2\n\n9\n$PUCSORTHOVIEW\n70\n0\n9\n$PUCSORGTOP\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSORGBOTTOM\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSORGLEFT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSORGRIGHT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSORGFRONT\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PUCSORGBACK\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$USERI1\n70\n0\n9\n$USERI2\n70\n0\n9\n$USERI3\n70\n0\n9\n$USERI4\n70\n0\n9\n$USERI5\n70\n0\n9\n$USERR1\n40\n0.0\n9\n$USERR2\n40\n0.0\n9\n$USERR3\n40\n0.0\n9\n$USERR4\n40\n0.0\n9\n$USERR5\n40\n0.0\n9\n$WORLDVIEW\n70\n1\n9\n$SHADEDGE\n70\n3\n9\n$SHADEDIF\n70\n70\n9\n$TILEMODE\n70\n1\n9\n$MAXACTVP\n70\n64\n9\n$PINSBASE\n10\n0.0\n20\n0.0\n30\n0.0\n9\n$PLIMCHECK\n70\n0\n9\n$PEXTMIN\n10\n1e+20\n20\n1e+20\n30\n1e+20\n9\n$PEXTMAX\n10\n-1e+20\n20\n-1e+20\n30\n-1e+20\n9\n$PLIMMIN\n10\n0.0\n20\n0.0\n9\n$PLIMMAX\n10\n420.0\n20\n297.0\n9\n$UNITMODE\n70\n0\n9\n$VISRETAIN\n70\n1\n9\n$PLINEGEN\n70\n0\n9\n$PSLTSCALE\n70\n1\n9\n$TREEDEPTH\n70\n3020\n9\n$CMLSTYLE\n2\nStandard\n9\n$CMLJUST\n70\n0\n9\n$CMLSCALE\n40\n20.0\n9\n$PROXYGRAPHICS\n70\n1\n9\n$MEASUREMENT\n70\n1\n9\n$CELWEIGHT\n370\n-1\n9\n$ENDCAPS\n280\n0\n9\n$JOINSTYLE\n280\n0\n9\n$LWDISPLAY\n290\n0\n9\n$INSUNITS\n70\n6\n9\n$HYPERLINKBASE\n1\n\n9\n$STYLESHEET\n1\n\n9\n$XEDIT\n290\n1\n9\n$CEPSNTYPE\n380\n0\n9\n$PSTYLEMODE\n290\n1\n9\n$FINGERPRINTGUID\n2\n{076FABC9-990B-4826-8AA9-6DD4EA627642}\n9\n$VERSIONGUID\n2\n{1E9DB91A-D1B6-49ED-BB25-EE4C46339467}\n9\n$EXTNAMES\n290\n1\n9\n$PSVPSCALE\n40\n0.0\n9\n$OLESTARTUP\n290\n0\n9\n$SORTENTS\n280\n127\n9\n$INDEXCTL\n280\n0\n9\n$HIDETEXT\n280\n1\n9\n$XCLIPFRAME\n280\n1\n9\n$HALOGAP\n280\n0\n9\n$OBSCOLOR\n70\n257\n9\n$OBSLTYPE\n280\n0\n9\n$INTERSECTIONDISPLAY\n280\n0\n9\n$INTERSECTIONCOLOR\n70\n257\n9\n$DIMASSOC\n280\n2\n9\n$PROJECTNAME\n1\n\n9\n$CAMERADISPLAY\n290\n0\n9\n$LENSLENGTH\n40\n50.0\n9\n$CAMERAHEIGHT\n40\n0.0\n9\n$STEPSPERSEC\n40\n24.0\n9\n$STEPSIZE\n40\n100.0\n9\n$3DDWFPREC\n40\n2.0\n9\n$PSOLWIDTH\n40\n0.005\n9\n$PSOLHEIGHT\n40\n0.08\n9\n$LOFTANG1\n40\n1.570796326795\n9\n$LOFTANG2\n40\n1.570796326795\n9\n$LOFTMAG1\n40\n0.0\n9\n$LOFTMAG2\n40\n0.0\n9\n$LOFTPARAM\n70\n7\n9\n$LOFTNORMALS\n280\n1\n9\n$LATITUDE\n40\n37.795\n9\n$LONGITUDE\n40\n-122.394\n9\n$NORTHDIRECTION\n40\n0.0\n9\n$TIMEZONE\n70\n-8000\n9\n$LIGHTGLYPHDISPLAY\n280\n1\n9\n$TILEMODELIGHTSYNCH\n280\n1\n9\n$CMATERIAL\n347\n20\n9\n$SOLIDHIST\n280\n0\n9\n$SHOWHIST\n280\n1\n9\n$DWFFRAME\n280\n2\n9\n$DGNFRAME\n280\n2\n9\n$REALWORLDSCALE\n290\n1\n9\n$INTERFERECOLOR\n62\n256\n9\n$CSHADOW\n280\n0\n9\n$SHADOWPLANELOCATION\n40\n0.0\n0\nENDSEC\n0\nSECTION\n2\nCLASSES\n0\nCLASS\n1\nACDBDICTIONARYWDFLT\n2\nAcDbDictionaryWithDefault\n3\nObjectDBX Classes\n90\n0\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nSUN\n2\nAcDbSun\n3\nSCENEOE\n90\n1153\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nVISUALSTYLE\n2\nAcDbVisualStyle\n3\nObjectDBX Classes\n90\n4095\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nMATERIAL\n2\nAcDbMaterial\n3\nObjectDBX Classes\n90\n1153\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nSCALE\n2\nAcDbScale\n3\nObjectDBX Classes\n90\n1153\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nTABLESTYLE\n2\nAcDbTableStyle\n3\nObjectDBX Classes\n90\n4095\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nMLEADERSTYLE\n2\nAcDbMLeaderStyle\n3\nACDB_MLEADERSTYLE_CLASS\n90\n4095\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nDICTIONARYVAR\n2\nAcDbDictionaryVar\n3\nObjectDBX Classes\n90\n0\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nCELLSTYLEMAP\n2\nAcDbCellStyleMap\n3\nObjectDBX Classes\n90\n1152\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nMENTALRAYRENDERSETTINGS\n2\nAcDbMentalRayRenderSettings\n3\nSCENEOE\n90\n1024\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nACDBDETAILVIEWSTYLE\n2\nAcDbDetailViewStyle\n3\nObjectDBX Classes\n90\n1025\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nACDBSECTIONVIEWSTYLE\n2\nAcDbSectionViewStyle\n3\nObjectDBX Classes\n90\n1025\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nRASTERVARIABLES\n2\nAcDbRasterVariables\n3\nISM\n90\n0\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nLAYOUT\n2\nAcDbLayout\n3\nObjectDBX Classes\n90\n0\n91\n0\n280\n0\n281\n0\n0\nCLASS\n1\nACDBPLACEHOLDER\n2\nAcDbPlaceHolder\n3\nObjectDBX Classes\n90\n0\n91\n0\n280\n0\n281\n0\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nVPORT\n5\n8\n330\n0\n100\nAcDbSymbolTable\n70\n1\n0\nVPORT\n5\n23\n330\n8\n100\nAcDbSymbolTableRecord\n100\nAcDbViewportTableRecord\n2\n*Active\n70\n0\n10\n0.0\n20\n0.0\n11\n1.0\n21\n1.0\n12\n@@VX@@\n22\n@@VY@@\n13\n0.0\n23\n0.0\n14\n0.5\n24\n0.5\n15\n0.5\n25\n0.5\n16\n0.0\n26\n0.0\n36\n1.0\n17\n0.0\n27\n0.0\n37\n0.0\n40\n@@VH@@\n41\n1.34\n42\n50.0\n43\n0.0\n44\n0.0\n50\n0.0\n51\n0.0\n71\n0\n72\n1000\n73\n1\n74\n3\n75\n0\n76\n0\n77\n0\n78\n0\n281\n0\n65\n0\n146\n0.0\n0\nENDTAB\n0\nTABLE\n2\nLTYPE\n5\n2\n330\n0\n100\nAcDbSymbolTable\n70\n3\n0\nLTYPE\n5\n24\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n2\nByBlock\n70\n0\n3\n\n72\n65\n73\n0\n40\n0.0\n0\nLTYPE\n5\n25\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n2\nByLayer\n70\n0\n3\n\n72\n65\n73\n0\n40\n0.0\n0\nLTYPE\n5\n26\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n2\nContinuous\n70\n0\n3\n\n72\n65\n73\n0\n40\n0.0\n0\nENDTAB\n0\nTABLE\n2\nLAYER\n5\n1\n330\n0\n100\nAcDbSymbolTable\n70\n2\n0\nLAYER\n5\n27\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\n0\n70\n0\n62\n7\n6\nContinuous\n370\n-3\n390\n13\n347\n21\n0\nLAYER\n5\n28\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nDefpoints\n70\n0\n62\n7\n6\nContinuous\n290\n0\n370\n-3\n390\n13\n347\n21\n@@LAYERS@@\n0\nENDTAB\n0\nTABLE\n2\nSTYLE\n5\n5\n330\n0\n100\nAcDbSymbolTable\n70\n1\n0\nSTYLE\n5\n29\n330\n5\n100\nAcDbSymbolTableRecord\n100\nAcDbTextStyleTableRecord\n2\nStandard\n70\n0\n40\n0.0\n41\n1.0\n50\n0.0\n71\n0\n42\n2.5\n3\narial.ttf\n4\n\n0\nENDTAB\n0\nTABLE\n2\nVIEW\n5\n7\n330\n0\n100\nAcDbSymbolTable\n70\n0\n0\nENDTAB\n0\nTABLE\n2\nUCS\n5\n6\n330\n0\n100\nAcDbSymbolTable\n70\n0\n0\nENDTAB\n0\nTABLE\n2\nAPPID\n5\n3\n330\n0\n100\nAcDbSymbolTable\n70\n4\n0\nAPPID\n5\n2A\n330\n3\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nACAD\n70\n0\n0\nAPPID\n5\n2F\n330\n3\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nKML2DXF\n70\n0\n0\nAPPID\n5\n30\n330\n3\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nHATCHBACKGROUNDCOLOR\n70\n0\n0\nAPPID\n5\n31\n330\n3\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nEZDXF\n70\n0\n0\nENDTAB\n0\nTABLE\n2\nDIMSTYLE\n5\n4\n330\n0\n100\nAcDbSymbolTable\n70\n1\n100\nAcDbDimStyleTable\n0\nDIMSTYLE\n105\n2B\n330\n4\n100\nAcDbSymbolTableRecord\n100\nAcDbDimStyleTableRecord\n2\nStandard\n70\n0\n40\n1.0\n41\n2.5\n42\n0.625\n43\n3.75\n44\n1.25\n45\n0.0\n46\n0.0\n47\n0.0\n48\n0.0\n49\n2.5\n140\n2.5\n141\n2.5\n142\n0.0\n143\n0.03937007874\n144\n1.0\n145\n0.0\n146\n1.0\n147\n0.625\n148\n0.0\n69\n0\n70\n0\n71\n0\n72\n0\n73\n0\n74\n0\n75\n0\n76\n0\n77\n1\n78\n8\n79\n3\n170\n0\n171\n3\n172\n1\n173\n0\n174\n0\n175\n0\n176\n0\n177\n0\n178\n0\n179\n2\n271\n2\n272\n2\n273\n2\n274\n3\n275\n0\n276\n0\n277\n2\n278\n44\n279\n0\n280\n0\n281\n0\n282\n0\n283\n0\n284\n8\n285\n0\n286\n0\n288\n0\n289\n3\n290\n0\n371\n-2\n372\n-2\n0\nENDTAB\n0\nTABLE\n2\nBLOCK_RECORD\n5\n9\n330\n0\n100\nAcDbSymbolTable\n70\n2\n0\nBLOCK_RECORD\n5\n17\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n2\n*Model_Space\n340\n1A\n70\n0\n280\n1\n281\n0\n0\nBLOCK_RECORD\n5\n1B\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n2\n*Paper_Space\n340\n1E\n70\n0\n280\n1\n281\n0\n0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n18\n330\n17\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockBegin\n2\n*Model_Space\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*Model_Space\n1\n\n0\nENDBLK\n5\n19\n330\n17\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n0\nBLOCK\n5\n1C\n330\n1B\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockBegin\n2\n*Paper_Space\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*Paper_Space\n1\n\n0\nENDBLK\n5\n1D\n330\n1B\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n@@ENTITIES@@\n0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nA\n330\n0\n100\nAcDbDictionary\n281\n1\n3\nACAD_COLOR\n350\nB\n3\nACAD_GROUP\n350\nC\n3\nACAD_LAYOUT\n350\nD\n3\nACAD_MATERIAL\n350\nE\n3\nACAD_MLEADERSTYLE\n350\nF\n3\nACAD_MLINESTYLE\n350\n10\n3\nACAD_PLOTSETTINGS\n350\n11\n3\nACAD_PLOTSTYLENAME\n350\n12\n3\nACAD_SCALELIST\n350\n14\n3\nACAD_TABLESTYLE\n350\n15\n3\nACAD_VISUALSTYLE\n350\n16\n3\nEZDXF_META\n350\n2D\n0\nDICTIONARY\n5\nB\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nDICTIONARY\n5\nC\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nDICTIONARY\n5\nD\n330\nA\n100\nAcDbDictionary\n281\n1\n3\nModel\n350\n1A\n3\nLayout1\n350\n1E\n0\nDICTIONARY\n5\nE\n330\nA\n100\nAcDbDictionary\n281\n1\n3\nByBlock\n350\n1F\n3\nByLayer\n350\n20\n3\nGlobal\n350\n21\n0\nDICTIONARY\n5\nF\n330\nA\n100\nAcDbDictionary\n281\n1\n3\nStandard\n350\n2C\n0\nDICTIONARY\n5\n10\n330\nA\n100\nAcDbDictionary\n281\n1\n3\nStandard\n350\n22\n0\nDICTIONARY\n5\n11\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nACDBDICTIONARYWDFLT\n5\n12\n330\nA\n100\nAcDbDictionary\n281\n1\n3\nNormal\n350\n13\n100\nAcDbDictionaryWithDefault\n340\n13\n0\nACDBPLACEHOLDER\n5\n13\n330\n12\n0\nDICTIONARY\n5\n14\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nDICTIONARY\n5\n15\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nDICTIONARY\n5\n16\n330\nA\n100\nAcDbDictionary\n281\n1\n0\nLAYOUT\n5\n1A\n330\nD\n100\nAcDbPlotSettings\n1\n\n4\nA3\n6\n\n40\n7.5\n41\n20.0\n42\n7.5\n43\n20.0\n44\n420.0\n45\n297.0\n46\n0.0\n47\n0.0\n48\n0.0\n49\n0.0\n140\n0.0\n141\n0.0\n142\n1.0\n143\n1.0\n70\n1024\n72\n1\n73\n0\n74\n5\n7\n\n75\n16\n76\n0\n77\n2\n78\n300\n147\n1.0\n148\n0.0\n149\n0.0\n100\nAcDbLayout\n1\nModel\n70\n1\n71\n0\n10\n0.0\n20\n0.0\n11\n420.0\n21\n297.0\n12\n0.0\n22\n0.0\n32\n0.0\n14\n1e+20\n24\n1e+20\n34\n1e+20\n15\n-1e+20\n25\n-1e+20\n35\n-1e+20\n146\n0.0\n13\n0.0\n23\n0.0\n33\n0.0\n16\n1.0\n26\n0.0\n36\n0.0\n17\n0.0\n27\n1.0\n37\n0.0\n76\n1\n330\n17\n0\nLAYOUT\n5\n1E\n330\nD\n100\nAcDbPlotSettings\n1\n\n4\nA3\n6\n\n40\n7.5\n41\n20.0\n42\n7.5\n43\n20.0\n44\n420.0\n45\n297.0\n46\n0.0\n47\n0.0\n48\n0.0\n49\n0.0\n140\n0.0\n141\n0.0\n142\n1.0\n143\n1.0\n70\n0\n72\n1\n73\n0\n74\n5\n7\n\n75\n16\n76\n0\n77\n2\n78\n300\n147\n1.0\n148\n0.0\n149\n0.0\n100\nAcDbLayout\n1\nLayout1\n70\n1\n71\n1\n10\n0.0\n20\n0.0\n11\n420.0\n21\n297.0\n12\n0.0\n22\n0.0\n32\n0.0\n14\n1e+20\n24\n1e+20\n34\n1e+20\n15\n-1e+20\n25\n-1e+20\n35\n-1e+20\n146\n0.0\n13\n0.0\n23\n0.0\n33\n0.0\n16\n1.0\n26\n0.0\n36\n0.0\n17\n0.0\n27\n1.0\n37\n0.0\n76\n1\n330\n1B\n0\nMATERIAL\n5\n1F\n102\n{ACAD_REACTORS\n330\nE\n102\n}\n330\nE\n100\nAcDbMaterial\n1\nByBlock\n2\n\n70\n0\n40\n1.0\n71\n1\n41\n1.0\n91\n-1023410177\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n44\n0.5\n73\n0\n45\n1.0\n46\n1.0\n77\n1\n4\n\n78\n1\n79\n1\n170\n1\n48\n1.0\n171\n1\n6\n\n172\n1\n173\n1\n174\n1\n140\n1.0\n141\n1.0\n175\n1\n7\n\n176\n1\n177\n1\n178\n1\n143\n1.0\n179\n1\n8\n\n270\n1\n271\n1\n272\n1\n145\n1.0\n146\n1.0\n273\n1\n9\n\n274\n1\n275\n1\n276\n1\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n94\n63\n0\nMATERIAL\n5\n20\n102\n{ACAD_REACTORS\n330\nE\n102\n}\n330\nE\n100\nAcDbMaterial\n1\nByLayer\n2\n\n70\n0\n40\n1.0\n71\n1\n41\n1.0\n91\n-1023410177\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n44\n0.5\n73\n0\n45\n1.0\n46\n1.0\n77\n1\n4\n\n78\n1\n79\n1\n170\n1\n48\n1.0\n171\n1\n6\n\n172\n1\n173\n1\n174\n1\n140\n1.0\n141\n1.0\n175\n1\n7\n\n176\n1\n177\n1\n178\n1\n143\n1.0\n179\n1\n8\n\n270\n1\n271\n1\n272\n1\n145\n1.0\n146\n1.0\n273\n1\n9\n\n274\n1\n275\n1\n276\n1\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n94\n63\n0\nMATERIAL\n5\n21\n102\n{ACAD_REACTORS\n330\nE\n102\n}\n330\nE\n100\nAcDbMaterial\n1\nGlobal\n2\n\n70\n0\n40\n1.0\n71\n1\n41\n1.0\n91\n-1023410177\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n44\n0.5\n73\n0\n45\n1.0\n46\n1.0\n77\n1\n4\n\n78\n1\n79\n1\n170\n1\n48\n1.0\n171\n1\n6\n\n172\n1\n173\n1\n174\n1\n140\n1.0\n141\n1.0\n175\n1\n7\n\n176\n1\n177\n1\n178\n1\n143\n1.0\n179\n1\n8\n\n270\n1\n271\n1\n272\n1\n145\n1.0\n146\n1.0\n273\n1\n9\n\n274\n1\n275\n1\n276\n1\n42\n1.0\n72\n1\n3\n\n73\n1\n74\n1\n75\n1\n94\n63\n0\nMLINESTYLE\n5\n22\n102\n{ACAD_REACTORS\n330\n10\n102\n}\n330\n10\n100\nAcDbMlineStyle\n2\nStandard\n70\n0\n3\n\n62\n256\n51\n90.0\n52\n90.0\n71\n2\n49\n0.5\n62\n256\n6\nBYLAYER\n49\n-0.5\n62\n256\n6\nBYLAYER\n0\nMLEADERSTYLE\n5\n2C\n102\n{ACAD_REACTORS\n330\nF\n102\n}\n330\nF\n100\nAcDbMLeaderStyle\n179\n2\n170\n2\n171\n1\n172\n0\n90\n2\n40\n0.0\n41\n0.0\n173\n1\n91\n-1056964608\n92\n-2\n290\n1\n42\n2.0\n291\n1\n43\n8.0\n3\nStandard\n44\n4.0\n300\n\n342\n29\n174\n1\n175\n1\n176\n0\n178\n1\n93\n-1056964608\n45\n4.0\n292\n0\n297\n0\n46\n4.0\n94\n-1056964608\n47\n1.0\n49\n1.0\n140\n1.0\n294\n1\n141\n0.0\n177\n0\n142\n1.0\n295\n0\n296\n0\n143\n3.75\n271\n0\n272\n9\n273\n9\n0\nDICTIONARY\n5\n2D\n330\nA\n100\nAcDbDictionary\n280\n1\n281\n1\n3\nCREATED_BY_EZDXF\n350\n2E\n3\nWRITTEN_BY_EZDXF\n350\n32\n0\nDICTIONARYVAR\n5\n2E\n330\n2D\n100\nDictionaryVariables\n280\n0\n1\n1.4.2 @ 2026-10-16T09:04:05.988131+00:00\n0\nDICTIONARYVAR\n5\n32\n330\n2D\n100\nDictionaryVariables\n280\n0\n1\n1.4.2 @ 2026-10-16T09:04:05.988709+00:00\n0\nENDSEC\n0\nEOF\n", "seed": "33", "lt": "1", "ms": "17", "ps": "13", "mat": "21"};
+/* ==================== /ЯДРО ==================== */
+</script>
+
+<script>
+/* ==================== СОСТОЯНИЕ И ИНТЕРФЕЙС ==================== */
+const state={files:[],crs:null,pf:[],sel:-1,ctr:null,err:''};
+function log(type,msg){const el=$('log');const d=document.createElement('div');d.className=type==='w'?'w':type==='e'?'e':'';d.textContent=(type==='w'?'⚠ ':type==='e'?'✖ ':'· ')+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('active',s.id==='sec-'+t));
+  if(t==='conv')requestAnimationFrame(()=>{pvResize();pvDraw();});
+  if(t==='list')renderList();
+}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+
+/* ---------- загрузка файлов ---------- */
+async function addFiles(list){
+  for(const file of list){
+    const base=file.name.replace(/\.(kmz|kml)$/i,'');
+    const rec={name:file.name,base,feats:[],status:'чтение…'};
+    state.files.push(rec);renderFiles();
+    try{
+      const buf=await file.arrayBuffer(),u8=new Uint8Array(buf);
+      let docs;
+      if(u8[0]===0x50&&u8[1]===0x4b){docs=await unzipKml(buf);if(!docs.length)throw new Error('в архиве нет файлов .kml');}
+      else docs=[{name:file.name,data:u8}];
+      const multi=docs.length>1;
+      docs.forEach(d=>{
+        const lbl=multi?d.name.split('/').pop().replace(/\.kml$/i,''):'';
+        rec.feats.push(...parseKml(decodeXml(d.data),lbl,(t,m)=>log(t,file.name+': '+m)));
+      });
+      rec.feats.forEach(f=>f.file=base);
+      const c={point:0,line:0,poly:0};rec.feats.forEach(f=>f.geoms.forEach(g=>c[g.t]++));
+      rec.status=`${rec.feats.length} объектов · точек ${c.point}, линий ${c.line}, полигонов ${c.poly}`;
+      log('i',`${file.name}: прочитано объектов — ${rec.feats.length}${multi?' (KML в архиве: '+docs.length+')':''}`);
+      if(!rec.feats.length)log('w',file.name+': геометрия не найдена');
+    }catch(e){rec.status='ошибка';rec.error=true;log('e',file.name+': '+e.message);}
+    renderFiles();
+  }
+  if(!$('out-name').value&&state.files.length)$('out-name').placeholder=(state.files.length===1?state.files[0].base:'kml2dxf')+'.dxf';
+  recompute(true);
+}
+function renderFiles(){
+  $('file-list').innerHTML=state.files.map((f,i)=>`<div class="file"><span>${f.error?'⚠':'📄'}</span><span class="nm" title="${esc(f.name)}">${esc(f.name)}</span><span class="st">${esc(f.status)}</span><button title="Убрать" onclick="removeFile(${i})">×</button></div>`).join('');
+}
+function removeFile(i){state.files.splice(i,1);renderFiles();recompute(true);}
+function clearAll(){state.files=[];$('log').innerHTML='';renderFiles();recompute(true);}
+
+/* ---------- выбор СК ---------- */
+function srcCrs(){return $('src-mode').value==='wgs84'?WGS84:parseProj($('src-proj').value);}
+function zoneFor(mode,lon,lat){
+  const zIn=parseInt($('zone').value,10);
+  const L=((lon%360)+360)%360;
+  if(mode==='auto-utm')return zIn>=1&&zIn<=60?zIn:Math.min(60,Math.floor((lon+180)/6)+1);
+  if(mode==='auto-gk3')return zIn>=1&&zIn<=120?zIn:(Math.round(L/3)||120);
+  return zIn>=1&&zIn<=60?zIn:Math.floor(L/6)+1;
+}
+function targetCrs(ctr){
+  const mode=$('crs').value,prefix=$('prefix').checked;
+  const lon=ctr?ctr[0]:75,lat=ctr?ctr[1]:45;
+  switch(mode){
+    case 'auto-utm':{const z=zoneFor(mode,lon,lat),south=lat<0;return utmCrs(z,south);}
+    case 'auto-gk6':return gkCrs('sk42',zoneFor(mode,lon,lat),6,prefix);
+    case 'auto-gk3':return gkCrs('sk42',zoneFor(mode,lon,lat),3,prefix);
+    case 'auto-sk95':return gkCrs('sk95',zoneFor(mode,lon,lat),6,prefix);
+    case 'auto-gsk':return gkCrs('gsk2011',zoneFor(mode,lon,lat),6,prefix);
+    case 'webmerc':return WEBMERC;
+    case 'wgs84':return WGS84;
+    case 'proj':return parseProj($('crs-proj').value);
+    case 'msk':{
+      const lon0=parseAngle($('msk-lon0').value),lat0=parseAngle($('msk-lat0').value||'0');
+      if(!isFinite(lon0))throw new Error('МСК: укажите осевой меридиан');
+      if(!isFinite(lat0))throw new Error('МСК: неверная широта начала');
+      const k=numIn('msk-k',1),x0=numIn('msk-x0',0),y0=numIn('msk-y0',0);
+      if(![k,x0,y0].every(isFinite)||k<=0)throw new Error('МСК: проверьте числовые параметры');
+      let d=$('msk-datum').value,datum;
+      if(d==='custom'){
+        const tw=$('msk-tw').value.split(/[,;\s]+/).filter(Boolean).map(v=>+v);
+        if(tw.some(v=>!isFinite(v))||(tw.length!==3&&tw.length!==7))throw new Error('МСК: towgs84 — 3 или 7 чисел через запятую');
+        datum={ell:ellOf($('msk-ell').value),tw};
+      }else datum=DATUMS[d];
+      return mkTmerc(datum,lon0,x0,y0,k,lat0,($('msk-name').value.trim()||'Местная система')+` (осевой ${$('msk-lon0').value.trim()})`);
+    }
+  }
+}
+function updBlocks(){
+  const m=$('crs').value;
+  $('src-proj-blk').hidden=$('src-mode').value!=='proj';
+  $('zone-blk').hidden=!m.startsWith('auto');
+  $('prefix-blk').style.visibility=m.startsWith('auto')&&m!=='auto-utm'?'visible':'hidden';
+  $('msk-blk').hidden=m!=='msk';
+  $('proj-blk').hidden=m!=='proj';
+  const cu=$('msk-datum').value==='custom';
+  $('msk-ell-blk').hidden=!cu;$('msk-tw-blk').hidden=!cu;
+}
+
+/* ---------- пересчёт ---------- */
+const mapGeom=(g,fn)=>g.t==='point'?{t:'point',p:fn(g.p)}:g.t==='line'?{t:'line',p:g.p.map(fn)}:{t:'poly',rings:g.rings.map(r=>r.map(fn))};
+function geoCenter(feats){
+  let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;
+  const u=p=>{if(p[0]<a)a=p[0];if(p[0]>c)c=p[0];if(p[1]<b)b=p[1];if(p[1]>d)d=p[1];};
+  feats.forEach(f=>f.geo.forEach(g=>{if(g.t==='point')u(g.p);else if(g.t==='line')g.p.forEach(u);else g.rings.forEach(r=>r.forEach(u));}));
+  return isFinite(a)?{c:[(a+c)/2,(b+d)/2],box:[a,b,c,d]}:null;
+}
+function project(feats,crs){
+  const fwd=makeTransformer(WGS84,crs);
+  const fn=p=>{const r=fwd(p[0],p[1]);return [r[0],r[1],p[2]];};
+  return feats.map(f=>Object.assign({},f,{pg:f.geo.map(g=>mapGeom(g,fn))}));
+}
+let rcT=null;
+function recompute(refit){clearTimeout(rcT);rcT=setTimeout(()=>doRecompute(refit),refit?0:150);}
+function doRecompute(refit){
+  updBlocks();saveSettings();
+  const info=$('crs-info');info.className='rec-box';
+  state.err='';state.pf=[];state.crs=null;
+  const feats=[].concat(...state.files.map(f=>f.feats));
+  try{
+    const src=srcCrs();
+    let bad=0,total=0;
+    const toG=src===WGS84?null:makeTransformer(src,WGS84);
+    feats.forEach(f=>{f.geo=f.geoms.map(g=>mapGeom(g,p=>{total++;
+      if(src.deg&&(Math.abs(p[0])>180||Math.abs(p[1])>90))bad++;
+      if(!src.deg&&Math.abs(p[0])<=180&&Math.abs(p[1])<=90)bad++;
+      if(!toG)return p;const r=toG(p[0],p[1]);return [r[0],r[1],p[2]];}));});
+    if(bad&&total){
+      if(src.deg)throw new Error(`${bad} из ${total} координат вне диапазона градусов — похоже, файл уже в проекции. Укажите исходную СК (EPSG или PROJ).`);
+      log('w',`${bad} из ${total} координат похожи на градусы, а исходная СК задана в метрах — проверьте выбор исходной системы`);
+    }
+    const gc=geoCenter(feats);state.ctr=gc;
+    const crs=targetCrs(gc&&gc.c);state.crs=crs;
+    state.pf=project(feats,crs);
+    let html=`<b>${esc(crs.name)}</b>${crs.epsg?` · EPSG:${crs.epsg}`:''}<br><code style="white-space:normal">${esc(projString(crs))}</code>`;
+    if(src!==WGS84)html+=`<br>Исходная: ${esc(src.name)}${src.epsg?' · EPSG:'+src.epsg:''}`;
+    if(gc){
+      html+=`<br>Центр данных: ${gc.c[1].toFixed(5)}° с.ш., ${gc.c[0].toFixed(5)}° в.д.`;
+      if(crs.type==='tmerc'){
+        const dl=Math.max(Math.abs(normLam((gc.box[0]-crs.lon0)*D2R)),Math.abs(normLam((gc.box[2]-crs.lon0)*D2R)))*R2D;
+        const lim=$('crs').value==='auto-gk3'?1.5:3;
+        if(dl>lim+0.5){info.className='rec-box warn';html+=`<br>⚠ Данные удалены от осевого меридиана на ${dl.toFixed(2)}° — выходят за пределы зоны, искажения растут.`;}
+      }
+      if($('separate').checked&&$('crs').value.startsWith('auto')&&!$('zone').value&&state.files.length>1)html+='<br>В режиме «каждый файл отдельно» зона подбирается по каждому файлу.';
+    }
+    info.innerHTML=html;
+  }catch(e){state.err=e.message;info.className='rec-box err';info.textContent='✖ '+e.message;}
+  renderKpi();fillObjSelect();
+  if(refit)pvFit();
+  pvDraw();
+  if($('sec-list').classList.contains('active'))renderList();
+}
+function renderKpi(){
+  const pf=state.pf,c={point:0,line:0,poly:0};let v=0;
+  pf.forEach(f=>f.pg.forEach(g=>{c[g.t]++;v+=g.t==='point'?1:g.t==='line'?g.p.length:g.rings.reduce((a,r)=>a+r.length,0);}));
+  const b=bounds(pf);const deg=state.crs&&state.crs.deg;
+  const size=b?(deg?`${fmt(b[2]-b[0],4)} × ${fmt(b[3]-b[1],4)}`:`${fmt(b[2]-b[0])} × ${fmt(b[3]-b[1])}`):'—';
+  const zone=state.crs?(state.crs.epsg?'EPSG:'+state.crs.epsg:(state.crs.name.match(/зона \d+\w?/)||[state.crs.type==='tmerc'?'МСК / tmerc':state.crs.name.split(' (')[0]])[0]):'—';
+  const k=(val,u,lbl,cls='')=>`<div class="kpi ${cls}"><span class="v">${val}</span><span class="u">${u}</span><span class="lbl">${lbl}</span></div>`;
+  $('kpi').innerHTML=pf.length?
+    k(state.files.filter(f=>!f.error).length,'шт.','Файлов')+k(fmt(pf.length),'шт.','Объектов','big')+k(fmt(c.point),'шт.','Точек')+k(fmt(c.line),'шт.','Линий')+
+    k(fmt(c.poly),'шт.','Полигонов')+k(fmt(v),'шт.','Вершин')+k(esc(zone),'','Система','txt')+k(size,deg?'град.':'м','Габарит','txt'):'';
+  $('btn-dxf').disabled=!pf.length;
+  $('pv-empty').style.display=pf.length?'none':'flex';
+  $('dxf-hint').textContent=pf.length?'':(state.err?'':'загрузите KMZ или KML');
+}
+function bounds(pf){
+  let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;
+  const u=p=>{if(p[0]<a)a=p[0];if(p[0]>c)c=p[0];if(p[1]<b)b=p[1];if(p[1]>d)d=p[1];};
+  pf.forEach(f=>f.pg.forEach(g=>{if(g.t==='point')u(g.p);else if(g.t==='line')g.p.forEach(u);else g.rings.forEach(r=>r.forEach(u));}));
+  return isFinite(a)?[a,b,c,d]:null;
+}
+
+/* ---------- DXF ---------- */
+function drawOpts(){
+  const off=String($('offset').value||'').split(/[;\s]+/).filter(Boolean).map(v=>+v.replace(',','.'));
+  const r=$('round').value===''?null:Math.max(0,Math.min(12,parseInt($('round').value,10)||0));
+  return {layers:$('layers').value,labels:$('labels').value,textH:Math.max(0.01,numIn('text-h',2)||2),round:r,
+    dx:isFinite(off[0])?off[0]:0,dy:isFinite(off[1])?off[1]:0,flat:$('flat').checked,swap:$('swap').checked,origin:$('origin').checked,
+    colors:$('colors').checked,xdata:$('xdata').checked,ver:$('dxf-ver').value,hatch:$('hatch').checked};
+}
+function saveBlob(name,bytes,mime){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:mime}));a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+}
+function downloadDXF(){
+  if(!state.pf.length)return;
+  const opt=drawOpts();
+  const fixName=n=>(n||'').replace(/[\\/:*?"<>|]+/g,'_').trim();
+  try{
+    const groups=[];
+    if($('separate').checked&&state.files.length>1){
+      state.files.filter(f=>!f.error&&f.feats.length).forEach(f=>{
+        let crs=state.crs,pf;
+        if($('crs').value.startsWith('auto')){const gc=geoCenter(f.feats);crs=targetCrs(gc&&gc.c);}
+        pf=crs===state.crs?state.pf.filter(p=>p.file===f.base):project(f.feats,crs);
+        groups.push({name:f.base+'.dxf',crs,pf,files:[f.name]});
+      });
+    }else{
+      const nm=fixName($('out-name').value)||$('out-name').placeholder||'kml2dxf.dxf';
+      groups.push({name:/\.dxf$/i.test(nm)?nm:nm+'.dxf',crs:state.crs,pf:state.pf,files:state.files.filter(f=>!f.error).map(f=>f.name)});
+    }
+    groups.forEach((g,i)=>{
+      const r=buildDXF(g.pf,g.crs,opt);
+      setTimeout(()=>saveBlob(g.name,r.bytes,'application/dxf'),i*400);
+      log('i',`${g.name}: ${g.crs.name}; слоёв ${r.stats.layers}, точек ${r.stats.points}, полилиний ${r.stats.polylines}, подписей ${r.stats.texts}${r.stats.hatches?', заливок '+r.stats.hatches:''}; ${opt.ver}`+
+        (opt.origin?`; начало координат перенесено в (${fmt(r.origin[0],g.crs.deg?6:0)}; ${fmt(r.origin[1],g.crs.deg?6:0)})`:''));
+    });
+  }catch(e){log('e','DXF: '+e.message);}
+}
+
+/* ---------- предпросмотр ---------- */
+const pv={s:1,cx:0,cy:0,w:0,h:0,dpr:1,drag:null,moved:false};
+function pvResize(){
+  const c=$('pv'),r=c.getBoundingClientRect();if(!r.width)return;
+  pv.dpr=window.devicePixelRatio||1;pv.w=r.width;pv.h=r.height;
+  c.width=Math.round(r.width*pv.dpr);c.height=Math.round(r.height*pv.dpr);
+}
+function pvFit(){
+  pvResize();const b=bounds(state.pf);if(!b||!pv.w)return;
+  const bw=Math.max(b[2]-b[0],1e-9),bh=Math.max(b[3]-b[1],1e-9);
+  pv.s=Math.min(pv.w/bw,pv.h/bh)*0.9;
+  if(b[2]-b[0]<1e-9&&b[3]-b[1]<1e-9)pv.s=state.crs&&state.crs.deg?1e5:1;
+  pv.cx=(b[0]+b[2])/2;pv.cy=(b[1]+b[3])/2;
+}
+const scr=p=>[pv.w/2+(p[0]-pv.cx)*pv.s,pv.h/2-(p[1]-pv.cy)*pv.s];
+const css=(rgb,a)=>`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+const DEF={point:[251,191,36],line:[56,189,248],poly:[163,230,53]};
+function pvDraw(){
+  const c=$('pv'),ctx=c.getContext('2d');if(!pv.w)pvResize();
+  ctx.setTransform(pv.dpr,0,0,pv.dpr,0,0);ctx.clearRect(0,0,pv.w,pv.h);
+  if(!state.pf.length)return;
+  // сетка
+  const step=niceStep(120/pv.s);
+  ctx.strokeStyle='rgba(139,146,168,.12)';ctx.lineWidth=1;ctx.fillStyle='rgba(139,146,168,.55)';ctx.font='10px Consolas,Menlo,monospace';
+  const x0=pv.cx-pv.w/2/pv.s,x1=pv.cx+pv.w/2/pv.s,y0=pv.cy-pv.h/2/pv.s,y1=pv.cy+pv.h/2/pv.s;
+  const dg=state.crs&&state.crs.deg?Math.max(0,-Math.floor(Math.log10(step))):0;
+  ctx.beginPath();
+  for(let x=Math.ceil(x0/step)*step;x<=x1;x+=step){const s=scr([x,0])[0];ctx.moveTo(s,0);ctx.lineTo(s,pv.h);}
+  for(let y=Math.ceil(y0/step)*step;y<=y1;y+=step){const s=scr([0,y])[1];ctx.moveTo(0,s);ctx.lineTo(pv.w,s);}
+  ctx.stroke();
+  for(let x=Math.ceil(x0/step)*step;x<=x1;x+=step){ctx.fillText(x.toFixed(dg),scr([x,0])[0]+3,pv.h-4);}
+  for(let y=Math.ceil(y0/step)*step;y<=y1;y+=step){ctx.fillText(y.toFixed(dg),3,scr([0,y])[1]-3);}
+  const colors=$('colors').checked;
+  const drawF=(f,hl)=>{
+    f.pg.forEach(g=>{
+      const rgb=hl?[255,255,255]:(colors&&featColor(f,g.t))||DEF[g.t];
+      ctx.lineWidth=hl?2.5:1.3;ctx.strokeStyle=css(rgb,1);
+      if(g.t==='point'){const p=scr(g.p);ctx.fillStyle=css(rgb,1);ctx.beginPath();ctx.arc(p[0],p[1],hl?5:3,0,7);ctx.fill();}
+      else if(g.t==='line'){ctx.beginPath();g.p.forEach((q,i)=>{const p=scr(q);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});ctx.stroke();}
+      else{ctx.beginPath();g.rings.forEach(r=>{r.forEach((q,i)=>{const p=scr(q);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});ctx.closePath();});
+        const fr=(colors&&f.style&&f.style.poly)||rgb;ctx.fillStyle=css(fr,hl?.3:.14);ctx.fill('evenodd');ctx.stroke();}
+    });
+  };
+  state.pf.forEach((f,i)=>{if(i!==state.sel)drawF(f,false);});
+  if(state.pf[state.sel])drawF(state.pf[state.sel],true);
+  const lb=$('labels').value;
+  if(lb!=='none'&&state.pf.length<=3000){
+    ctx.fillStyle='rgba(232,234,240,.85)';ctx.font='11px Segoe UI,Arial,sans-serif';
+    state.pf.forEach(f=>{if(!f.name)return;f.pg.forEach(g=>{if(g.t==='point'){const p=scr(g.p);ctx.fillText(f.name,p[0]+5,p[1]-5);}else if(lb==='all'){const q=g.t==='line'?g.p[Math.floor(g.p.length/2)]:g.rings[0][0];const p=scr(q);ctx.fillText(f.name,p[0]+4,p[1]-4);}});});
+  }
+}
+function niceStep(v){const p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p;}
+function world(e){const r=$('pv').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;return [pv.cx+(x-pv.w/2)/pv.s,pv.cy-(y-pv.h/2)/pv.s,x,y];}
+function pickAt(sx,sy){
+  let best=-1,bd=8;
+  const segD=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);};
+  const P=[sx,sy];
+  state.pf.forEach((f,i)=>f.pg.forEach(g=>{
+    let d=Infinity;
+    if(g.t==='point'){const p=scr(g.p);d=Math.hypot(p[0]-sx,p[1]-sy);}
+    else{const rs=g.t==='line'?[g.p]:g.rings;rs.forEach(r=>{const s=r.map(scr);const n=g.t==='line'?s.length-1:s.length;for(let k=0;k<n;k++)d=Math.min(d,segD(P,s[k],s[(k+1)%s.length]));});}
+    if(d<bd){bd=d;best=i;}
+  }));
+  return best;
+}
+function featTitle(f){return (f.name||'(без имени)')+(f.folder.length?' — '+f.folder.join(' / '):'');}
+function initPreview(){
+  const c=$('pv');
+  c.addEventListener('wheel',e=>{if(!state.pf.length)return;e.preventDefault();const w=world(e),k=Math.exp(-e.deltaY*0.0015);pv.s*=k;pv.cx=w[0]-(w[2]-pv.w/2)/pv.s;pv.cy=w[1]+(w[3]-pv.h/2)/pv.s;pvDraw();},{passive:false});
+  c.addEventListener('mousedown',e=>{pv.drag=[e.clientX,e.clientY,pv.cx,pv.cy];pv.moved=false;c.classList.add('drag');});
+  window.addEventListener('mouseup',e=>{
+    if(pv.drag&&!pv.moved&&e.target===c&&state.pf.length){const w=world(e);state.sel=pickAt(w[2],w[3]);
+      $('pv-sel').textContent=state.sel>=0?'Выбран: '+featTitle(state.pf[state.sel]):'колесо — масштаб · перетаскивание — сдвиг · клик — выбрать объект';
+      if(state.sel>=0)$('v-obj').value=String(state.sel);pvDraw();}
+    pv.drag=null;c.classList.remove('drag');});
+  window.addEventListener('mousemove',e=>{
+    if(pv.drag){const dx=e.clientX-pv.drag[0],dy=e.clientY-pv.drag[1];if(Math.abs(dx)+Math.abs(dy)>3)pv.moved=true;pv.cx=pv.drag[2]-dx/pv.s;pv.cy=pv.drag[3]+dy/pv.s;pvDraw();}
+    if(e.target===c&&state.crs){const w=world(e),d=state.crs.deg;
+      $('pv-cur').textContent=d?`λ ${w[0].toFixed(6)}°  φ ${w[1].toFixed(6)}°`:`X ${fmt(w[1],2)}  Y ${fmt(w[0],2)}`;}
+  });
+  c.addEventListener('dblclick',()=>{pvFit();pvDraw();});
+  window.addEventListener('resize',()=>{pvResize();pvDraw();});
+}
+
+/* ---------- ведомость ---------- */
+function fillObjSelect(){
+  const s=$('v-obj'),prev=s.value;
+  const tl={point:'точка',line:'линия',poly:'полигон'};
+  let html='';
+  if(state.pf.some(f=>f.pg.some(g=>g.t==='point')))html+='<option value="pts">— все точки —</option>';
+  html+=state.pf.map((f,i)=>{const t=f.pg.map(g=>tl[g.t]).filter((v,j,a)=>a.indexOf(v)===j).join(', ');return `<option value="${i}">${esc(featTitle(f))} (${t})</option>`;}).join('');
+  s.innerHTML=html;
+  if(prev&&[...s.options].some(o=>o.value===prev))s.value=prev;
+}
+function listRows(){
+  const v=$('v-obj').value,deg=state.crs&&state.crs.deg;const rows=[];
+  if(v==='pts'){
+    state.pf.forEach(f=>f.pg.forEach(g=>{if(g.t==='point')rows.push({name:f.name||'',p:g.p});}));
+    return {mode:'pts',rows};
+  }
+  const f=state.pf[+v];if(!f)return {mode:'none',rows};
+  let len=0,area=0,nv=0;const parts=[];
+  f.pg.forEach((g,gi)=>{
+    const rs=g.t==='point'?[[g.p]]:g.t==='line'?[g.p]:g.rings;
+    rs.forEach((r,ri)=>{
+      const closed=g.t==='poly';const pts=[];
+      r.forEach((p,k)=>{const nx=closed?r[(k+1)%r.length]:r[k+1];const d=nx&&!deg?Math.hypot(nx[0]-p[0],nx[1]-p[1]):null;if(d&&!(g.t!=='poly'&&k===r.length-1))len+=d;pts.push({p,d:(g.t==='point'||(!closed&&k===r.length-1))?null:d});nv++;});
+      if(closed&&!deg){let s=0;r.forEach((p,k)=>{const q=r[(k+1)%r.length];s+=p[0]*q[1]-q[0]*p[1];});area+=(ri===0?1:-1)*Math.abs(s)/2;}
+      parts.push({title:g.t==='poly'?(ri===0?'Внешний контур':'Внутренний контур '+ri):g.t==='line'?'Линия':'Точка',pts,gi,closed});
+    });
+  });
+  return {mode:'obj',f,parts,len,area,nv,kind:f.pg.map(g=>g.t)};
+}
+function renderList(){
+  $('v-crs').value=state.crs?state.crs.name+(state.crs.epsg?' · EPSG:'+state.crs.epsg:''):'';
+  const deg=state.crs&&state.crs.deg,d=deg?8:3;
+  const L=listRows();
+  const k=(val,u,lbl)=>`<div class="kpi"><span class="v">${val}</span><span class="u">${u}</span><span class="lbl">${lbl}</span></div>`;
+  const hx=deg?'<th>Широта φ, °</th><th>Долгота λ, °</th>':'<th>X (север), м</th><th>Y (восток), м</th>';
+  const hasZ=rs=>rs.some(p=>p&&p[2]);
+  if(L.mode==='none'){$('v-kpi').innerHTML='';$('v-table').innerHTML='<div style="padding:20px;text-align:center;color:var(--text-s)">Нет данных — загрузите файл на вкладке «Конвертация».</div>';return;}
+  if(L.mode==='pts'){
+    const z=hasZ(L.rows.map(r=>r.p));
+    $('v-kpi').innerHTML=k(fmt(L.rows.length),'шт.','Точек');
+    $('v-table').innerHTML=`<table class="res-table"><thead><tr><th style="width:50px">№</th><th>Имя</th>${hx}${z?'<th>Z, м</th>':''}</tr></thead><tbody>`+
+      L.rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="num">${fmt(r.p[1],d)}</td><td class="num">${fmt(r.p[0],d)}</td>${z?`<td class="num">${fmt(r.p[2],2)}</td>`:''}</tr>`).join('')+'</tbody></table>';
+    return;
+  }
+  const z=hasZ([].concat(...L.parts.map(p=>p.pts.map(q=>q.p))));
+  const isPoly=L.kind.includes('poly'),isLine=L.kind.includes('line');
+  $('v-kpi').innerHTML=k(fmt(L.nv),'шт.','Вершин')+
+    (!deg&&(isPoly||isLine)?k(fmt(L.len,2),'м',isPoly&&!isLine?'Периметр':'Длина'):'')+
+    (!deg&&isPoly?k(fmt(L.area,1),'м²','Площадь')+k(fmt(L.area/10000,4),'га','Площадь'):'');
+  let n=0;
+  $('v-table').innerHTML=`<table class="res-table"><thead><tr><th style="width:50px">№</th>${hx}${z?'<th>Z, м</th>':''}${deg?'':'<th>Длина участка, м</th>'}</tr></thead><tbody>`+
+    L.parts.map(pt=>(L.parts.length>1?`<tr><td colspan="${4+(z?1:0)-(deg?1:0)}" style="background:var(--bg3);color:var(--text-s);font-size:11px">${pt.title}</td></tr>`:'')+
+      pt.pts.map(q=>`<tr><td>${++n}</td><td class="num">${fmt(q.p[1],d)}</td><td class="num">${fmt(q.p[0],d)}</td>${z?`<td class="num">${fmt(q.p[2],2)}</td>`:''}${deg?'':`<td class="num">${q.d==null?'':fmt(q.d,2)}</td>`}</tr>`).join('')).join('')+'</tbody></table>';
+}
+function downloadCSV(){
+  const L=listRows();if(L.mode==='none')return;
+  const deg=state.crs&&state.crs.deg,d=deg?8:3,n=v=>v==null?'':v.toFixed(d).replace('.',','),q=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
+  const H=deg?['Широта','Долгота']:['X (север)','Y (восток)'];
+  let rows=[];
+  if(L.mode==='pts'){rows.push(['№','Имя',...H,'Z'].join(';'));L.rows.forEach((r,i)=>rows.push([i+1,q(r.name),n(r.p[1]),n(r.p[0]),String(r.p[2]||0).replace('.',',')].join(';')));}
+  else{rows.push(['№','Контур',...H,'Z','Длина участка'].join(';'));let k=0;L.parts.forEach(p=>p.pts.forEach(t=>rows.push([++k,q(p.title),n(t.p[1]),n(t.p[0]),String(t.p[2]||0).replace('.',','),t.d==null?'':t.d.toFixed(3).replace('.',',')].join(';'))));}
+  const name=(L.mode==='pts'?'точки':(L.f.name||'объект')).replace(/[\\/:*?"<>|]+/g,'_');
+  saveBlob(name+'_координаты.csv','﻿'+rows.join('\r\n'),'text/csv;charset=utf-8');
+}
+function exportPDF(){
+  const L=listRows();if(L.mode==='none')return;
+  const deg=state.crs&&state.crs.deg,d=deg?8:3;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:4px 7px;font-size:9.5pt',th=td+';background:#e0f2f7';
+  const H=deg?`<th style="${th}">Широта φ, °</th><th style="${th}">Долгота λ, °</th>`:`<th style="${th}">X, м</th><th style="${th}">Y, м</th>`;
+  let body='',title,sum='';
+  if(L.mode==='pts'){
+    title='Ведомость координат точек';
+    body=`<table><thead><tr><th style="${th}">№</th><th style="${th}">Имя</th>${H}<th style="${th}">Z, м</th></tr></thead><tbody>`+
+      L.rows.map((r,i)=>`<tr><td style="${td}">${i+1}</td><td style="${td}">${esc(r.name)}</td><td style="${td};text-align:right">${fmt(r.p[1],d)}</td><td style="${td};text-align:right">${fmt(r.p[0],d)}</td><td style="${td};text-align:right">${fmt(r.p[2]||0,2)}</td></tr>`).join('')+'</tbody></table>';
+  }else{
+    title='Ведомость координат: '+esc(L.f.name||'объект');
+    let n=0;
+    body=L.parts.map(pt=>(L.parts.length>1?`<h2>${pt.title}</h2>`:'')+`<table><thead><tr><th style="${th}">№</th>${H}${deg?'':`<th style="${th}">Длина участка, м</th>`}</tr></thead><tbody>`+
+      pt.pts.map(q=>`<tr><td style="${td}">${++n}</td><td style="${td};text-align:right">${fmt(q.p[1],d)}</td><td style="${td};text-align:right">${fmt(q.p[0],d)}</td>${deg?'':`<td style="${td};text-align:right">${q.d==null?'':fmt(q.d,2)}</td>`}</tr>`).join('')+'</tbody></table>').join('');
+    if(!deg){const isPoly=L.kind.includes('poly');sum=`<p>${isPoly?'Периметр':'Длина'}: <b>${fmt(L.len,2)} м</b>${isPoly?` &nbsp; Площадь: <b>${fmt(L.area,1)} м² (${fmt(L.area/10000,4)} га)</b>`:''}</p>`;}
+  }
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>${title.toUpperCase()}</h1>
+  <p>Система координат: ${esc(state.crs.name)}${state.crs.epsg?' (EPSG:'+state.crs.epsg+')':''}. Источник: ${esc(state.files.filter(f=>!f.error).map(f=>f.name).join(', '))}</p>
+  ${sum}${body}
+  <p style="font-size:8.5pt;margin-top:8px">Координаты получены пересчётом из KML (WGS 84). ${deg?'':'Длины и площади — на плоскости проекции.'}</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+/* ---------- сохранённые МСК и настройки ---------- */
+const MSK_FIELDS=['msk-name','msk-datum','msk-ell','msk-tw','msk-lon0','msk-lat0','msk-k','msk-x0','msk-y0'];
+function mskList(){try{return JSON.parse(localStorage.getItem('kml2dxfMsk')||'[]')||[];}catch(_){return[];}}
+function mskRender(sel){
+  const l=mskList();
+  $('msk-preset').innerHTML='<option value="">— новая —</option>'+l.map((m,i)=>`<option value="${i}">${esc(m['msk-name']||'МСК '+(i+1))}</option>`).join('');
+  if(sel!=null)$('msk-preset').value=String(sel);
+}
+function mskSave(){
+  const m={};MSK_FIELDS.forEach(k=>m[k]=$(k).value);
+  if(!m['msk-name'].trim()){m['msk-name']='МСК, осевой '+m['msk-lon0'];$('msk-name').value=m['msk-name'];}
+  const l=mskList();let i=l.findIndex(x=>x['msk-name']===m['msk-name']);
+  if(i>=0)l[i]=m;else{l.push(m);i=l.length-1;}
+  try{localStorage.setItem('kml2dxfMsk',JSON.stringify(l));}catch(_){}
+  mskRender(i);log('i','МСК «'+m['msk-name']+'» сохранена');
+}
+function mskDelete(){
+  const i=$('msk-preset').value;if(i==='')return;
+  const l=mskList();const nm=l[+i]&&l[+i]['msk-name'];l.splice(+i,1);
+  try{localStorage.setItem('kml2dxfMsk',JSON.stringify(l));}catch(_){}
+  mskRender();log('i','МСК «'+nm+'» удалена');
+}
+function settingsEls(){return Array.from(document.querySelectorAll('[data-s]'));}
+function saveSettings(){
+  const s={};settingsEls().forEach(el=>s[el.id]=el.type==='checkbox'?el.checked:el.value);
+  try{localStorage.setItem('kml2dxfSettings',JSON.stringify(s));}catch(_){}
+}
+function loadSettings(){
+  let s=null;try{s=JSON.parse(localStorage.getItem('kml2dxfSettings')||'null');}catch(_){}
+  if(!s)return;
+  settingsEls().forEach(el=>{if(s[el.id]===undefined)return;if(el.type==='checkbox')el.checked=!!s[el.id];else el.value=s[el.id];});
+}
+function zonesRef(){
+  let h='';
+  for(let z=8;z<=16;z++){const lo=(z-1)*6,u=z+30;
+    h+=`<tr><td>${lo}° … ${lo+6}° в.д.</td><td class="c">${z} / ${lo+3}°</td><td class="c">${28400+z}</td><td class="c">${u}N</td><td class="c">${32600+u}</td></tr>`;}
+  $('zones-ref').innerHTML=h;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  loadSettings();mskRender();zonesRef();updBlocks();
+  settingsEls().forEach(el=>el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',()=>recompute(['crs','src-mode','src-proj','zone','prefix','crs-proj','swap'].includes(el.id)||el.id.startsWith('msk-'))));
+  $('msk-preset').addEventListener('change',()=>{const i=$('msk-preset').value;if(i==='')return;const m=mskList()[+i];if(!m)return;MSK_FIELDS.forEach(k=>{if(m[k]!==undefined)$(k).value=m[k];});recompute(true);});
+  const drop=$('drop'),inp=$('files');
+  drop.addEventListener('click',()=>inp.click());
+  inp.addEventListener('change',()=>{addFiles(Array.from(inp.files));inp.value='';});
+  ['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over');}));
+  ['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over');}));
+  drop.addEventListener('drop',e=>{const fl=Array.from(e.dataTransfer.files).filter(f=>/\.(kml|kmz)$/i.test(f.name));if(fl.length)addFiles(fl);else log('w','Нужны файлы .kml или .kmz');});
+  document.addEventListener('dragover',e=>e.preventDefault());
+  document.addEventListener('drop',e=>{if(!drop.contains(e.target)){e.preventDefault();const fl=Array.from(e.dataTransfer.files).filter(f=>/\.(kml|kmz)$/i.test(f.name));if(fl.length)addFiles(fl);}});
+  initPreview();recompute(true);
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
