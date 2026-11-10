@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Земляные работы — объёмы котлована, траншеи, баланс грунта</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#9a3412;--accent2:#7c2d12;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fb923c;font-size:22px}
+.rec-box{background:#2a1206;border:1px solid #7c2d12;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#fdba74;margin-top:12px;line-height:1.7}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.7}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">⛏ Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ПОС-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('pit')">⛏ Котлован</button>
+  <button class="tab-btn" onclick="switchTab('trench')">📏 Траншея</button>
+  <button class="tab-btn" onclick="switchTab('bal')">⚖ Баланс грунта</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== PIT ===== -->
+<div id="sec-pit" class="sec active">
+  <div class="card">
+    <div class="card-title">Котлован с откосами (прямоугольный)</div>
+    <div class="grid4">
+      <div class="fld"><label>Размер по дну a, м</label><input id="pit-a" type="number" step="0.1" value="10" oninput="calcPit()"></div>
+      <div class="fld"><label>Размер по дну b, м</label><input id="pit-b" type="number" step="0.1" value="8" oninput="calcPit()"></div>
+      <div class="fld"><label>Глубина H, м</label><input id="pit-H" type="number" step="0.1" value="3" oninput="calcPit()"></div>
+      <div class="fld"><label>Грунт (заложение откоса m)</label>
+        <select id="pit-soil" onchange="onSoil('pit')">
+          <option value="0.5" selected>Суглинок — 1:0,5</option>
+          <option value="1">Песок / насыпной — 1:1</option>
+          <option value="0.67">Супесь — 1:0,67</option>
+          <option value="0.25">Глина — 1:0,25</option>
+          <option value="0">Без откосов (крепление) — 1:0</option>
+          <option value="custom">вручную…</option>
+        </select></div>
+      <div class="fld"><label>Заложение откоса m (вручную)</label><input id="pit-m" type="number" step="0.05" value="0.5" oninput="calcPit()"></div>
+      <div class="fld"><label>Недобор / зачистка дна, м</label><input id="pit-under" type="number" step="0.05" value="0" oninput="calcPit()"></div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:14px">
+      <div id="pit-svg"></div>
+      <div style="flex:1;min-width:260px">
+        <div class="kpi-row" id="pit-kpi"></div>
+      </div>
+    </div>
+    <div class="formula" id="pit-formula"></div>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="pitToBal()">→ В баланс грунта</button>
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">V = H/6·[(2a+a₁)·b + (2a₁+a)·b₁], где a₁=a+2mH, b₁=b+2mH — размеры по верху. Заложение откоса m — по виду грунта и глубине (СНиП 12-04, техника безопасности).</div>
+  </div>
+</div>
+
+<!-- ===== TRENCH ===== -->
+<div id="sec-trench" class="sec">
+  <div class="card">
+    <div class="card-title">Траншея (трапецеидальное сечение)</div>
+    <div class="grid4">
+      <div class="fld"><label>Ширина по дну b, м</label><input id="tr-b" type="number" step="0.1" value="1.2" oninput="calcTrench()"></div>
+      <div class="fld"><label>Глубина H, м</label><input id="tr-H" type="number" step="0.1" value="2" oninput="calcTrench()"></div>
+      <div class="fld"><label>Заложение откоса m</label><input id="tr-m" type="number" step="0.05" value="0.5" oninput="calcTrench()"></div>
+      <div class="fld"><label>Длина траншеи L, м</label><input id="tr-L" type="number" step="1" value="50" oninput="calcTrench()"></div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:14px">
+      <div id="tr-svg"></div>
+      <div style="flex:1;min-width:260px"><div class="kpi-row" id="tr-kpi"></div></div>
+    </div>
+    <div class="formula" id="tr-formula"></div>
+    <div class="note">Площадь сечения F = (b + m·H)·H; объём V = F·L. Ширина по верху b + 2mH.</div>
+  </div>
+</div>
+
+<!-- ===== BALANCE ===== -->
+<div id="sec-bal" class="sec">
+  <div class="card">
+    <div class="card-title">Баланс грунта и объём вывоза</div>
+    <div class="grid4">
+      <div class="fld"><label>Объём выемки (котлован/траншея) V<sub>вых</sub>, м³</label><input id="b-vout" type="number" step="1" value="330" oninput="calcBal()"></div>
+      <div class="fld"><label>Объём подземной части (не засыпается) V<sub>соор</sub>, м³</label><input id="b-vunder" type="number" step="1" value="180" oninput="calcBal()"></div>
+      <div class="fld"><label>Грунт для обр. засыпки использ., %</label><input id="b-reuse" type="number" step="5" value="100" oninput="calcBal()"></div>
+      <div class="fld"><label>K<sub>р</sub> — первонач. разрыхление</label>
+        <select id="b-kr" onchange="onKr()">
+          <option value="1.12">Песок — 1,12</option>
+          <option value="1.27" selected>Суглинок — 1,27</option>
+          <option value="1.28">Глина — 1,28</option>
+          <option value="1.10">Растительный — 1,20</option>
+          <option value="custom">вручную…</option>
+        </select></div>
+      <div class="fld"><label>K<sub>р</sub> вручную</label><input id="b-krv" type="number" step="0.01" value="1.27" oninput="calcBal()"></div>
+      <div class="fld"><label>Ёмкость самосвала, м³</label><input id="b-truck" type="number" step="1" value="12" oninput="calcBal()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="b-kpi"></div>
+    <div class="formula" id="b-formula"></div>
+    <div class="rec-box" id="b-rec"></div>
+    <div class="note">
+      Обратная засыпка (плотное тело) = V<sub>вых</sub> − V<sub>соор</sub>. Излишек грунта на вывоз = V<sub>вых</sub> − засыпка; для транспорта пересчитывается через коэффициент
+      первоначального разрыхления K<sub>р</sub> (разрыхлённое тело). Число рейсов = V<sub>вывоза, разрыхл.</sub> / ёмкость самосвала.
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Наибольшая крутизна откосов (заложение m = 1:m)</div>
+    <table class="ref-table"><thead><tr><th>Грунт</th><th>Глубина ≤1,5 м</th><th>1,5–3 м</th><th>3–5 м</th></tr></thead>
+      <tbody>
+        <tr><td>Насыпной неслежавшийся</td><td class="c">1:0,67</td><td class="c">1:1</td><td class="c">1:1,25</td></tr>
+        <tr><td>Песчаный</td><td class="c">1:0,5</td><td class="c">1:1</td><td class="c">1:1</td></tr>
+        <tr><td>Супесь</td><td class="c">1:0,25</td><td class="c">1:0,67</td><td class="c">1:0,85</td></tr>
+        <tr><td>Суглинок</td><td class="c">1:0</td><td class="c">1:0,5</td><td class="c">1:0,75</td></tr>
+        <tr><td>Глина</td><td class="c">1:0</td><td class="c">1:0,25</td><td class="c">1:0,5</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">По СНиП 12-04 (безопасность труда, земляные работы). Для глубоких выработок — крепление или расчёт устойчивости.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Коэффициенты разрыхления грунта K<sub>р</sub></div>
+    <table class="ref-table"><thead><tr><th>Грунт</th><th>Первоначальное K<sub>р</sub></th><th>Остаточное K<sub>о.р.</sub></th></tr></thead>
+      <tbody>
+        <tr><td>Песок</td><td class="c">1,10–1,15</td><td class="c">1,02–1,05</td></tr>
+        <tr><td>Супесь</td><td class="c">1,12–1,17</td><td class="c">1,03–1,05</td></tr>
+        <tr><td>Суглинок</td><td class="c">1,18–1,28</td><td class="c">1,03–1,06</td></tr>
+        <tr><td>Глина</td><td class="c">1,24–1,30</td><td class="c">1,04–1,07</td></tr>
+        <tr><td>Скальный (разрыхлённый)</td><td class="c">1,45–1,50</td><td class="c">1,20–1,30</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">По ГЭСН/ЕНиР. Первоначальное — для транспортировки; остаточное — для расчёта уплотнённой засыпки.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+/* ===== PIT ===== */
+function onSoil(p){const v=$(p+'-soil').value;if(v!=='custom')$(p+'-m').value=v;calcPit();}
+function calcPit(){
+  const a=parseFloat($('pit-a').value)||0,b=parseFloat($('pit-b').value)||0,H=parseFloat($('pit-H').value)||0,m=parseFloat($('pit-m').value)||0;
+  const under=parseFloat($('pit-under').value)||0;
+  const a1=a+2*m*H,b1=b+2*m*H;
+  const V=H/6*((2*a+a1)*b+(2*a1+a)*b1);
+  const Vunder=under>0?a*b*under:0; // зачистка вручную
+  $('pit-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(V,1)}</span><span class="u">м³</span><span class="lbl">Объём котлована</span></div>
+    <div class="kpi"><span class="v">${fmt(a1,1)}×${fmt(b1,1)}</span><span class="u">м</span><span class="lbl">Размер по верху</span></div>
+    <div class="kpi"><span class="v">${fmt(a*b,1)}</span><span class="u">м²</span><span class="lbl">Площадь дна</span></div>
+    <div class="kpi"><span class="v">${fmt(a1*b1,1)}</span><span class="u">м²</span><span class="lbl">Площадь верха</span></div>`;
+  $('pit-formula').innerHTML=`a₁=${fmt(a1,1)}, b₁=${fmt(b1,1)}; V = ${fmt(H,1)}/6·[(2·${fmt(a,1)}+${fmt(a1,1)})·${fmt(b,1)} + (2·${fmt(a1,1)}+${fmt(a,1)})·${fmt(b1,1)}] = <b>${fmt(V,1)} м³</b>`;
+  drawPitSVG(a,b,H,m,a1,b1);
+  window._pit={V,a1,b1};
+}
+function drawPitSVG(a,b,H,m,a1,b1){
+  const W=240,Hs=120,pad=24;
+  const sc=Math.min((W-2*pad)/a1,(Hs-2*pad)/H);
+  const topW=a1*sc,botW=a*sc,hh=H*sc;
+  const cx=W/2, topY=pad, botY=pad+hh;
+  const svg=`<svg width="${W}" height="${Hs}" viewBox="0 0 ${W} ${Hs}">
+    <polygon points="${cx-topW/2},${topY} ${cx+topW/2},${topY} ${cx+botW/2},${botY} ${cx-botW/2},${botY}"
+      fill="#7c2d1233" stroke="#fb923c" stroke-width="1.5"/>
+    <line x1="0" y1="${topY}" x2="${W}" y2="${topY}" stroke="#4a3a00" stroke-dasharray="3 3"/>
+    <text x="${cx}" y="${topY-6}" fill="#8b92a8" font-size="10" text-anchor="middle">${fmt(a1,1)} м</text>
+    <text x="${cx}" y="${botY+13}" fill="#8b92a8" font-size="10" text-anchor="middle">дно ${fmt(a,1)} м</text>
+    <text x="${cx+topW/2-4}" y="${(topY+botY)/2}" fill="#fdba74" font-size="9">H=${fmt(H,1)}</text>
+  </svg>`;
+  $('pit-svg').innerHTML=svg;
+}
+function pitToBal(){$('b-vout').value=Math.round((window._pit||{}).V||0);switchTab('bal');calcBal();}
+
+/* ===== TRENCH ===== */
+function calcTrench(){
+  const b=parseFloat($('tr-b').value)||0,H=parseFloat($('tr-H').value)||0,m=parseFloat($('tr-m').value)||0,L=parseFloat($('tr-L').value)||0;
+  const F=(b+m*H)*H, V=F*L, btop=b+2*m*H;
+  $('tr-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(V,1)}</span><span class="u">м³</span><span class="lbl">Объём траншеи</span></div>
+    <div class="kpi"><span class="v">${fmt(F,2)}</span><span class="u">м²</span><span class="lbl">Площадь сечения</span></div>
+    <div class="kpi"><span class="v">${fmt(btop,2)}</span><span class="u">м</span><span class="lbl">Ширина по верху</span></div>`;
+  $('tr-formula').innerHTML=`F = (b + m·H)·H = (${fmt(b,1)} + ${fmt(m,2)}·${fmt(H,1)})·${fmt(H,1)} = ${fmt(F,2)} м²; V = F·L = <b>${fmt(V,1)} м³</b>`;
+  // svg cross-section
+  const W=240,Hs=120,pad=22;const sc=Math.min((W-2*pad)/btop,(Hs-2*pad)/H);
+  const topW=btop*sc,botW=b*sc,hh=H*sc,cx=W/2,topY=pad,botY=pad+hh;
+  $('tr-svg').innerHTML=`<svg width="${W}" height="${Hs}" viewBox="0 0 ${W} ${Hs}">
+    <polygon points="${cx-topW/2},${topY} ${cx+topW/2},${topY} ${cx+botW/2},${botY} ${cx-botW/2},${botY}" fill="#7c2d1233" stroke="#fb923c" stroke-width="1.5"/>
+    <text x="${cx}" y="${topY-6}" fill="#8b92a8" font-size="10" text-anchor="middle">${fmt(btop,2)} м</text>
+    <text x="${cx}" y="${botY+13}" fill="#8b92a8" font-size="10" text-anchor="middle">дно ${fmt(b,1)} м</text></svg>`;
+  window._tr={V,F};
+}
+
+/* ===== BALANCE ===== */
+function onKr(){const v=$('b-kr').value;if(v!=='custom')$('b-krv').value=v;calcBal();}
+function calcBal(){
+  const Vout=parseFloat($('b-vout').value)||0,Vunder=parseFloat($('b-vunder').value)||0,reuse=parseFloat($('b-reuse').value)||100;
+  const Kr=parseFloat($('b-krv').value)||1.27,truck=parseFloat($('b-truck').value)||12;
+  const Vfill=Math.max(Vout-Vunder,0)*(reuse/100); // засыпка плотное тело
+  const Vexcess=Math.max(Vout-Vfill,0); // на вывоз плотное
+  const Vtrans=Vexcess*Kr; // разрыхлённое
+  const trucks=truck>0?Math.ceil(Vtrans/truck):0;
+  $('b-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(Vfill,1)}</span><span class="u">м³</span><span class="lbl">Обр. засыпка (плотн.)</span></div>
+    <div class="kpi big"><span class="v">${fmt(Vexcess,1)}</span><span class="u">м³</span><span class="lbl">Вывоз (плотн. тело)</span></div>
+    <div class="kpi"><span class="v">${fmt(Vtrans,1)}</span><span class="u">м³</span><span class="lbl">Вывоз (разрыхл.)</span></div>
+    <div class="kpi"><span class="v">${trucks}</span><span class="u">рейсов</span><span class="lbl">Самосвалов ${fmt(truck,0)} м³</span></div>`;
+  $('b-formula').innerHTML=`Засыпка = (V<sub>вых</sub> − V<sub>соор</sub>)·${fmt(reuse/100,2)} = ${fmt(Vfill,1)} м³; вывоз = ${fmt(Vexcess,1)} м³ (плотн.) × K<sub>р</sub>(${Kr}) = <b>${fmt(Vtrans,1)} м³</b>`;
+  $('b-rec').className='rec-box';
+  $('b-rec').innerHTML=`Обратная засыпка — ${fmt(Vfill,1)} м³ (в плотном теле). На вывоз — ${fmt(Vexcess,1)} м³ грунта, что в разрыхлённом состоянии составит <b>${fmt(Vtrans,1)} м³</b> ≈ <b>${trucks} рейсов</b> самосвала ${fmt(truck,0)} м³.`;
+  window._bal={Vfill,Vexcess,Vtrans,trucks};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['pit','trench','bal','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,
+    pit:{a:$('pit-a').value,b:$('pit-b').value,H:$('pit-H').value,soil:$('pit-soil').value,m:$('pit-m').value,under:$('pit-under').value},
+    tr:{b:$('tr-b').value,H:$('tr-H').value,m:$('tr-m').value,L:$('tr-L').value},
+    bal:{vout:$('b-vout').value,vunder:$('b-vunder').value,reuse:$('b-reuse').value,kr:$('b-kr').value,krv:$('b-krv').value,truck:$('b-truck').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const set=(pfx,obj,map)=>{if(!obj)return;Object.keys(obj).forEach(k=>{const id=pfx+(map&&map[k]?map[k]:k);if($(id)&&obj[k]!=null)$(id).value=obj[k];});};
+  set('pit-',d.pit);set('tr-',d.tr);set('b-',d.bal);
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcPit();calcTrench();calcBal();}
+function saveLS(){localStorage.setItem('earthCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('earthCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#7c2d12;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcPit();calcTrench();calcBal();
+  const pit=window._pit||{},tr=window._tr||{},bal=window._bal||{};
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Земляные работы</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#9a3412;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>ВЕДОМОСТЬ ОБЪЁМОВ ЗЕМЛЯНЫХ РАБОТ</h1>
+  <table><tbody>
+  <tr class="tot"><td style="${td}">Показатель</td><td style="${td};text-align:right">Значение</td></tr>
+  <tr><td style="${td}">Объём котлована (${esc($('pit-a').value)}×${esc($('pit-b').value)}×${esc($('pit-H').value)}, откос 1:${esc($('pit-m').value)})</td><td style="${td};text-align:right">${fmt(pit.V,1)} м³</td></tr>
+  <tr><td style="${td}">Объём траншеи (b=${esc($('tr-b').value)}, H=${esc($('tr-H').value)}, L=${esc($('tr-L').value)})</td><td style="${td};text-align:right">${fmt(tr.V,1)} м³</td></tr>
+  <tr><td style="${td}">Обратная засыпка (плотное тело)</td><td style="${td};text-align:right">${fmt(bal.Vfill,1)} м³</td></tr>
+  <tr><td style="${td}">Вывоз излишка грунта (плотное тело)</td><td style="${td};text-align:right">${fmt(bal.Vexcess,1)} м³</td></tr>
+  <tr><td style="${td}">То же в разрыхлённом состоянии (K<sub>р</sub>=${esc($('b-krv').value)})</td><td style="${td};text-align:right">${fmt(bal.Vtrans,1)} м³</td></tr>
+  <tr><td style="${td}">Число рейсов самосвала (${esc($('b-truck').value)} м³)</td><td style="${td};text-align:right">${bal.trucks}</td></tr>
+  </tbody></table>
+  <p style="font-size:8.5pt;margin-top:8px">Формула котлована: V=H/6·[(2a+a₁)b+(2a₁+a)b₁]. Заложение откосов — СНиП 12-04; коэф. разрыхления — ГЭСН/ЕНиР.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('earthCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{calcPit();calcTrench();calcBal();}
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
