@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Генплан — ТЭП участка, баланс территории, парковки</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#65a30d;--accent2:#4d7c0f;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-add{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:12.5px;margin-top:10px;font-weight:600}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#a3e635;font-size:22px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{background:var(--bg3);color:var(--text-s);padding:7px 8px;text-align:left;border:1px solid var(--border);font-size:11px;font-weight:600}
+.res-table td{padding:4px 7px;border:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+.res-table tr.total td{background:var(--accent);color:#fff;font-weight:700}
+.ap-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+.ap-inp.num{text-align:right;font-variant-numeric:tabular-nums}
+.rec-box{background:#1a2606;border:1px solid #4d7c0f;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#bef264;margin-top:12px;line-height:1.7}
+.rec-box.warn{background:#2a1500;border-color:#b45309;color:#fcd34d}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.btn-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.bars{display:flex;height:26px;border-radius:6px;overflow:hidden;margin-top:8px;border:1px solid var(--border)}
+.bars .seg{display:flex;align-items:center;justify-content:center;font-size:10px;color:#0f1117;font-weight:700;overflow:hidden;white-space:nowrap}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">🗺 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ГП-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('bal')">🌳 Баланс территории</button>
+  <button class="tab-btn" onclick="switchTab('tep')">📐 ТЭП участка</button>
+  <button class="tab-btn" onclick="switchTab('park')">🅿 Парковки</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== BALANCE ===== -->
+<div id="sec-bal" class="sec active">
+  <div class="card">
+    <div class="card-title">Площадь участка</div>
+    <div class="grid4">
+      <div class="fld"><label>Площадь участка S<sub>уч</sub>, м²</label><input id="b-plot" type="number" step="1" value="10000" oninput="calcBal()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Баланс использования территории</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr><th>Элемент территории</th><th style="width:140px">Площадь, м²</th><th style="width:100px">% от участка</th><th style="width:28px"></th></tr></thead>
+        <tbody id="bal-rows"></tbody>
+        <tfoot><tr class="total"><td>ИТОГО распределено</td><td id="bal-sum" style="text-align:right"></td><td id="bal-pct" style="text-align:right"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addBal()">＋ Добавить элемент</button>
+    <div class="bars" id="bal-bars"></div>
+    <div class="rec-box" id="bal-rec" style="margin-top:12px"></div>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">Сумма всех элементов должна быть равна площади участка. Озеленение нормируется (для жилой застройки — обычно не менее 15–25 %, уточняйте по СН РК / местным нормам).</div>
+  </div>
+</div>
+
+<!-- ===== TEP ===== -->
+<div id="sec-tep" class="sec">
+  <div class="card">
+    <div class="card-title">Технико-экономические показатели участка</div>
+    <div class="grid4">
+      <div class="fld"><label>Площадь участка, м²</label><input id="t-plot" type="number" step="1" value="10000" oninput="calcTep()"></div>
+      <div class="fld"><label>Площадь застройки S<sub>застр</sub>, м²</label><input id="t-build" type="number" step="1" value="2200" oninput="calcTep()"></div>
+      <div class="fld"><label>Суммарная поэтажная площадь, м²</label><input id="t-floors" type="number" step="1" value="8800" oninput="calcTep()"></div>
+      <div class="fld"><label>Общая площадь здания, м²</label><input id="t-total" type="number" step="1" value="8000" oninput="calcTep()"></div>
+      <div class="fld"><label>Площадь озеленения, м²</label><input id="t-green" type="number" step="1" value="2500" oninput="calcTep()"></div>
+      <div class="fld"><label>Этажность (макс.)</label><input id="t-floornum" type="number" step="1" value="4" oninput="calcTep()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="t-kpi"></div>
+    <div class="rec-box" id="t-rec"></div>
+    <div class="note">
+      Коэф. застройки К<sub>з</sub> = S<sub>застр</sub>/S<sub>уч</sub>; коэф. плотности застройки К<sub>пл</sub> = Σ<sub>поэт</sub>/S<sub>уч</sub>;
+      процент озеленения = S<sub>озел</sub>/S<sub>уч</sub>·100. Нормируемые значения — по СН РК 3.01-01 (градостроительство) / местным ПЗЗ.
+    </div>
+  </div>
+</div>
+
+<!-- ===== PARKING ===== -->
+<div id="sec-park" class="sec">
+  <div class="card">
+    <div class="card-title">Расчёт машино-мест</div>
+    <div style="overflow-x:auto">
+      <table class="res-table">
+        <thead><tr>
+          <th>Объект / назначение</th>
+          <th style="width:120px">Расч. единица</th>
+          <th style="width:100px">Кол-во</th>
+          <th style="width:140px">Норма (м/м на единицу)</th>
+          <th style="width:90px">М/мест</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="park-rows"></tbody>
+        <tfoot><tr class="total"><td colspan="4">ИТОГО машино-мест (расчётно)</td><td id="park-sum" style="text-align:right"></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addPark()">＋ Добавить позицию</button>
+    <div class="grid4" style="margin-top:14px">
+      <div class="fld"><label>Доля мест для МГН, %</label><input id="p-mgn" type="number" step="1" value="10" oninput="calcPark()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:14px" id="park-kpi"></div>
+    <div class="rec-box" id="park-rec"></div>
+    <div class="btn-row"><button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button></div>
+    <div class="note">
+      Нормы м/мест зависят от назначения (жилое — на 1000 м² площади квартир или на квартиру; общественное — на работников/посетителей/площадь).
+      Не менее 10 % мест (но не менее 1) выделяется для МГН, из них часть — уширенные. Уточняйте по СН РК 3.01-01 / местным нормам.
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Ориентировочные нормы машино-мест</div>
+    <table class="ref-table"><thead><tr><th>Объект</th><th>Расчётная единица</th><th>Норма (м/м)</th></tr></thead>
+      <tbody>
+        <tr><td>Жилые дома</td><td>на 1000 м² общей пл. квартир</td><td class="c">10–20</td></tr>
+        <tr><td>Административные, офисы</td><td>на 1 работника</td><td class="c">0,2–0,4</td></tr>
+        <tr><td>Торговые центры</td><td>на 100 м² торг. площади</td><td class="c">3–7</td></tr>
+        <tr><td>Гостиницы</td><td>на 10 мест</td><td class="c">3–5</td></tr>
+        <tr><td>Рестораны, кафе</td><td>на 100 посадочных мест</td><td class="c">10–15</td></tr>
+        <tr><td>Поликлиники</td><td>на 100 посещений/смену</td><td class="c">2–3</td></tr>
+        <tr><td>Спортивные сооружения</td><td>на 100 мест зрителей</td><td class="c">3–5</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Значения ориентировочные. Точные нормы — по СН РК 3.01-01 и правилам землепользования и застройки (ПЗЗ) конкретного города.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Показатели застройки (ориентировочно)</div>
+    <table class="ref-table"><thead><tr><th>Показатель</th><th>Типовые значения</th></tr></thead>
+      <tbody>
+        <tr><td>Коэф. застройки К<sub>з</sub></td><td class="c">0,2–0,6</td></tr>
+        <tr><td>Коэф. плотности застройки К<sub>пл</sub></td><td class="c">0,4–3,0</td></tr>
+        <tr><td>Озеленение (жилая застройка)</td><td class="c">≥ 15–25 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=0)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+let balRows=[], parkRows=[];
+const COLORS=['#65a30d','#0891b2','#ca8a04','#dc2626','#7c3aed','#0d9488','#db2777','#2563eb'];
+
+/* ===== BALANCE ===== */
+function addBal(){balRows.push({name:'',S:0});renderBal();}
+function delBal(i){balRows.splice(i,1);renderBal();}
+function updBal(i,f,v){balRows[i][f]=(f==='name')?v:(parseFloat(v)||0);renderBal();}
+function renderBal(){
+  const plot=parseFloat($('b-plot').value)||1;
+  const tb=$('bal-rows');
+  if(!balRows.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-s)">Нет элементов. Нажмите «＋ Добавить элемент».</td></tr>';}
+  else tb.innerHTML=balRows.map((r,i)=>`<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updBal(${i},'name',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="1" value="${r.S}" oninput="updBal(${i},'S',this.value)"></td>
+      <td class="num">${fmt(r.S/plot*100,1)}%</td>
+      <td><button class="btn-del" onclick="delBal(${i})">×</button></td>
+    </tr>`).join('');
+  calcBal();
+}
+function calcBal(){
+  const plot=parseFloat($('b-plot').value)||1;
+  const sum=balRows.reduce((a,r)=>a+r.S,0);
+  $('bal-sum').textContent=fmt(sum);
+  $('bal-pct').textContent=fmt(sum/plot*100,1)+'%';
+  $('bal-bars').innerHTML=balRows.filter(r=>r.S>0).map((r,i)=>{const w=r.S/plot*100;return `<div class="seg" style="width:${w}%;background:${COLORS[i%COLORS.length]}" title="${esc(r.name)}">${w>7?fmt(w,0)+'%':''}</div>`;}).join('');
+  const diff=plot-sum;
+  const green=balRows.find(r=>/озелен|газон|зелен/i.test(r.name));
+  const greenPct=green?green.S/plot*100:0;
+  const ok=Math.abs(diff)<0.5;
+  $('bal-rec').className='rec-box'+(ok?'':' warn');
+  $('bal-rec').innerHTML=(ok?'✓ Баланс сходится с площадью участка.':`⚠ Расхождение баланса: ${fmt(diff)} м² ${diff>0?'не распределено':'превышение'}.`)+
+    (green?` Озеленение — ${fmt(greenPct,1)}%${greenPct<15?' (ниже рекомендуемых 15%)':''}.`:'');
+}
+
+/* ===== TEP ===== */
+function calcTep(){
+  const plot=parseFloat($('t-plot').value)||1, build=parseFloat($('t-build').value)||0, floors=parseFloat($('t-floors').value)||0;
+  const total=parseFloat($('t-total').value)||0, green=parseFloat($('t-green').value)||0, fn=parseFloat($('t-floornum').value)||1;
+  const Kz=build/plot, Kpl=floors/plot, greenPct=green/plot*100;
+  $('t-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(Kz,3)}</span><span class="u">S₃/Sуч</span><span class="lbl">Коэф. застройки</span></div>
+    <div class="kpi"><span class="v">${fmt(Kz*100,1)}</span><span class="u">%</span><span class="lbl">Процент застройки</span></div>
+    <div class="kpi"><span class="v">${fmt(Kpl,2)}</span><span class="u">м²/м²</span><span class="lbl">Плотность застройки</span></div>
+    <div class="kpi"><span class="v">${fmt(greenPct,1)}</span><span class="u">%</span><span class="lbl">Озеленение</span></div>
+    <div class="kpi"><span class="v">${fmt(fn,0)}</span><span class="u">эт.</span><span class="lbl">Этажность</span></div>`;
+  let warn=[];
+  if(greenPct<15)warn.push('озеленение ниже 15%');
+  if(Kz>0.6)warn.push('коэф. застройки выше типового 0,6');
+  $('t-rec').className='rec-box'+(warn.length?' warn':'');
+  $('t-rec').innerHTML=warn.length?('⚠ Обратите внимание: '+warn.join(', ')+'.'):'✓ Показатели в типовых пределах.';
+  window._tep={Kz,Kpl,greenPct,plot,build,floors,total,green,fn};
+}
+
+/* ===== PARKING ===== */
+function addPark(){parkRows.push({name:'',unit:'ед.',qty:0,norm:0});renderPark();}
+function delPark(i){parkRows.splice(i,1);renderPark();}
+function updPark(i,f,v){parkRows[i][f]=(f==='name'||f==='unit')?v:(parseFloat(v)||0);renderPark();}
+function renderPark(){
+  const tb=$('park-rows');
+  if(!parkRows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-s)">Нет позиций. Нажмите «＋ Добавить позицию».</td></tr>';}
+  else tb.innerHTML=parkRows.map((r,i)=>{
+    const mm=r.qty*r.norm;
+    return `<tr>
+      <td><input class="ap-inp" value="${esc(r.name)}" oninput="updPark(${i},'name',this.value)"></td>
+      <td><input class="ap-inp" value="${esc(r.unit)}" oninput="updPark(${i},'unit',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="1" value="${r.qty}" oninput="updPark(${i},'qty',this.value)"></td>
+      <td><input class="ap-inp num" type="number" step="0.01" value="${r.norm}" oninput="updPark(${i},'norm',this.value)"></td>
+      <td class="num">${fmt(mm,1)}</td>
+      <td><button class="btn-del" onclick="delPark(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+  calcPark();
+}
+function calcPark(){
+  const sum=parkRows.reduce((a,r)=>a+r.qty*r.norm,0);
+  const total=Math.ceil(sum);
+  $('park-sum').textContent=fmt(sum,1);
+  const mgnPct=parseFloat($('p-mgn').value)||10;
+  const mgn=Math.max(Math.ceil(total*mgnPct/100),total>0?1:0);
+  $('park-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${total}</span><span class="u">м/м</span><span class="lbl">Всего машино-мест</span></div>
+    <div class="kpi"><span class="v">${mgn}</span><span class="u">м/м</span><span class="lbl">Для МГН (${fmt(mgnPct,0)}%)</span></div>
+    <div class="kpi"><span class="v">${total-mgn}</span><span class="u">м/м</span><span class="lbl">Обычные</span></div>`;
+  $('park-rec').className='rec-box';
+  $('park-rec').innerHTML=`Требуется <b>${total} машино-мест</b>, из них не менее <b>${mgn}</b> — для маломобильных групп населения (МГН). `+
+    `Из мест для МГН часть должна быть уширенной (для инвалидов на кресле-коляске).`;
+  window._park={total,mgn,mgnPct};
+}
+
+/* utils */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function switchTab(t){const ids=['bal','tep','park','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function collect(){const o={};['org','obj','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,plot:$('b-plot').value,bal:balRows,
+    tep:{plot:$('t-plot').value,build:$('t-build').value,floors:$('t-floors').value,total:$('t-total').value,green:$('t-green').value,fn:$('t-floornum').value},
+    park:parkRows,mgn:$('p-mgn').value,logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  if(d.plot!=null)$('b-plot').value=d.plot;
+  if(Array.isArray(d.bal))balRows=d.bal;
+  const t=d.tep||{};if(t.plot!=null)$('t-plot').value=t.plot;if(t.build!=null)$('t-build').value=t.build;if(t.floors!=null)$('t-floors').value=t.floors;if(t.total!=null)$('t-total').value=t.total;if(t.green!=null)$('t-green').value=t.green;if(t.fn!=null)$('t-floornum').value=t.fn;
+  if(Array.isArray(d.park))parkRows=d.park;if(d.mgn!=null)$('p-mgn').value=d.mgn;
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  renderBal();calcTep();renderPark();}
+function saveLS(){localStorage.setItem('genplanCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('genplanCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#4d7c0f;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcBal();calcTep();calcPark();
+  const tep=window._tep||{},park=window._park||{};
+  const plot=parseFloat($('b-plot').value)||1;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  let balR=balRows.map(r=>`<tr><td style="${td}">${esc(r.name)}</td><td style="${td};text-align:right">${fmt(r.S)}</td><td style="${td};text-align:right">${fmt(r.S/plot*100,1)}%</td></tr>`).join('');
+  let parkR=parkRows.map(r=>`<tr><td style="${td}">${esc(r.name)}</td><td style="${td}">${esc(r.unit)}</td><td style="${td};text-align:right">${fmt(r.qty)}</td><td style="${td};text-align:right">${fmt(r.norm,2)}</td><td style="${td};text-align:right">${fmt(r.qty*r.norm,1)}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Генплан — ТЭП</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}h2{font-size:11pt;margin:12px 0 5px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}.tot td{background:#65a30d;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>ГЕНЕРАЛЬНЫЙ ПЛАН — ТЭП И БАЛАНС ТЕРРИТОРИИ</h1>
+  <h2>1. Технико-экономические показатели</h2>
+  <table><tbody>
+  <tr><td style="${td}">Площадь участка</td><td style="${td};text-align:right">${fmt(tep.plot)} м²</td></tr>
+  <tr><td style="${td}">Площадь застройки</td><td style="${td};text-align:right">${fmt(tep.build)} м²</td></tr>
+  <tr><td style="${td}">Коэффициент застройки Кз</td><td style="${td};text-align:right">${fmt(tep.Kz,3)} (${fmt(tep.Kz*100,1)}%)</td></tr>
+  <tr><td style="${td}">Коэффициент плотности застройки Кпл</td><td style="${td};text-align:right">${fmt(tep.Kpl,2)}</td></tr>
+  <tr><td style="${td}">Озеленение</td><td style="${td};text-align:right">${fmt(tep.green)} м² (${fmt(tep.greenPct,1)}%)</td></tr>
+  <tr><td style="${td}">Этажность</td><td style="${td};text-align:right">${fmt(tep.fn)}</td></tr>
+  </tbody></table>
+  <h2>2. Баланс территории</h2>
+  <table><thead><tr><th style="${td};background:#eaf5d8">Элемент</th><th style="${td};background:#eaf5d8">Площадь, м²</th><th style="${td};background:#eaf5d8">%</th></tr></thead>
+  <tbody>${balR}<tr class="tot"><td style="${td}">ИТОГО</td><td style="${td};text-align:right">${fmt(balRows.reduce((a,r)=>a+r.S,0))}</td><td style="${td};text-align:right">${fmt(balRows.reduce((a,r)=>a+r.S,0)/plot*100,1)}%</td></tr></tbody></table>
+  <h2>3. Машино-места</h2>
+  <table><thead><tr><th style="${td};background:#eaf5d8">Объект</th><th style="${td};background:#eaf5d8">Ед.</th><th style="${td};background:#eaf5d8">Кол-во</th><th style="${td};background:#eaf5d8">Норма</th><th style="${td};background:#eaf5d8">М/м</th></tr></thead>
+  <tbody>${parkR}<tr class="tot"><td colspan="4" style="${td}">ИТОГО (в т.ч. для МГН — ${park.mgn})</td><td style="${td};text-align:right">${park.total}</td></tr></tbody></table>
+  <p style="font-size:8.5pt;margin-top:8px">Основание: СН РК 3.01-01 «Градостроительство. Планировка и застройка», ПЗЗ.</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  const saved=localStorage.getItem('genplanCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{
+    balRows=[
+      {name:'Застройка (здания)',S:2200},
+      {name:'Проезды и площадки',S:2600},
+      {name:'Озеленение',S:3800},
+      {name:'Спортивные / игровые площадки',S:600},
+      {name:'Прочее (отмостки, МАФ)',S:800}
+    ];
+    parkRows=[
+      {name:'Жилой дом',unit:'на 1000 м² кв.',qty:8,norm:15},
+      {name:'Встроенные помещения',unit:'на 100 м²',qty:5,norm:3}
+    ];
+    renderBal();calcTep();renderPark();
+  }
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
