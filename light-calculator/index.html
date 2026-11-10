@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Расчёт электроосвещения — светотехника</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+  --border:#2e3348;--accent:#ca8a04;--accent2:#a16207;
+  --text:#e8eaf0;--text-s:#8b92a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.hdr-logo{cursor:pointer;border:2px dashed var(--border);border-radius:6px;padding:6px 10px;color:var(--text-s);font-size:11px;white-space:nowrap;min-width:76px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{max-height:44px;max-width:140px;object-fit:contain}
+#logo-preview img{max-height:52px;max-width:140px;object-fit:contain}
+.hdr-fields{display:flex;flex-wrap:wrap;gap:8px 16px;flex:1}
+.hdr-fld{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.hdr-fld label{font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em}
+.hdr-fld input,.hdr-fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px;width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tab-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);color:var(--text-s);border-radius:6px;cursor:pointer;font-size:12.5px;transition:.15s}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent2);color:#fff;font-weight:600}
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px}
+@media(max-width:760px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;color:var(--text-s)}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;transition:.15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none}
+.hint{font-size:10.5px;color:var(--text-s);margin-top:1px;line-height:1.4}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:9px 22px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--accent2)}
+.btn-clear{padding:9px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text-s);border-radius:7px;cursor:pointer;font-size:13px}
+.btn-pdf{padding:8px 16px;background:#1a56db;border:none;color:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
+.kpi-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kpi{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi .v{font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+.kpi .u{font-size:10px;color:var(--text-s);display:block;margin-top:1px}
+.kpi .lbl{font-size:10px;color:var(--text-s);margin-top:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi.big .v{color:#fbbf24;font-size:24px}
+.kpi.ok .v{color:#22d3a0}.kpi.bad .v{color:#fca5a5}
+.rec-box{background:#2a2206;border:1px solid #a16207;border-radius:6px;padding:10px 14px;font-size:12.5px;color:#fde68a;margin-top:12px;line-height:1.7}
+.rec-box.ok{background:#06301f;border-color:#15803d;color:#6ee7b7}
+.rec-box.bad{background:#2a0d0d;border-color:#7f1d1d;color:#fca5a5}
+.note{background:#1a1500;border:1px solid #4a3a00;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#c8a840;margin-top:10px;line-height:1.7}
+.formula{font-size:11.5px;color:var(--text-s);background:var(--bg3);border-radius:6px;padding:8px 12px;margin-top:10px;line-height:1.6}
+.ref-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--text-s);padding:6px 10px;text-align:left;border:1px solid var(--border);font-size:11px}
+.ref-table td{padding:5px 10px;border:1px solid var(--border)}
+.ref-table td.c{text-align:center;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#8b92a8;font-size:12px;text-decoration:none;border:1px solid #2e3348;padding:5px 12px;border-radius:6px;background:#1a1d27">← Все калькуляторы</a>
+
+<div class="hdr">
+  <div class="hdr-logo" onclick="$('logo-inp').click()">
+    <div id="logo-preview">💡 Логотип</div>
+    <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+  </div>
+  <div class="hdr-fields">
+    <div class="hdr-fld" style="min-width:200px"><label>Организация</label><input id="doc-org" placeholder="ТОО «Проект»"></div>
+    <div class="hdr-fld" style="min-width:200px"><label>Объект</label><input id="doc-obj" placeholder="Наименование объекта"></div>
+    <div class="hdr-fld"><label>Помещение</label><input id="doc-room" placeholder="Кабинет / цех"></div>
+    <div class="hdr-fld"><label>Шифр</label><input id="doc-num" placeholder="ЭО-001"></div>
+    <div class="hdr-fld"><label>Исполнитель</label><input id="doc-exec" placeholder="Иванов И.И."></div>
+    <div class="hdr-fld"><label>Дата</label><input id="doc-date"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('util')">💡 Метод коэф. использования</button>
+  <button class="tab-btn" onclick="switchTab('spec')">⚡ Метод удельной мощности</button>
+  <button class="tab-btn" onclick="switchTab('ref')">📖 Справочники</button>
+</div>
+
+<!-- ===== UTILIZATION ===== -->
+<div id="sec-util" class="sec active">
+  <div class="card">
+    <div class="card-title">Геометрия помещения</div>
+    <div class="grid4">
+      <div class="fld"><label>Длина A, м</label><input id="u-A" type="number" step="0.1" value="10" oninput="calcUtil()"></div>
+      <div class="fld"><label>Ширина B, м</label><input id="u-B" type="number" step="0.1" value="5" oninput="calcUtil()"></div>
+      <div class="fld"><label>Высота помещения H, м</label><input id="u-H" type="number" step="0.1" value="3" oninput="calcUtil()"></div>
+      <div class="fld"><label>Высота раб. поверхности h<sub>р</sub>, м</label><input id="u-hp" type="number" step="0.1" value="0.8" oninput="calcUtil()"></div>
+      <div class="fld"><label>Свес светильника h<sub>с</sub>, м</label><input id="u-hc" type="number" step="0.1" value="0.1" oninput="calcUtil()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Нормирование и коэффициенты</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип помещения (норма E)</label>
+        <select id="u-roomtype" onchange="onRoomType('u')"></select>
+      </div>
+      <div class="fld"><label>Нормируемая освещённость E, лк</label><input id="u-E" type="number" step="10" value="300" oninput="calcUtil()"></div>
+      <div class="fld"><label>Коэф. запаса K<sub>з</sub></label>
+        <select id="u-Kz" onchange="calcUtil()">
+          <option value="1.4" selected>1,4 — обществ., чистые помещения</option>
+          <option value="1.5">1,5 — производств. со средней запылён.</option>
+          <option value="1.8">1,8 — сильная запылённость</option>
+        </select>
+      </div>
+      <div class="fld"><label>Коэф. неравномерности z</label><input id="u-z" type="number" step="0.05" value="1.1" oninput="calcUtil()"></div>
+      <div class="fld"><label>Отражение потолок/стены/пол ρ, %</label>
+        <select id="u-refl" onchange="onRefl()">
+          <option value="70,50,30" selected>70 / 50 / 30 — светлое помещение</option>
+          <option value="50,30,10">50 / 30 / 10 — среднее</option>
+          <option value="30,10,10">30 / 10 / 10 — тёмное / производство</option>
+        </select>
+      </div>
+      <div class="fld"><label>Коэф. использования η</label><input id="u-eta" type="number" step="0.01" min="0.05" max="0.95" value="0.5" oninput="calcUtil()">
+        <span class="hint" id="u-eta-hint"></span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Светильник / источник света</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип источника</label><select id="u-src" onchange="onSrc('u')"></select></div>
+      <div class="fld"><label>Световой поток светильника Φ, лм</label><input id="u-flux" type="number" step="50" value="3600" oninput="calcUtil()"></div>
+      <div class="fld"><label>Мощность светильника P, Вт</label><input id="u-pow" type="number" step="1" value="36" oninput="calcUtil()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="u-kpi"></div>
+    <div class="formula" id="u-formula"></div>
+    <div class="rec-box" id="u-rec"></div>
+    <div class="btn-row">
+      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF / Печать</button>
+      <button class="btn-clear" onclick="saveLS()">💾 Сохранить</button>
+      <button class="btn-clear" onclick="loadLS()">📂 Загрузить</button>
+    </div>
+    <div class="note">
+      Число светильников N = E·S·K<sub>з</sub>·z / (Φ·η), округляется вверх. Индекс помещения i = A·B / (H<sub>р</sub>·(A+B)), где H<sub>р</sub> = H − h<sub>р</sub> − h<sub>с</sub>.
+      η зависит от i, типа светильника и коэффициентов отражения — уточняется по светотехническим таблицам/каталогу (см. подсказку у поля η).
+    </div>
+  </div>
+</div>
+
+<!-- ===== SPECIFIC POWER ===== -->
+<div id="sec-spec" class="sec">
+  <div class="card">
+    <div class="card-title">Оценка по методу удельной мощности</div>
+    <div class="grid4">
+      <div class="fld"><label>Тип помещения</label><select id="s-roomtype" onchange="onRoomType('s')"></select></div>
+      <div class="fld"><label>Площадь S, м²</label><input id="s-S" type="number" step="1" value="50" oninput="calcSpec()"></div>
+      <div class="fld"><label>Удельная мощность w, Вт/м²</label><input id="s-w" type="number" step="0.5" value="10" oninput="calcSpec()"></div>
+      <div class="fld"><label>Тип источника</label><select id="s-src" onchange="onSrc('s')"></select></div>
+      <div class="fld"><label>Мощность светильника P, Вт</label><input id="s-pow" type="number" step="1" value="36" oninput="calcSpec()"></div>
+    </div>
+    <div class="kpi-row" style="margin-top:16px" id="s-kpi"></div>
+    <div class="rec-box" id="s-rec"></div>
+    <div class="note">
+      Метод удельной мощности — быстрая оценка/проверка: P<sub>общ</sub> = w · S. Ориентировочные w для LED-освещения:
+      офисы 8–12, торговые 12–18, производство 10–20, склады 4–8, коридоры 3–5 Вт/м². Для точного расчёта используйте метод коэффициента использования.
+    </div>
+  </div>
+</div>
+
+<!-- ===== REF ===== -->
+<div id="sec-ref" class="sec">
+  <div class="card">
+    <div class="card-title">Нормы освещённости рабочих поверхностей E, лк</div>
+    <table class="ref-table"><thead><tr><th>Помещение</th><th>E, лк</th></tr></thead><tbody id="norm-ref-body"></tbody></table>
+    <div class="hint" style="margin-top:6px">Ориентировочно по СН РК 2.04-02 / СП 52.13330 (естественное и искусственное освещение). Уточняйте по разряду зрительной работы.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Источники света — световой поток и отдача</div>
+    <table class="ref-table"><thead><tr><th>Источник</th><th>Мощн., Вт</th><th>Поток, лм</th><th>лм/Вт</th></tr></thead><tbody id="src-ref-body"></tbody></table>
+  </div>
+  <div class="card">
+    <div class="card-title">Коэффициент использования η (ориентировочно, светлое помещение 70/50/30)</div>
+    <table class="ref-table"><thead><tr><th>Индекс помещения i</th><th>η (LED/люмин. светильники)</th></tr></thead>
+      <tbody>
+        <tr><td class="c">0,5</td><td>0,30–0,38</td></tr>
+        <tr><td class="c">0,8</td><td>0,40–0,48</td></tr>
+        <tr><td class="c">1,25</td><td>0,48–0,55</td></tr>
+        <tr><td class="c">2,0</td><td>0,55–0,62</td></tr>
+        <tr><td class="c">3,0</td><td>0,60–0,68</td></tr>
+        <tr><td class="c">5,0</td><td>0,65–0,72</td></tr>
+      </tbody>
+    </table>
+    <div class="hint" style="margin-top:6px">Точное η — по каталогу конкретного светильника (кривая силы света). Тёмные помещения — на 10–25 % ниже.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>isNaN(n)||n==null||!isFinite(n)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+let logoBase64=(function(){try{return localStorage.getItem('wsLogo')||'';}catch(_){return'';}})();
+
+const NORMS={
+  'Кабинет / офис':300,'Офис (компьютерный)':400,'Читальный зал':400,'Учебный класс':400,'Жилая комната':150,
+  'Кухня':200,'Коридор / лестница':100,'Санузел':75,'Торговый зал':400,'Склад':100,
+  'Производственное (точные работы)':500,'Производственное (грубые работы)':200,'Спортзал':200,
+  'Больничная палата':150,'Операционная':500,'Паркинг / стоянка':75,'Конференц-зал':300
+};
+const SRC={
+  'LED-панель 36 Вт':{f:3600,p:36},'LED-панель 40 Вт':{f:4000,p:40},'LED-светильник 20 Вт':{f:2000,p:20},
+  'LED-лампа 10 Вт':{f:1000,p:10},'LED-прожектор 100 Вт':{f:11000,p:100},'LED-линейный 48 Вт':{f:5000,p:48},
+  'Люминесц. T8 36 Вт':{f:3350,p:36},'Лампа накаливания 100 Вт':{f:1350,p:100},'ДРЛ 250 Вт':{f:13000,p:250},
+  'Металлогалоген. 250 Вт':{f:20000,p:250}
+};
+const NORM_KEYS=Object.keys(NORMS), SRC_KEYS=Object.keys(SRC);
+
+function fillSelect(id,keys){$(id).innerHTML=keys.map(k=>`<option>${k}</option>`).join('');}
+function onRoomType(p){const t=$(p+'-roomtype').value;const E=NORMS[t];if(p==='u'){$('u-E').value=E;calcUtil();}else{$('s-roomtype')&&0;calcSpec();}}
+function onSrc(p){const s=SRC[$(p+'-src').value];if(!s)return;if(p==='u'){$('u-flux').value=s.f;$('u-pow').value=s.p;calcUtil();}else{$('s-pow').value=s.p;calcSpec();}}
+function onRefl(){calcUtil();}
+
+/* ===== UTILIZATION ===== */
+function calcUtil(){
+  const A=parseFloat($('u-A').value)||0,B=parseFloat($('u-B').value)||0,H=parseFloat($('u-H').value)||0;
+  const hp=parseFloat($('u-hp').value)||0,hc=parseFloat($('u-hc').value)||0;
+  const Hp=Math.max(H-hp-hc,0.1), S=A*B;
+  const i=(A*B)/(Hp*(A+B));
+  const E=parseFloat($('u-E').value)||0,Kz=parseFloat($('u-Kz').value)||1.4,z=parseFloat($('u-z').value)||1.1;
+  const eta=parseFloat($('u-eta').value)||0.5;
+  const flux=parseFloat($('u-flux').value)||1,pow=parseFloat($('u-pow').value)||0;
+  const Nexact=E*S*Kz*z/(flux*eta);
+  const N=Math.ceil(Nexact);
+  const Efact=N*flux*eta/(S*Kz*z);
+  const Ptot=N*pow, wud=S>0?Ptot/S:0;
+  $('u-eta-hint').textContent='индекс помещения i = '+fmt(i,2)+' (см. справочник η)';
+  $('u-kpi').innerHTML=`
+    <div class="kpi"><span class="v">${fmt(i,2)}</span><span class="u">—</span><span class="lbl">Индекс i</span></div>
+    <div class="kpi big"><span class="v">${N}</span><span class="u">шт</span><span class="lbl">Светильников</span></div>
+    <div class="kpi ${Efact>=E?'ok':'bad'}"><span class="v">${fmt(Efact,0)}</span><span class="u">лк</span><span class="lbl">E фактич. (норма ${fmt(E,0)})</span></div>
+    <div class="kpi"><span class="v">${fmt(Ptot,0)}</span><span class="u">Вт</span><span class="lbl">Уст. мощность</span></div>
+    <div class="kpi"><span class="v">${fmt(wud,1)}</span><span class="u">Вт/м²</span><span class="lbl">Удельная мощн.</span></div>`;
+  $('u-formula').innerHTML=`H<sub>р</sub> = ${fmt(H,1)} − ${fmt(hp,1)} − ${fmt(hc,1)} = ${fmt(Hp,2)} м; S = ${fmt(S,1)} м²; `+
+    `N = E·S·K<sub>з</sub>·z / (Φ·η) = ${fmt(E,0)}·${fmt(S,1)}·${fmt(Kz,2)}·${fmt(z,2)} / (${fmt(flux,0)}·${fmt(eta,2)}) = ${fmt(Nexact,2)} → <b>${N} шт</b>`;
+  $('u-rec').className='rec-box '+(Efact>=E?'ok':'bad');
+  $('u-rec').innerHTML=Efact>=E
+    ? `✓ Принято ${N} светильников. Фактическая освещённость ${fmt(Efact,0)} лк ≥ нормы ${fmt(E,0)} лк. Удельная мощность ${fmt(wud,1)} Вт/м².`
+    : `✗ При ${N} светильниках E = ${fmt(Efact,0)} лк ниже нормы ${fmt(E,0)} лк — увеличьте световой поток/число светильников.`;
+  window._u={N,Efact,Ptot,wud,i,S};
+}
+
+/* ===== SPECIFIC ===== */
+function calcSpec(){
+  const S=parseFloat($('s-S').value)||0,w=parseFloat($('s-w').value)||0,pow=parseFloat($('s-pow').value)||0;
+  const Ptot=w*S, N=pow>0?Math.ceil(Ptot/pow):0;
+  $('s-kpi').innerHTML=`
+    <div class="kpi big"><span class="v">${fmt(Ptot,0)}</span><span class="u">Вт</span><span class="lbl">Общая мощность</span></div>
+    <div class="kpi"><span class="v">${N}</span><span class="u">шт</span><span class="lbl">Светильников (≈)</span></div>
+    <div class="kpi"><span class="v">${fmt(w,1)}</span><span class="u">Вт/м²</span><span class="lbl">Удельная мощн.</span></div>`;
+  $('s-rec').className='rec-box';
+  $('s-rec').innerHTML=`Ориентировочная установленная мощность освещения: <b>${fmt(Ptot,0)} Вт</b> (≈ ${N} светильников по ${fmt(pow,0)} Вт). `+
+    `Это оценочный метод — для проекта уточните расчётом коэффициента использования.`;
+  window._s={Ptot,N,w,S};
+}
+
+/* ===== utils ===== */
+function switchTab(t){const ids=['util','spec','ref'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));ids.forEach(id=>$('sec-'+id).classList.toggle('active',id===t));}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{logoBase64=e.target.result;try{localStorage.setItem('wsLogo',logoBase64);}catch(_){}$('logo-preview').innerHTML='<img src="'+logoBase64+'">';};rd.readAsDataURL(f);}
+function fillRefs(){
+  $('norm-ref-body').innerHTML=NORM_KEYS.map(k=>`<tr><td>${k}</td><td class="c">${NORMS[k]}</td></tr>`).join('');
+  $('src-ref-body').innerHTML=SRC_KEYS.map(k=>`<tr><td>${k}</td><td class="c">${SRC[k].p}</td><td class="c">${SRC[k].f}</td><td class="c">${Math.round(SRC[k].f/SRC[k].p)}</td></tr>`).join('');
+}
+function collect(){const o={};['org','obj','room','num','exec','date'].forEach(k=>o[k]=$('doc-'+k).value);
+  return {doc:o,u:{A:$('u-A').value,B:$('u-B').value,H:$('u-H').value,hp:$('u-hp').value,hc:$('u-hc').value,rt:$('u-roomtype').value,E:$('u-E').value,Kz:$('u-Kz').value,z:$('u-z').value,refl:$('u-refl').value,eta:$('u-eta').value,src:$('u-src').value,flux:$('u-flux').value,pow:$('u-pow').value},
+    s:{rt:$('s-roomtype').value,S:$('s-S').value,w:$('s-w').value,src:$('s-src').value,pow:$('s-pow').value},logo:logoBase64};}
+function apply(d){if(!d)return;const o=d.doc||{};['org','obj','room','num','exec','date'].forEach(k=>{if(o[k]!=null)$('doc-'+k).value=o[k];});
+  const u=d.u||{};Object.keys(u).forEach(k=>{const el=$('u-'+(k==='rt'?'roomtype':k));if(el&&u[k]!=null)el.value=u[k];});
+  const s=d.s||{};Object.keys(s).forEach(k=>{const el=$('s-'+(k==='rt'?'roomtype':k));if(el&&s[k]!=null)el.value=s[k];});
+  if(d.logo){logoBase64=d.logo;$('logo-preview').innerHTML='<img src="'+logoBase64+'">';}
+  calcUtil();calcSpec();}
+function saveLS(){localStorage.setItem('lightCalc',JSON.stringify(collect()));toast('Сохранено');}
+function loadLS(){const d=localStorage.getItem('lightCalc');if(!d){alert('Нет сохранённых данных');return;}apply(JSON.parse(d));toast('Загружено');}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#a16207;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999';document.body.appendChild(t);setTimeout(()=>t.remove(),1700);}
+
+function exportPDF(){
+  calcUtil();
+  const u=window._u||{};
+  const A=$('u-A').value,B=$('u-B').value,H=$('u-H').value;
+  const logo=logoBase64?'<img src="'+logoBase64+'" style="max-height:55px;max-width:150px">':'';
+  const td='border:1px solid #aac;padding:5px 8px;font-size:9.5pt';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт освещения</title>
+  <style>body{font-family:'Times New Roman',serif;padding:16mm 18mm;font-size:10.5pt;color:#111}
+  h1{font-size:14pt;text-align:center;margin:6px 0}table{width:100%;border-collapse:collapse;margin:8px 0}
+  .tot td{background:#ca8a04;color:#fff;font-weight:bold}@page{margin:16mm}</style></head><body>
+  <table style="border:none"><tr style="border:none"><td style="border:none;width:160px">${logo}</td>
+  <td style="border:none">${esc($('doc-org').value)}<br>Объект: ${esc($('doc-obj').value)} | Помещение: ${esc($('doc-room').value)}<br>
+  Шифр: ${esc($('doc-num').value)} | Исп.: ${esc($('doc-exec').value)} | ${esc($('doc-date').value)}</td></tr></table>
+  <h1>СВЕТОТЕХНИЧЕСКИЙ РАСЧЁТ (метод коэффициента использования)</h1>
+  <table><tbody>
+  <tr><td style="${td}">Размеры помещения A×B×H</td><td style="${td}">${esc(A)} × ${esc(B)} × ${esc(H)} м; S = ${fmt(u.S,1)} м²</td></tr>
+  <tr><td style="${td}">Индекс помещения i</td><td style="${td}">${fmt(u.i,2)}</td></tr>
+  <tr><td style="${td}">Нормируемая освещённость E</td><td style="${td}">${esc($('u-E').value)} лк</td></tr>
+  <tr><td style="${td}">Коэффициенты Kз / z / η</td><td style="${td}">${esc($('u-Kz').value)} / ${esc($('u-z').value)} / ${esc($('u-eta').value)}</td></tr>
+  <tr><td style="${td}">Светильник (Φ / P)</td><td style="${td}">${esc($('u-src').value)} — ${esc($('u-flux').value)} лм / ${esc($('u-pow').value)} Вт</td></tr>
+  <tr class="tot"><td style="${td}">Число светильников N</td><td style="${td}">${u.N} шт</td></tr>
+  <tr><td style="${td}">Фактическая освещённость</td><td style="${td}">${fmt(u.Efact,0)} лк</td></tr>
+  <tr><td style="${td}">Установленная мощность</td><td style="${td}">${fmt(u.Ptot,0)} Вт (${fmt(u.wud,1)} Вт/м²)</td></tr>
+  </tbody></table>
+  <p>N = E·S·K<sub>з</sub>·z / (Φ·η). Основание: СН РК 2.04-02 / СП 52.13330 «Естественное и искусственное освещение».</p>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  $('doc-date').value=new Date().toLocaleDateString('ru-RU');
+  if(logoBase64)$('logo-preview').innerHTML='<img src="'+logoBase64+'">';
+  fillSelect('u-roomtype',NORM_KEYS);fillSelect('s-roomtype',NORM_KEYS);
+  fillSelect('u-src',SRC_KEYS);fillSelect('s-src',SRC_KEYS);
+  fillRefs();
+  const saved=localStorage.getItem('lightCalc');
+  if(saved){apply(JSON.parse(saved));}
+  else{calcUtil();calcSpec();}
+});
+</script>
+<script>(function(){try{var o=document.getElementById("doc-org"),e=document.getElementById("doc-exec");if(o){var s=localStorage.getItem("wsOrg");if(s&&!o.value)o.value=s;o.addEventListener("input",function(){localStorage.setItem("wsOrg",o.value);});}if(e){var x=localStorage.getItem("wsExec");if(x&&!e.value)e.value=x;e.addEventListener("input",function(){localStorage.setItem("wsExec",e.value);});}}catch(_){}})();</script>
+
+<script>
+/* Публикация результатов в общий канал мастерской (wsResults) */
+(function(){
+  try{
+    var id = location.pathname.split('/').filter(Boolean).slice(-2)[0] || 'tool';
+    var last = '';
+    function val(i){ var e = document.getElementById(i); return e && e.value ? String(e.value).trim() : ''; }
+    function txt(n){ return (n.textContent || '').replace(/\s+/g,' ').trim(); }
+    function visible(el){ return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+    function snapshot(){
+      var kpis = [];
+      document.querySelectorAll('.kpi-row').forEach(function(row){
+        if(!visible(row)) return;
+        row.querySelectorAll('.kpi').forEach(function(k){
+          var lbl = k.querySelector('.lbl'), v = k.querySelector('.v'), u = k.querySelector('.u');
+          if(!lbl || !v) return;
+          var value = txt(v);
+          if(!value || value === '—') return;
+          kpis.push({lbl: txt(lbl), v: value, u: u ? txt(u) : ''});
+        });
+      });
+      if(!kpis.length) return;
+      var data = {
+        title: document.title,
+        obj:  val('doc-obj') || val('p_name') || val('m-obj'),
+        room: val('doc-room') || val('doc-el'),
+        num:  val('doc-num') || val('p_code') || val('m-cipher'),
+        kpis: kpis.slice(0,14),
+        ts:   Date.now()
+      };
+      var s = JSON.stringify({t:data.title,o:data.obj,r:data.room,k:data.kpis});
+      if(s === last) return;
+      last = s;
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem('wsResults') || '{}') || {}; }catch(_){}
+      all[id] = data;
+      try{ localStorage.setItem('wsResults', JSON.stringify(all)); }catch(_){}
+    }
+    var t = null;
+    function sched(){ clearTimeout(t); t = setTimeout(snapshot, 700); }
+    window.addEventListener('load', function(){
+      sched();
+      var mo = new MutationObserver(sched);
+      document.querySelectorAll('.kpi-row').forEach(function(r){ mo.observe(r, {childList:true, subtree:true, characterData:true}); });
+      document.addEventListener('input', sched, true);
+      document.addEventListener('change', sched, true);
+      document.addEventListener('click', sched, true);
+    });
+  }catch(_){}
+})();
+</script>
+</body>
+</html>
